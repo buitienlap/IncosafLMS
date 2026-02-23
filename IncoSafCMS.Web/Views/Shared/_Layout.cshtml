@@ -33,7 +33,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>IncosafCMS | @ViewBag.Title</title>
+    <title>IncosafLMS | @ViewBag.Title</title>
 
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
     <!-- Add local styles, mostly for plugins css file -->
@@ -81,25 +81,25 @@
             settings.Styles.LoadingDiv.BackColor = System.Drawing.Color.FromArgb(41, 56, 70);
         }
     ).GetHtml()
-    <!-- Wrapper-->
+    <!-- Wrapper user layout -->
     <div id="wrapper" class="@Html.PageClass()">
 
-        <!-- Navigation -->
+        <!-- Navigation user layout -->
         @Html.Partial("_Navigation")
 
         @*
         <!-- Page wraper -->
         <div id="page-wrapper" class="gray-bg" style="padding: 0px; margin-top: 40px; margin-bottom: 0px">
 
-            <!-- Top Navbar -->
-            @Html.Partial("_TopNavbar")
-
-            <!-- Main view  -->
-            @RenderBody()
+            <!-- Top 1 Navbar Html. Partial("_TopNavbar") -->
 
 
-            <!-- Footer -->
-            @Html.Partial("_Footer")
+            <!-- Main view  Render Body() -->
+
+
+
+            <!-- Footer Html. Partial("_Footer") -->
+
 
         </div>
         <!-- End page wrapper-->
@@ -127,9 +127,6 @@
 
         @Scripts.Render("~/bundles/signalr")
         @Scripts.Render("/signalr/hubs")
-        <!-- ✅ Chart.js: dùng cho Dashboard -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- cho vẽ biểu đồ cột -->
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script> <!-- cho vẽ biểu đồ tròn -->
 
         @RenderSection("scripts", required: false)
 </body>

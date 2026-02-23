@@ -1,0 +1,37 @@
+@model IEnumerable<IncosafCMS.Core.DomainModels.ActivityLog>
+
+@{
+    Layout = null;
+}
+
+@Html.Partial("_ActivityGridPartial", Model)
+
+<script type="text/javascript">
+    function OnActivityFocusedRowChanged(s, e) {
+        try {
+            var rowIndex = s.GetFocusedRowIndex();
+            if (rowIndex < 0) return;
+            var key = s.GetRowKey(rowIndex);
+            if (!key) return;
+            $.get('/Activity/Details', { id: key }).done(function (html) {
+                $('#activityDetailWrapper').html(html);
+            }).fail(function () { toastr.error('Không t?i ???c chi ti?t ho?t ??ng.'); });
+        } catch (ex) { console.log(ex); }
+    }
+
+    function OnActivityGridEndCallback(s, e) {
+        try {
+            var focus = s.GetFocusedRowIndex();
+            if ((typeof focus !== 'number' || focus < 0) && s.GetVisibleRowsOnPage && s.GetVisibleRowsOnPage() > 0) {
+                s.SetFocusedRowIndex(0);
+                focus = 0;
+            }
+            var key = s.GetRowKey(focus);
+            if (key) {
+                $.get('/Activity/Details', { id: key }).done(function (html) {
+                    $('#activityDetailWrapper').html(html);
+                });
+            }
+        } catch (ex) { console.log(ex); }
+    }
+</script>

@@ -33,6 +33,7 @@ namespace IncosafCMS.Data
         //public DbSet<Department> Departments { get; set; } //thêm 4.11.2025
         //public DbSet<SanLuongDK> SanLuongDK { get; set; } //thêm 4.11.2025
         public DbSet<AppUser> AppUser { get; set; } //thêm 5.11.2025
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
         public IncosafCMSContext()
             : base("AppContext")
         {

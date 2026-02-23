@@ -63,6 +63,7 @@
     <Compile Include="Data\IUnitOfWork.cs" />
     <Compile Include="Data\OrderBy.cs" />
     <Compile Include="DomainModels\Accreditation.cs" />
+    <Compile Include="DomainModels\ActivityLog.cs" />
     <Compile Include="DomainModels\BaseEntity.cs" />
     <Compile Include="DomainModels\Contract.cs" />
     <Compile Include="DomainModels\Customer.cs" />

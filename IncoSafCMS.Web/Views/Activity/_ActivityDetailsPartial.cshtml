@@ -1,0 +1,10 @@
+@model IncosafCMS.Core.DomainModels.ActivityLog
+
+<div style="padding:10px;">
+    <h4>@Model.Title</h4>
+    <p><b>Lo?i:</b> @Model.Type</p>
+    <p><b>Th?i gian:</b> @Model.Timestamp.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+    <p><b>Ng??i th?c hi?n:</b> @Model.User?.DisplayName</p>
+    <p><b>Mô t?:</b> @Html.Raw(Model.Description ?? "-")</p>
+    <p><b>Metadata:</b> <pre style="white-space:pre-wrap;">@Model.Metadata</pre></p>
+</div>

@@ -1,0 +1,40 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.ActivityLog>
+
+@using DevExpress.Web.Mvc
+@using IncosafCMS.Core.DomainModels
+
+@{
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "grvActivityLogs";
+        settings.KeyFieldName = "Id";
+        settings.CallbackRouteValues = new { Controller = "Activity", Action = "GetByUser" };
+        settings.SettingsBehavior.AllowFocusedRow = true;
+        settings.SettingsPager.PageSize = 20;
+        settings.SettingsPager.Mode = GridViewPagerMode.ShowAllRecords; // GridViewPagerMode.ShowPager;
+        settings.SettingsSearchPanel.Visible = false;
+        settings.ClientSideEvents.FocusedRowChanged = "OnActivityFocusedRowChanged";
+
+        settings.Columns.Add(c => { c.FieldName = "Id"; c.Visible = false; });
+        settings.Columns.Add(c => { c.FieldName = "Timestamp"; c.Caption = "Thời gian"; c.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy HH:mm"; c.Width = System.Web.UI.WebControls.Unit.Pixel(150); });
+        settings.Columns.Add(c => {
+            c.FieldName = "Type";
+            c.Caption = "Loại hình";
+            c.Width = System.Web.UI.WebControls.Unit.Pixel(120);
+            c.SetDataItemTemplateContent(container =>
+            {
+                var item = container.DataItem as ActivityLog;
+                if (item != null)
+                {
+                    var text = item.Type.ToString();
+                    container.Controls.Add(new System.Web.UI.WebControls.Literal { Text = text });
+                }
+            });
+        });
+        settings.Columns.Add(c => { c.FieldName = "Title"; c.Caption = "Tiêu đề"; });
+        settings.Columns.Add(c => { c.FieldName = "User.DisplayName"; c.Caption = "Người tham gia"; c.Width = System.Web.UI.WebControls.Unit.Pixel(200); });
+
+        settings.ClientSideEvents.EndCallback = "OnActivityGridEndCallback";
+
+    }).Bind(Model).GetHtml();
+}

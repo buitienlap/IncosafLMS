@@ -9,6 +9,40 @@ function OnGridTaskOfContractFocusedRowChanged(s, e) {
     s.GetRowValues(s.GetFocusedRowIndex(), 'Id;Name', OnGetRowTaskOfContractValues);
 }
 
+// Activity grid handlers (moved from Home/Index view)
+window.OnActivityFocusedRowChanged = function (s, e) {
+    LoadingPanel.Show();
+    try {
+        var rowIndex = s.GetFocusedRowIndex();
+        if (rowIndex < 0) return;
+        var key = s.GetRowKey(rowIndex);
+        console.log('Activity id = ' + key);
+        if (!key) return;
+        $.get('/Activity/Details', { id: key }).done(function (html) {
+            $('#activityDetailWrapper').html(html);
+        }).fail(function () { toastr.error('Không tải được chi tiết hoạt động.'); });
+    } catch (ex) {
+        console.log(ex);
+    }
+    LoadingPanel.Hide();
+};
+
+window.OnActivityGridEndCallback = function (s, e) {
+    try {
+        var focus = s.GetFocusedRowIndex();
+        if ((typeof focus !== 'number' || focus < 0) && s.GetVisibleRowsOnPage && s.GetVisibleRowsOnPage() > 0) {
+            s.SetFocusedRowIndex(0);
+            focus = 0;
+        }
+        var key = s.GetRowKey(focus);
+        if (key) {
+            $.get('/Activity/Details', { id: key }).done(function (html) {
+                $('#activityDetailWrapper').html(html);
+            });
+        }
+    } catch (ex) { console.log(ex); }
+};
+
 function OnGetRowTaskOfContractValues(values) {    
     if (values[0]) {
         selectedtaskofcontract = parseInt(values[0]);
@@ -517,6 +551,45 @@ function AccreditationOfTaskMenuClick(s, e) {
 
 
 // End AccreditionOfTask
+
+
+// --- Cleanup overrides: replace heavy/removed functions with lightweight stubs ---
+// These override earlier definitions so we don't need to edit many places in the file.
+(function () {
+    // No-op equipment toolbar click
+    window.EquipmentToolBarClick = function (s, e) { if (e) e.processOnServer = false; };
+
+    // Disable bulk print on main page; keep function to avoid missing refs
+    window.PrintSelected = function () { console.log('PrintSelected disabled'); };
+
+    // Disable edit/show modals that were removed from the view
+    window.showEditSpecificationsModal = function (equipmentId) { console.log('showEditSpecificationsModal disabled', equipmentId); };
+    window.showEditAccreditationModal = function (equipmentId, contractId) { console.log('showEditAccreditationModal disabled', equipmentId, contractId); };
+
+    // Disable upload/print helper
+    window.uploadAndPrint = function (formData, equipmentId) { console.log('uploadAndPrint disabled', equipmentId); };
+
+    // Load stamps via AJAX into placeholder created in Index.cshtml
+    window.showStampsOfContract = function () {
+        $.get('/Equipments/StampViewPartial')
+            .done(function (data) {
+                $('#stampGridPlaceholder').html(data);
+                $('#stampModal').modal('show');
+            })
+            .fail(function () { toastr.error('Không tải được danh sách tem.'); });
+    };
+
+    // Replace dashboard/chart heavy functions with stubs to avoid runtime chart calls
+    window.drawProductionChart = function () { console.log('drawProductionChart disabled'); };
+    window.drawProductionChartLH = function () { console.log('drawProductionChartLH disabled'); };
+    window.loadProductionChart = function () { console.log('loadProductionChart disabled'); };
+    window.loadProductionChartLH = function () { console.log('loadProductionChartLH disabled'); };
+    window.loadLoaiHinhPieChart = function () { console.log('loadLoaiHinhPieChart disabled'); };
+    window.drawLoaiHinhPieChart = function () { console.log('drawLoaiHinhPieChart disabled'); };
+    window.valueLabelPlugin = null;
+
+    console.log('index.js cleanup overrides applied');
+})();
 
 
 

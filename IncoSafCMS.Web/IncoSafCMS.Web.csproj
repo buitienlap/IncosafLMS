@@ -255,6 +255,7 @@
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\CustomerAdminController.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
@@ -385,7 +386,7 @@
     <Content Include="Images\setcontractnumber.png" />
     <Content Include="Images\waiting.png" />
     <Content Include="Images\zender_logo.png" />
-    <Content Include="readme.txt" />
+    <None Include="App_Doc\readme.md" />
     <Content Include="Scripts\app\app.js" />
     <Content Include="Scripts\app\index.js" />
     <Content Include="Scripts\app\inspinia.js" />
@@ -787,6 +788,9 @@
     <Content Include="Views\Contracts\_DashboardCompanyPartial.cshtml" />
     <Content Include="Views\Contracts\_DashboardCompanyGrid.cshtml" />
     <Content Include="Views\Contracts\_DashboardCompanyGridLoaiHinh.cshtml" />
+    <Content Include="Views\Activity\_ActivityGridPartial.cshtml" />
+    <Content Include="Views\Activity\_ActivityDetailsPartial.cshtml" />
+    <Content Include="Views\Activity\Index.cshtml" />
     <None Include="Web.Incosaf.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

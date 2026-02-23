@@ -91,7 +91,12 @@ namespace IncosafCMS.Web.Controllers
                 ViewBag.UserList = userList;
             }
 
-            return View(new List<Contract>());
+            // Return recent activity logs as the model for the home index (left panel now shows ActivityLog)
+            var activities = uow.Repository<ActivityLog>().GetAll()
+                .OrderByDescending(x => x.Timestamp)
+                .ToList();
+
+            return View(activities);
 
         }
         public ActionResult ContractDetails(Contract model)

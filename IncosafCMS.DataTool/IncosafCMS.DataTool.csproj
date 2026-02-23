@@ -107,20 +107,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
-    <Compile Include="ContractDataTool.cs" />
     <Compile Include="CustomerDataTool.cs" />
     <Compile Include="DebugLogger.cs" />
     <Compile Include="DepartmentDataTool.cs" />
     <Compile Include="EmployeeDataTool.cs" />
-    <Compile Include="EquipmentDataTool.cs" />
     <Compile Include="GridInit.cs" />
     <Compile Include="IDatatool.cs" />
-    <Compile Include="ImportContract.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ImportContract.Designer.cs">
-      <DependentUpon>ImportContract.cs</DependentUpon>
-    </Compile>
     <Compile Include="ImportCustomer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -139,12 +131,6 @@
     <Compile Include="ImportEmployee.Designer.cs">
       <DependentUpon>ImportEmployee.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImportEquipment.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ImportEquipment.Designer.cs">
-      <DependentUpon>ImportEquipment.cs</DependentUpon>
-    </Compile>
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -153,9 +139,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="ImportContract.resx">
-      <DependentUpon>ImportContract.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="ImportCustomer.resx">
       <DependentUpon>ImportCustomer.cs</DependentUpon>
     </EmbeddedResource>
@@ -164,9 +147,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ImportEmployee.resx">
       <DependentUpon>ImportEmployee.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ImportEquipment.resx">
-      <DependentUpon>ImportEquipment.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
