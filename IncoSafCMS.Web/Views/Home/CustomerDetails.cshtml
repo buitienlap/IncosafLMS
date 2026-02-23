@@ -1,0 +1,119 @@
+﻿
+@{
+    ViewBag.Title = "Chi tiết khách hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<script type="text/javascript">
+    
+    function editCustomer() {
+        $.ajax({
+            url: '/Customers/Edit/' + GetURLParameter(), // The method name + paramater
+            success: function (data) {
+                $('#modalEditWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+            }
+        });
+    }
+
+    function GetURLParameter() {
+        var sPageURL = window.location.href;
+        var indexOfLastSlash = sPageURL.lastIndexOf("/");
+
+        if(indexOfLastSlash>0 && sPageURL.length-1!=indexOfLastSlash)
+            return sPageURL.substring(indexOfLastSlash+1);
+        else
+            return 0;
+    }
+</script>
+
+<div class="wrapper animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-12" style="padding-left: 0px; padding-right: 0px;">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Chi tiết khách hàng</h5>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="text-right">
+                                <button class="btn btn-info btn-rounded btn-xs" data-toggle="modal" data-target="#editModal" onclick="editCustomer()">Chỉnh sửa</button>
+                                <div class="modal inmodal" id="editModal" tabindex="-2" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Chỉnh sửa khách hàng</h4>
+                                            </div>
+                                            <div class="modal-body scroll_content" id="modalEditWrapper" style="padding: 10px">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-danger btn-rounded btn-xs deleteCustomer" href="#">Xóa</button>
+                            </div>
+                        }
+                        
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        @Html.Action("Details", "Customers")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 170px)'
+            })
+
+        });
+
+        $('.deleteCustomer').click(function () {
+            swal({
+                title: "Bạn có muốn xóa?",
+                text: "Thao tác này sẽ không thể khôi phục lại",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Đồng ý",
+                cancelButtonColor: "#23C6C8",
+                cancelButtonText: "Hủy bỏ",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+
+                        url: '/Customers/Delete/' + GetURLParameter(), // The method name + paramater
+                        type: "POST",
+                        success: function (data) {
+                            swal({ title: "Đã xóa!", text: "Đã xóa thành công.", type: "success", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                            window.location.href = '@Url.Action("Customer", "Home")';
+                        }
+                    });
+                } else {
+                    swal({ title: "Đã hủy bỏ", text: "Đã hủy bỏ thao tác.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                }
+            });
+
+        });
+    </script>
+}

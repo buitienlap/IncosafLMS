@@ -1,0 +1,120 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppUser>
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-12">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách người dùng</h5>
+                    </div>
+                    <div class="ibox-content scroll_content" style="padding: 5px">
+                        @Html.DevExpress().GridView(
+                            settings =>
+                            {
+                                settings.Name = "gvUserEditing";
+                                settings.KeyFieldName = "Id";
+                                settings.CallbackRouteValues = new { Controller = "UsersAdmin", Action = "Index" };
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.SettingsBehavior.AllowFocusedRow = true;
+                                settings.SettingsLoadingPanel.Text = "Đang tải...";
+
+                                settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+                                settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+                                settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(7);
+                                settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(7);
+                                settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+                                settings.Columns.Add(column =>
+                                {
+                                    column.Caption = "#";
+                                    column.SetDataItemTemplateContent(c =>
+                                    {
+                                        ViewContext.Writer.Write(
+                                            Html.ActionLink("Sửa", "Edit", new { Id = DataBinder.Eval(c.DataItem, "Id") }) + "&nbsp;" +
+                                            Html.ActionLink("Xóa", "Delete", new { Id = DataBinder.Eval(c.DataItem, "Id") },
+                                                new { onclick = "return confirm('Bạn có chắc chắn muốn xóa?')" })
+                                        );
+                                    });
+                                    column.SetHeaderTemplateContent(c =>
+                                    {
+                                        ViewContext.Writer.Write(
+                                            Html.ActionLink("Tạo mới", "Create").ToHtmlString()
+                                        );
+                                    });
+                                    column.Settings.AllowDragDrop = DefaultBoolean.False;
+                                    column.Settings.AllowSort = DefaultBoolean.False;
+                                    column.Width = 70;
+                                });
+
+                                settings.Columns.Add(column =>
+                                {
+                                    column.FieldName = "DisplayName";
+                                    column.Caption = "Họ và Tên";
+                                });
+                                settings.Columns.Add(column =>
+                                {
+                                    column.FieldName = "UserName";
+                                    column.Caption = "Tên đăng nhập";
+                                });
+                                settings.Columns.Add(column =>
+                                {
+                                    column.FieldName = "Position.Name";
+                                    column.Caption = "Chức vụ";
+                                });
+                                settings.Columns.Add(column =>
+                                {
+                                    column.FieldName = "department.Name";
+                                    column.Caption = "Phòng ban";
+                                });
+
+                                settings.Columns.Add(column =>
+                                {
+                                    column.FieldName = "PhoneNumber";
+                                    column.Caption = "Điện thoại";
+                                });
+
+
+                                settings.ClientLayout = (s, e) =>
+                                {
+                                    if (e.LayoutMode == ClientLayoutMode.Loading)
+                                    {
+                                        if (Session["GridState"] != null)
+                                            e.LayoutData = (string)Session["GridState"];
+                                    }
+                                    else
+                                        Session["GridState"] = e.LayoutData;
+                                };
+                            }).Bind(Model).GetHtml()
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 205px)'
+            });
+
+
+        });
+    </script>
+
+}

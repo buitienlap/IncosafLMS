@@ -1,0 +1,138 @@
+﻿
+@*@{
+    ViewBag.Title = "DeregisterContractNumber";
+}
+
+<h2>DeregisterContractNumber</h2>*@
+
+@model IncosafCMS.Core.DomainModels.Contract
+
+@{
+    Layout = null;
+}
+
+<script type="text/javascript">
+    function OnDeregisterContractNumberClick() {
+        var mahd = txtMaHD.GetValue();
+        txtMaHD.SetText("");
+    
+        var res = confirm('Bạn có chắc chắn muốn hủy cấp số cho hợp đồng này?');
+        if (res != true) {
+            txtMaHD.SetText(mahd);
+            return;
+        }
+        if (selectedcontract && typeof selectedcontract === "number") {
+            
+            $.ajax({
+                type: "POST",
+                data: { ContractID: selectedcontract, maHD: mahd },
+                url: '/Contracts/DeregisterContractNumber/', // The method name + paramater
+                success: function (data) {
+                    if (data) {
+                        if (data === "success") {
+                            txtMaHD.SetText("");
+                            var index = rdbGridContractFilter.GetSelectedIndex();
+                            grvContracts.PerformCallback({ filtermode: parseInt(index) });
+                        } else {
+                            swal({ title: "Đã có lỗi xảy ra!", text: data, type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                        }
+                    }
+                    else {
+                        swal({ title: "Bạn không có quyền!", text: "Bạn không có quyền thực hiện việc này.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                },
+                error: function (data) {
+                    swal({ title: "Lỗi rồi :)", text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                }
+            });
+        }
+
+        else {
+            swal({
+                title: "Máy chủ chưa có phản hồi",
+                text: "Vui lòng thực hiện lại!",
+                type: "warning",
+                showCancelButton: false,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Đồng ý",
+                closeOnConfirm: true,
+                closeOnCancel: false
+            });
+        }
+    }
+</script>
+
+@using (Html.BeginForm("DeregisterContractNumber", "Contracts", FormMethod.Post, new { id = "editContractNumberForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Hợp đồng</label>
+                    <div>
+                        @Html.DevExpress().TextBox(
+                            settings =>
+                            {
+                                settings.Name = "txtTenHD";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+                                settings.Enabled = false;
+                            }
+                        ).Bind(Model.Name).GetHtml()
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <label>Mã hợp đồng</label>
+                            <div>
+                                @Html.DevExpress().TextBox(
+                            settings =>
+                            {
+                                settings.Name = "txtMaHD";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập mã hợp đồng mới";
+                                //settings.Properties.ClientSideEvents.ValueChanged = "OnSoHopDongChangedViaContract";
+                            }
+                        ).Bind(Model.MaHD).GetHtml()
+                            </div>
+
+                        </div>
+                        <div class="col-sm-4">
+                            <label></label>
+                            <div style="margin-left: 5px; margin-top: 5px">
+                                <button type="button" class="btn btn-sm btn-primary pull-right" onclick="OnDeregisterContractNumberClick()">Hủy cấp số</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+        @*<button type="button" class="btn btn-primary" onclick="OnSubmitEditContractNumber()" data-dismiss="modal">Cấp số</button>*@
+        <button type="button" class="btn btn-white" data-dismiss="modal">Đóng</button>
+    </div>
+}
+
+@section Styles {
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+
+
+        });
+    </script>
+
+}

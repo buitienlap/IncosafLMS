@@ -1,0 +1,103 @@
+﻿@model IncosafCMS.Core.DomainModels.Identity.ApplicationRole
+
+@{
+    ViewBag.Title = "Chi tiết nhóm người dùng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IncosafCMS | @ViewBag.Title</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Fonts/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="~/Content/animate.css" rel="stylesheet">
+    <link href="~/Content/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+
+    <div class="passwordBox animated fadeInDown" style="max-width: 700px; padding-top: 15px">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Chi tiết nhóm người dùng</h5>
+                        @*<div class="text-right">
+                                <a class="btn btn-success btn-rounded btn-xs" href="@Url.Action("Create", "RolesAdmin")">Tạo mới</a>
+                            </div>*@
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>STT</th>
+                                                <th>Họ và Tên</th>
+                                                <th>Email</th>
+                                                <th>Nhóm</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                var groupName = Model.Name;
+                                                int i = 1;
+                                                foreach (IncosafCMS.Core.DomainModels.Identity.AppUser item in ViewBag.Users)
+                                                {
+                                                    <tr>
+                                                        <td>@i</td>
+                                                        <td>@item.DisplayName</td>
+                                                        <td>@item.UserName</td>
+                                                        <td><span class="badge badge-primary">@groupName</span></td>
+                                                    </tr>
+                                                    i++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-10">
+                                <a class="btn btn-w-m btn-primary" href="@Url.Action("Edit", "RolesAdmin", new { id = Model.Id })">Chỉnh sửa</a>
+                                <a class="btn btn-w-m btn-default" href="@Url.Action("UserGroups", "Admin")">Quay lại</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 205px)'
+            });
+
+
+        });
+    </script>
+}
+
+
+

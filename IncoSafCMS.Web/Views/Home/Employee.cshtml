@@ -1,0 +1,210 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppUser>
+@{
+    ViewBag.Title = "Danh sách nhân sự";
+}
+<script type="text/javascript">
+    var selectedemployee;
+
+    function OnGridFocusedRowChanged(s, e) {
+        s.GetRowValues(s.GetFocusedRowIndex(), 'Id;DisplayName;department;Position;Address;PhoneNumber;Email', OnGetRowValues);
+    }
+
+    function OnGetRowValues(values) {
+        if (values[0]) {
+            selectedemployee = values[0];
+            if (selectedemployee && typeof selectedemployee === "number") {
+                gvContractsOfEmployee.PerformCallback({
+                    selectedemployee: parseInt(selectedemployee)
+                });
+            }
+            else {
+                selectedemployee = -1;
+                gvContractsOfEmployee.PerformCallback({
+                    selectedemployee: parseInt(selectedemployee)
+                });
+            }
+        }
+        else {
+            selectedemployee = -1;
+            gvContractsOfEmployee.PerformCallback({
+                selectedemployee: parseInt(selectedemployee)
+            });
+        }
+
+        eDisplayName.textContent = "Tên nhân viên: " + (values[1] ? values[1] : "N/A");
+        eDepartment.textContent = "Đơn vị: " + (values[2] ? values[2].Name : "N/A");
+        ePosition.textContent = "Chức vụ: " + (values[3] ? values[3].Name : "N/A");
+        eAddress.textContent = "Địa chỉ: " + (values[4] ? values[4] : "N/A");
+        ePhoneNumber.textContent = "Điện thoại: " + (values[5] ? values[5] : "N/A");
+        eEmail.textContent = "Email: " + (values[6] ? values[6] : "N/A");
+    }
+
+    function editEmployee() {
+        if (selectedemployee && typeof selectedemployee === "number") {
+            $.ajax({
+                url: '/Employees/Edit/' + selectedemployee, // The method name + paramater
+                success: function (data) {
+                    $('#modalEditWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+                }
+            });
+        }
+        else {
+            swal("Máy chủ chưa phản hồi", "Vui lòng thực hiện lại!", "warning")
+        }
+    }
+    function addnewEmployee() {
+        $.ajax({
+            url: '/Employees/Create/', // The method name + paramater
+            success: function (data) {
+                $('#modalAddNewWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+            }
+        });
+    }
+</script>
+
+<div class="wrapper animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-7" style="padding-left: 0px; padding-right: 2px;">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách nhân sự</h5>
+                        <div class="text-right">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <button class="btn btn-primary btn-rounded btn-xs" data-toggle="modal" data-target="#addnewModal" onclick="addnewEmployee()">Tạo mới</button>
+                                <div class="modal inmodal" id="addnewModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Tạo mới nhân viên</h4>
+                                            </div>
+                                            <div class="modal-body scroll_content" id="modalAddNewWrapper" style="padding: 10px">
+                                                @*@Html.Action("Create", "Employees")*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-info btn-rounded btn-xs" data-toggle="modal" data-target="#editModal" onclick="editEmployee()">Chỉnh sửa</button>
+                                <div class="modal inmodal" id="editModal" tabindex="-2" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Chỉnh sửa nhân viên</h4>
+                                            </div>
+                                            <div class="modal-body scroll_content" id="modalEditWrapper" style="padding: 10px">
+                                                @*@Html.Partial("_EmployeeDetailsPartial")*@
+                                            </div>
+                                            @*<div class="modal-footer">
+                                                    <button type="button" class="btn btn-primary">Lưu lại</button>
+                                                    <button type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+                                                </div>*@
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-danger btn-rounded btn-xs deleteEmployee" href="#">Xóa</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary btn-rounded btn-xs accessDeny">Tạo mới</button>
+                                <button class="btn btn-info btn-rounded btn-xs accessDeny">Chỉnh sửa</button>
+                                <button class="btn btn-danger btn-rounded btn-xs accessDeny" href="#">Xóa</button>
+                            }
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            @Html.Action("EmployeeViewPartial", "Employees")
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5" style="padding-left: 0px; padding-right: 2px;">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Chi tiết nhân viên</h5>
+                        @*<div class="text-right">
+                            <a class="btn btn-warning btn-rounded btn-xs" href="@Url.Action("CustomerDetails","Home")">Xem chi tiết ></a>
+                        </div>*@
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            <ul class="list-group">
+                                <li class="list-group-item" style="height: 30px; padding-top:5px; padding-bottom:5px"><b id="eDisplayName"></b></li>
+                                <li class="list-group-item" style="height: 30px; padding-top:5px; padding-bottom:5px"><p id="eDepartment"></p></li>
+                                <li class="list-group-item" style="height: 30px; padding-top:5px; padding-bottom:5px"><p id="ePosition"></p></li>
+                                <li class="list-group-item" style="height: 30px; padding-top:5px; padding-bottom:5px"><p id="eAddress"></p></li>
+                                <li class="list-group-item" style="height: 30px; padding-top:5px; padding-bottom:5px"><p id="ePhoneNumber"></p></li>
+                                <li class="list-group-item" style="height: 30px; padding-top:5px; padding-bottom:5px"><p id="eEmail"></p></li>
+                            </ul>
+                            <div class="bg-success p-xs b-r-xs">Danh sách hợp đồng liên quan</div>
+                            @Html.Action("ContractsOfEmployeePartial", "Employees")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 170px)'
+            });
+        });
+
+        $('.deleteEmployee').click(function () {
+            if (selectedemployee && typeof selectedemployee === "number") {
+                swal({
+                    title: "Bạn có muốn xóa?",
+                    text: "Thao tác này sẽ không thể khôi phục lại",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Đồng ý",
+                    cancelButtonColor: "#23C6C8",
+                    cancelButtonText: "Hủy bỏ",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+
+                            url: '/Employees/Delete/' + selectedemployee, // The method name + paramater
+                            type: "POST",
+                            success: function (data) {
+                                swal({ title: "Đã xóa!", text: "Đã xóa thành công.", type: "success", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                                window.location.href = '@Url.Action("Employee", "Home")';
+                            }
+                        });
+                    } else {
+                        swal({ title: "Đã hủy bỏ", text: "Đã hủy bỏ thao tác.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                });
+            }
+        });
+
+        $('.accessDeny').click(function () {
+            swal({ title: "Bạn không có quyền", text: "Bạn bị giới hạn quyền cho tác vụ này", type: "warning", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" })
+        });
+    </script>
+}

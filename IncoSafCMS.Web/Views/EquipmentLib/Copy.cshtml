@@ -1,0 +1,67 @@
+﻿@model IncosafCMS.Core.DomainModels.OriginalEquipment
+
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("Copy", "EquipmentLib", FormMethod.Post, new { id = "copyEquipmentLibForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group hidden">
+                    <label>ID Thiết bị</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Id,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mã hiệu</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Code,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập mã hiệu thiết bị";
+                                
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Code, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tên Thiết bị</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Name,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập tên thiết bị";
+                                
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+        <input type="submit" value="Lưu lại" class="btn btn-primary" />
+        <button type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+    </div>
+}
+
+ 

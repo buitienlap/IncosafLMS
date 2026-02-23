@@ -1,0 +1,263 @@
+﻿@model IncosafCMS.Web.Models.InvoiceViewModel
+
+@{
+    Layout = null;
+}
+<script type="text/javascript">
+
+</script>
+
+@using (Html.BeginForm("InvoiceCreate", "Contracts", FormMethod.Post, new { id = "invoiceCreateForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group hidden">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>ID hợp đồng</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.ContractID,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.ReadOnly = true;
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Thuế VAT</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.VAT,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.ReadOnly = true;
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <label>Số hợp đồng</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.ContractNumber,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.ReadOnly = true;
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Ngày ký</label>
+                            <div>
+                                @Html.DevExpress().DateEditFor(model => model.ContractSignDate,
+                                    settings =>
+                                    {
+                                        settings.Properties.EditFormat = EditFormat.Date;
+                                        settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatInEditMode = true;
+                                        settings.Properties.CalendarProperties.ShowWeekNumbers = false;
+                                        settings.Properties.CalendarProperties.ShowClearButton = false;
+                                        settings.Properties.CalendarProperties.ShowTodayButton = false;
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.ReadOnly = true;
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <label>Số hóa đơn</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.HDNumber,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập số hóa đơn";
+                                        settings.Properties.ClientSideEvents.ValueChanged = "OnCheckHDNumberValid";
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <label>Ngày xuất HĐ</label>
+                            <div>
+                                @Html.DevExpress().DateEditFor(model => model.CreateDate,
+                                    settings =>
+                                    {
+                                        settings.Properties.NullText = "Nhập ngày xuất hóa đơn";
+                                        settings.Properties.EditFormat = EditFormat.Date;
+                                        settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatInEditMode = true;
+                                        settings.Properties.CalendarProperties.ShowWeekNumbers = false;
+                                        settings.Properties.CalendarProperties.ShowClearButton = false;
+                                        settings.Properties.CalendarProperties.ShowTodayButton = false;
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Số tài khoản</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.MyAccountNumber,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập số tài khoản";
+                                        settings.Properties.Items.Add("", "");
+                                        settings.Properties.Items.Add("12110000039689 - BIDV - Chi nhánh Hai Bà Trưng - TP Hà Nội", "12110000039689 - BIDV - Chi nhánh Hai Bà Trưng - TP Hà Nội");
+                                        settings.Properties.Items.Add("114000000949 - VIETINBANK - Chi nhánh Hai Bà Trưng - TP Hà Nội", "114000000949 - VIETINBANK - Chi nhánh Hai Bà Trưng - TP Hà Nội");
+                                        settings.Properties.Items.Add("115000111058 - VIETINBANK - Chi nhánh Hoàn Kiểm - TP Hà Nội", "115000111058 - VIETINBANK - Chi nhánh Hoàn Kiểm - TP Hà Nội");
+                                        settings.Properties.Items.Add("013704073456789 - HDBANK - Chi nhánh Ba Đình", "013704073456789 - HDBANK - Chi nhánh Ba Đình");
+                                    }
+                               ).GetHtml()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Họ tên người mua hàng</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.Representative,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập họ tên người mua hàng";
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Tên đơn vị</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.CustomerName,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập tên đơn vị";
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Địa chỉ</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.CustomerAddress,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập địa chỉ";
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Mã số thuế</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.TaxID,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập mã số thuế";
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Số tài khoản</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.CustomerAccountNumber,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập số tài khoản";
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Hình thức thanh toán</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.PaymentMethod,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập hình thức thanh toán";
+                                        settings.Properties.Items.Add("Tiền mặt", IncosafCMS.Core.DomainModels.PaymentMethod.directly);
+                                        settings.Properties.Items.Add("Chuyển khoản", IncosafCMS.Core.DomainModels.PaymentMethod.transfer);
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bg-success p-xs b-r-xs">Hóa đơn đã xuất</div>
+                @Html.Action("TurnOversOfInvoiceContractPartial")
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bg-success p-xs b-r-xs">Hàng hóa, dịch vụ</div>
+                @Html.Action("InvoiceProductCreateActionPartial")
+            </div>
+        </div>
+    </div>
+    <br />
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+                <input id="CreateInvoiceReport" type="button" @*type="submit"*@ value="Tạo bản in" class="btn btn-primary" onclick="OnCreateInvoiceReport()" />
+                <button class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+        });
+    </script>
+
+}

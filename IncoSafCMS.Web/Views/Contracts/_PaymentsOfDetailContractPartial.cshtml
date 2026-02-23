@@ -1,0 +1,229 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Payment>
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "gvPaymentOfDetailContract";
+        settings.CallbackRouteValues = new { Controller = "Contracts", Action = "PaymentsOfDetailContractPartial" };
+        settings.CustomActionRouteValues = new { Controller = "Contracts", Action = "CustomCallBackPaymentsOfDetailContractAction" };
+
+        settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Contracts", Action = "PaymentsOfContractPartialAddNewViaContract" };
+        settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Contracts", Action = "PaymentsOfContractPartialUpdateViaContract" };
+        settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Contracts", Action = "PaymentsOfContractPartialDeleteViaContract" };
+
+        settings.KeyFieldName = "Id";
+
+        settings.SettingsText.EmptyDataRow = "Không có kết quả nào";
+
+        settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+        settings.SettingsBehavior.ConfirmDelete = true;
+
+        settings.SettingsPopup.EditForm.HorizontalAlign = PopupHorizontalAlign.Center;
+        settings.SettingsPopup.EditForm.VerticalAlign = PopupVerticalAlign.NotSet;
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.SettingsBehavior.AllowFocusedRow = true;
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+        settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.PageSize = 3;
+        settings.SettingsPager.Mode = GridViewPagerMode.ShowAllRecords;
+        settings.SettingsPager.AllButton.Visible = false;
+        settings.SettingsPager.LastPageButton.Visible = false;
+        settings.SettingsPager.FirstPageButton.Visible = false;
+
+        settings.Toolbars.Add(toolbar =>
+        {
+            toolbar.Enabled = true;
+            toolbar.Position = GridToolbarPosition.Top;
+            toolbar.ItemAlign = GridToolbarItemAlign.Justify;
+            toolbar.Items.Add(GridViewToolbarCommand.New).Text = "Tạo mới";
+            toolbar.Items.Add(GridViewToolbarCommand.Edit).Text = "Chỉnh sửa";
+            toolbar.Items.Add(GridViewToolbarCommand.Delete).Text = "Xóa";
+            toolbar.Items.Add(GridViewToolbarCommand.Refresh, true).Text = "Làm mới";
+        });
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Caption = "STT";
+        //    column.FieldName = "STT";
+        //    column.Settings.AllowSort = DefaultBoolean.False;
+        //    column.Width = System.Web.UI.WebControls.Unit.Pixel(20);
+        //    column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        //    column.EditFormSettings.Visible = DefaultBoolean.False;
+        //    column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+        //    column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        //});
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tên nội dung";
+            column.FieldName = "PaymentName";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Ngày";
+            column.FieldName = "PaymentDate";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.DateTime;
+            column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy";
+            column.UnboundExpression = "AddMonths(AddDays(Today(), [ReorderLevel]), -1)";
+            column.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Caption = "Số H.Đơn";
+        //    column.FieldName = "turnOver.HDNumber";
+        //    column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        //    column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        //});
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Số H.Đơn";
+            column.FieldName = "turnOver.HDNumber";
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            //column.Visible = false;
+
+            var comboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+
+            comboBoxProperties.DataSource = ViewData["TurnOvers"];
+            comboBoxProperties.ValueField = "Id";
+            comboBoxProperties.TextField = "HDNumber";
+            comboBoxProperties.ValueType = typeof(int);
+            comboBoxProperties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+            comboBoxProperties.Columns.Add("HDNumber", "Mã HĐ", 90);
+            comboBoxProperties.Columns.Add("GetTurnOverDate", "Ngày HĐ", System.Web.UI.WebControls.Unit.Percentage(100));
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Giá trị";
+            column.FieldName = "PaymentValue";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Số P.thu";
+            column.FieldName = "PaymentNumber";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Phương thức";
+            column.FieldName = "PaymentMethod";
+            column.Visible = false;
+            column.ShowInCustomizationForm = true;
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+
+            var comboBoxProperties = column.PropertiesEdit as ComboBoxProperties;
+            Dictionary<IncosafCMS.Core.DomainModels.PaymentMethod, string> dict = new Dictionary<IncosafCMS.Core.DomainModels.PaymentMethod, string>();
+            foreach (IncosafCMS.Core.DomainModels.PaymentMethod item in Enum.GetValues(typeof(IncosafCMS.Core.DomainModels.PaymentMethod)))
+            {
+                var type = item.GetType();
+                var member = type.GetMember(item.ToString());
+                var attribute = member[0].GetCustomAttributes(false).FirstOrDefault();
+                string text = attribute != null ? (attribute as System.ComponentModel.DescriptionAttribute).Description : item.ToString();
+                dict.Add(item, string.Format("{0}", text));
+            }
+
+            comboBoxProperties.DataSource = dict;
+            comboBoxProperties.TextField = "Value";
+            comboBoxProperties.ValueField = "Key";
+            comboBoxProperties.ValueType = typeof(IncosafCMS.Core.DomainModels.PaymentMethod);
+
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Ghi chú";
+            column.FieldName = "PaymentNote";
+            column.Visible = false;
+            column.ShowInCustomizationForm = true;
+            column.ColumnType = MVCxGridViewColumnType.Memo;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        });
+
+        settings.EditFormLayoutProperties.ColCount = 2;
+        settings.EditFormLayoutProperties.SettingsItemCaptions.Location = LayoutItemCaptionLocation.Top;
+        settings.EditFormLayoutProperties.Items.Add("PaymentName");
+        settings.EditFormLayoutProperties.Items.Add("turnOver.HDNumber");
+        settings.EditFormLayoutProperties.Items.Add("PaymentValue");
+        settings.EditFormLayoutProperties.Items.Add("PaymentDate");
+        settings.EditFormLayoutProperties.Items.Add("PaymentNumber");
+        settings.EditFormLayoutProperties.Items.Add("PaymentMethod");
+        settings.EditFormLayoutProperties.Items.Add("PaymentNote").ColSpan = 2;
+        settings.EditFormLayoutProperties.Items.AddCommandItem(itemSettings =>
+        {
+            itemSettings.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+            itemSettings.ColSpan = 2;
+        });
+
+        //settings.CustomColumnDisplayText = (sender, e) =>
+        //{
+        //    if (e.Column.FieldName == "STT")
+        //    {
+        //        var i = e.VisibleIndex + 1;
+        //        e.DisplayText = (i).ToString();
+        //    }
+        //};
+
+        settings.BeforeGetCallbackResult = (sender, e) =>
+        {
+            MVCxGridView gridView = sender as MVCxGridView;
+            if (gridView.IsNewRowEditing)
+            {
+                gridView.SettingsText.CommandUpdate = "Lưu lại";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+            else
+            {
+                gridView.SettingsText.CommandUpdate = "Cập nhật";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+        };
+
+        settings.CellEditorInitialize = (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.Dynamic;
+        };
+
+    });
+
+}
+@grid.Bind(Model).GetHtml()

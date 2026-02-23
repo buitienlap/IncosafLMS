@@ -1,0 +1,206 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.TurnOver>
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "gvTurnOverOfContract";
+        settings.CallbackRouteValues = new { Controller = "Contracts", Action = "TurnOversOfContractPartial" };
+        settings.CustomActionRouteValues = new { Controller = "Contracts", Action = "CustomCallBackTurnOversOfContractAction" };
+
+        settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Contracts", Action = "TurnOversOfContractPartialAddNew" };
+        settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Contracts", Action = "TurnOversOfContractPartialUpdate" };
+        settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Contracts", Action = "TurnOversOfContractPartialDelete" };
+
+        settings.KeyFieldName = "Id";
+
+        settings.SettingsText.CommandNew = "Thêm";
+        settings.SettingsText.CommandEdit = "Sửa";
+        settings.SettingsText.CommandDelete = "Xóa";
+        settings.SettingsText.PopupEditFormCaption = "Thêm/Sửa dữ liệu";
+        settings.SettingsText.SearchPanelEditorNullText = "Nhập từ khóa tìm kiếm...";
+        settings.CommandColumn.VisibleIndex = 7;
+        settings.CommandColumn.Caption = " ";
+        settings.CommandColumn.Width = System.Web.UI.WebControls.Unit.Pixel(60);
+        settings.SettingsText.EmptyDataRow = "Không có kết quả nào";
+
+        settings.SettingsPopup.EditForm.HorizontalAlign = PopupHorizontalAlign.Center;
+        settings.SettingsPopup.EditForm.VerticalAlign = PopupVerticalAlign.NotSet;
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.SettingsBehavior.AllowFocusedRow = true;
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+        settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+
+
+        settings.SettingsPopup.EditForm.HorizontalAlign = PopupHorizontalAlign.WindowCenter;
+        settings.SettingsPopup.EditForm.VerticalAlign = PopupVerticalAlign.Above;
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        //settings.SettingsPager.PageSize = 3;
+        //settings.SettingsPager.AllButton.Visible = true;
+        //settings.SettingsPager.LastPageButton.Visible = true;
+        //settings.SettingsPager.FirstPageButton.Visible = true;
+
+        settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+        settings.SettingsBehavior.ConfirmDelete = true;
+
+        settings.CommandColumn.Visible = true;
+        settings.CommandColumn.ShowNewButton = true;
+        settings.CommandColumn.ShowDeleteButton = true;
+        settings.CommandColumn.ShowEditButton = true;
+
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tên nội dung";
+            column.FieldName = "TurnOverName";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Ngày";
+            column.FieldName = "TurnOverDate";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.DateTime;
+            column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy";
+            column.UnboundExpression = "AddMonths(AddDays(Today(), [ReorderLevel]), -1)";
+            column.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Số B.Lai";
+            column.FieldName = "BLNumber";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tiền B.Lai";
+            column.FieldName = "BLValue";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Số H.Đơn";
+            column.FieldName = "HDNumber";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tiền H.Đơn";
+            column.FieldName = "HDValue";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Thuế VAT";
+            column.FieldName = "VAT";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "P2";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+
+            ComboBoxProperties c = column.PropertiesEdit as ComboBoxProperties;
+            c.Items.Add("8%", 8);
+            c.Items.Add("10%", 10);
+            c.Items.Add("5%", 5);
+            c.Items.Add("0%", 0);
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Ghi chú";
+            column.FieldName = "TurnOverNote";
+            column.Visible = false;
+            column.ShowInCustomizationForm = true;
+            column.ColumnType = MVCxGridViewColumnType.Memo;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        });
+
+        settings.EditFormLayoutProperties.ColCount = 2;
+        settings.EditFormLayoutProperties.Items.Add("TurnOverName");
+        settings.EditFormLayoutProperties.Items.Add("BLNumber");
+        settings.EditFormLayoutProperties.Items.Add("TurnOverDate");
+        settings.EditFormLayoutProperties.Items.Add("BLValue");
+        settings.EditFormLayoutProperties.Items.Add("VAT");
+        settings.EditFormLayoutProperties.Items.Add("HDNumber");
+        settings.EditFormLayoutProperties.Items.Add("TurnOverNote");
+        settings.EditFormLayoutProperties.Items.Add("HDValue");
+        settings.EditFormLayoutProperties.Items.AddCommandItem(itemSettings =>
+        {
+            itemSettings.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+            itemSettings.ColSpan = 2;
+        });
+
+        settings.BeforeGetCallbackResult = (sender, e) =>
+        {
+            MVCxGridView gridView = sender as MVCxGridView;
+            if (gridView.IsNewRowEditing)
+            {
+                gridView.SettingsText.CommandUpdate = "Lưu lại";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+            else
+            {
+                gridView.SettingsText.CommandUpdate = "Cập nhật";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+        };
+
+        settings.CellEditorInitialize = (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.Dynamic;
+        };
+
+    });
+
+}
+@grid.Bind(Model).GetHtml()

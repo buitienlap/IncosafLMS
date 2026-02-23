@@ -1,0 +1,124 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Customer>
+
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    var grid = Html.DevExpress().GridView(settings => {
+        settings.Name = "grvCustomers";
+        settings.KeyFieldName = "Id";
+        settings.CallbackRouteValues = new { Controller = "Customers", Action = "CustomerViewPartial" };
+
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+        settings.SettingsText.CommandNew = "Thêm";
+        settings.SettingsText.CommandEdit = "Sửa";
+        settings.SettingsText.CommandDelete = "Xóa";
+        settings.SettingsText.PopupEditFormCaption = "Thêm/Sửa dữ liệu";
+        settings.SettingsText.SearchPanelEditorNullText = "Nhập từ khóa tìm kiếm...";
+        settings.SettingsText.EmptyDataRow = "Không có kết quả nào";
+
+        settings.SettingsEditing.Mode = GridViewEditingMode.PopupEditForm;
+
+        settings.SettingsBehavior.ConfirmDelete = true;
+        //settings.SettingsBehavior.AllowFixedGroups = true;
+        settings.SettingsBehavior.AllowFocusedRow = true;
+
+        settings.SettingsPopup.EditForm.Modal = true;
+        settings.SettingsPopup.EditForm.HorizontalAlign = PopupHorizontalAlign.Center;
+        settings.SettingsPopup.EditForm.VerticalAlign = PopupVerticalAlign.NotSet;
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+        settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.PageSize = 30;
+        settings.SettingsPager.AllButton.Visible = false;
+        settings.SettingsPager.LastPageButton.Visible = false;
+        settings.SettingsPager.FirstPageButton.Visible = false;
+        settings.SettingsPager.NumericButtonCount = 4;
+
+        settings.SettingsSearchPanel.Visible = true;
+        settings.SettingsContextMenu.Enabled = false;
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "STT";
+            column.FieldName = "STT";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(20);
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.EditFormSettings.Visible = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Mã KH";
+            column.FieldName = "MaKH";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(50);
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tên K.Hàng";
+            column.FieldName = "Name";
+            column.CellStyle.Wrap = DefaultBoolean.True;
+            //column.Width = System.Web.UI.WebControls.Unit.Pixel(250);
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Đại diện";
+            column.FieldName = "Representative";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(120);
+            column.CellStyle.Wrap = DefaultBoolean.True;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Đ.Thoại";
+            column.FieldName = "Phone";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(60);
+            column.CellStyle.Wrap = DefaultBoolean.True;
+        });
+
+        settings.CustomColumnDisplayText = (sender, e) =>
+        {
+            if (e.Column.FieldName == "STT")
+            {
+                var i = e.VisibleIndex + 1;
+                e.DisplayText = (i).ToString();
+            }
+        };
+
+        settings.PreRender = (sender, e) =>
+        {
+            //((MVCxGridView)sender).StartEdit(1);
+        };
+        settings.CellEditorInitialize = (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.Dynamic;
+        };
+
+
+        settings.ClientSideEvents.FocusedRowChanged = "OnGridFocusedRowChanged";
+    });
+
+    if (ViewData["EditError"] != null)
+    {
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+    }
+}
+@grid.Bind(Model).GetHtml()

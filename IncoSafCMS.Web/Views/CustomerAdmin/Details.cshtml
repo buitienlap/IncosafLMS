@@ -1,0 +1,84 @@
+﻿@model IncosafCMS.Core.DomainModels.Customer
+
+<div>
+    <h4>Customer</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Address)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Address)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Phone)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Phone)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Fax)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Fax)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AccountNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AccountNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BankName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BankName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TaxID)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TaxID)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Representative)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Representative)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.RepresentativePosition)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.RepresentativePosition)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Customer", "Admin")
+</p>

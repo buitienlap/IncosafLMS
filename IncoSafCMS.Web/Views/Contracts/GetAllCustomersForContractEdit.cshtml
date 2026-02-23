@@ -1,0 +1,35 @@
+﻿@model IncosafCMS.Core.DomainModels.Contract
+
+@Html.DevExpress().ComboBoxFor(model => model.customer.Id,
+    settings =>
+    {
+        settings.Name = "cmbCustomerID_ContractEdit";
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+        settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+        settings.Properties.ValueField = "Id";
+        settings.Properties.DisplayFormatString = "{1}";
+
+        // Cấu hình cột
+        settings.Properties.Columns.Clear();
+        settings.Properties.Columns.Add("MaKH", "Mã KH", 80);
+        settings.Properties.Columns.Add("Name", "Tên khách hàng", System.Web.UI.WebControls.Unit.Percentage(300));
+        settings.Properties.Columns.Add("Address", "Địa chỉ", System.Web.UI.WebControls.Unit.Percentage(300));
+
+        // Tăng chiều rộng dropdown
+        settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(550);
+        settings.Properties.DropDownRows = 6;       
+
+        settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+        settings.Properties.ValueType = typeof(int);
+        settings.CallbackRouteValues = new { Controller = "Contracts", Action = "GetAllCustomersForContractEdit" };
+
+        settings.CustomJSProperties = (s, e) =>
+        {
+            MVCxComboBox cmb = s as MVCxComboBox;
+            e.Properties["cp_customerId"] = ViewBag.CustomerId ?? string.Empty;
+        };
+    }
+).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Customer>)ViewData["Customers"]).GetHtml()
+
+   

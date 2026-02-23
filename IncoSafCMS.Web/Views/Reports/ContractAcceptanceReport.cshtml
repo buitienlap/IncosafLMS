@@ -1,0 +1,19 @@
+﻿@model ContractAcceptanceReport
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+    ViewBag.Title = "Biên bản nghiệm thu";
+}
+
+@Html.DevExpress().WebDocumentViewer(settings =>
+{
+    settings.Name = "ContractAcceptanceReportWebViewer";
+    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+    settings.Height = System.Web.UI.WebControls.Unit.Percentage(100);
+    settings.ClientSideEvents.Init = "function(s, e){ setTimeout(function(){ s.previewModel.reportPreview.zoom(1); s.previewModel.reportPreview.showMultipagePreview(true);}, 1); }";
+}).Bind(Model).GetHtml()
+
+
+
+
+

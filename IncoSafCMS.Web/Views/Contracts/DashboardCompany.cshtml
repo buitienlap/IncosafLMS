@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = "Dashboard Tổng hợp theo Năm";
+    var currentYear = DateTime.Now.Year;
+}
+
+<div class="ibox-content">
+    <div class="row mb-2">
+        <div class="col-md-3">
+            <label><strong>Năm tài chính:</strong></label> 
+            <select id="yearSelector" class="form-control form-control-sm" style="width: 120px; display: inline-block;">
+                @for (int y = currentYear; y >= currentYear - 5; y--)
+                {
+                    <option value="@y" @(y == currentYear ? "selected" : "")>@y</option>
+                }
+            </select>
+            
+        </div>
+    </div>
+
+    <div id="dashboardGridWrapper">
+        @Html.Action("_DashboardCompanyPartial", "Contracts", new { year = currentYear })
+    </div>
+</div>
+
+<script>
+    
+    $(function () {
+        $('#yearSelector').change(function () {
+            var year = $(this).val();
+            $('#dashboardGridWrapper').load('/Contracts/_DashboardCompanyPartial?year=' + year);
+        });
+    });
+</script>

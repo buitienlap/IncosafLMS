@@ -1,0 +1,95 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Identity.ApplicationRole>
+
+@{
+    ViewBag.Title = "Nhóm người dùng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IncosafCMS | @ViewBag.Title</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Fonts/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="~/Content/animate.css" rel="stylesheet">
+    <link href="~/Content/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+
+    <div class="passwordBox animated fadeInDown" style="max-width: 700px; padding-top: 15px">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Danh sách nhóm người dùng</h5>
+                        @*<div class="text-right">
+                            <a class="btn btn-success btn-rounded btn-xs" href="@Url.Action("Create", "RolesAdmin")">Tạo mới</a>
+                        </div>*@
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>STT</th>
+                                                <th>Tên nhóm người dùng</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                int i = 1;
+                                                foreach (var item in Model)
+                                                {
+                                                    <tr>
+                                                        <td>@i</td>
+                                                        <td>@item.Name</td>
+                                                        <td>
+                                                            <a class="btn btn-info btn-rounded btn-xs" href="@Url.Action("Edit", "RolesAdmin", new { id = item.Id })">Chỉnh sửa</a>
+                                                            <a class="btn btn-warning btn-rounded btn-xs" href="@Url.Action("Details", "RolesAdmin", new { id = item.Id })">Chi tiết</a>
+                                                        </td>
+                                                    </tr>
+                                                    i++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </div>
+
+</body>
+</html>
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 205px)'
+            });
+
+
+        });
+    </script>
+}

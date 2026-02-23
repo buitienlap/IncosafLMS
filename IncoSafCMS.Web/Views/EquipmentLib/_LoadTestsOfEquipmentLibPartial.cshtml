@@ -1,0 +1,139 @@
+﻿@model IncosafCMS.Core.DomainModels.OriginalEquipment
+
+@{
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "gvLoadTestsOfEquipmentLib";
+        settings.CallbackRouteValues = new { Controller = "EquipmentLib", Action = "LoadTestsOfEquipmentLibPartial" };
+        settings.CustomActionRouteValues = new { Controller = "EquipmentLib", Action = "CustomCallBackLoadTestsOfEquipmentLibAction" };
+        settings.KeyFieldName = "Id";
+
+        settings.SettingsText.EmptyDataRow = "Không có kết quả nào";
+
+        settings.SettingsPopup.EditForm.HorizontalAlign = PopupHorizontalAlign.Center;
+        settings.SettingsPopup.EditForm.VerticalAlign = PopupVerticalAlign.NotSet;
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.SettingsBehavior.AllowFocusedRow = true;
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+        settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        //settings.SettingsPager.PageSize = 3;
+        //settings.SettingsPager.AllButton.Visible = true;
+        //settings.SettingsPager.LastPageButton.Visible = true;
+        //settings.SettingsPager.FirstPageButton.Visible = true;
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Caption = "STT";
+        //    column.FieldName = "STT";
+        //    column.Settings.AllowSort = DefaultBoolean.False;
+        //    column.Width = System.Web.UI.WebControls.Unit.Pixel(20);
+        //    column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        //    column.EditFormSettings.Visible = DefaultBoolean.False;
+        //    column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+        //    column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        //});
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "V.trí treo";
+            column.FieldName = "LocalTest";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Đạt";
+            column.FieldName = "Passed";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.ColumnType = MVCxGridViewColumnType.CheckBox;
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (cell.Text == "Checked")
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">Đạt</span>");
+                else if (cell.Text == "Unchecked")
+                    ViewContext.Writer.Write("<span class=\"badge badge-danger\">K.Đạt</span>");
+                else if (cell.Text == null) ViewContext.Writer.Write("<p></p>");
+            });
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tầm với";
+            column.FieldName = "Radius";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.ColumnType = MVCxGridViewColumnType.SpinEdit;
+            column.PropertiesEdit.DisplayFormatString = "N3";
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tải t/ư";
+            column.FieldName = "CorrespondingLoad";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.ColumnType = MVCxGridViewColumnType.SpinEdit;
+            column.PropertiesEdit.DisplayFormatString = "N3";
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "T.tĩnh";
+            column.FieldName = "StaticLoad";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.ColumnType = MVCxGridViewColumnType.SpinEdit;
+            column.PropertiesEdit.DisplayFormatString = "N3";
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "T.động";
+            column.FieldName = "DynamicLoad";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.ColumnType = MVCxGridViewColumnType.SpinEdit;
+            column.PropertiesEdit.DisplayFormatString = "N3";
+        });
+
+        //settings.CustomColumnDisplayText = (sender, e) =>
+        //{
+        //    if (e.Column.FieldName == "STT")
+        //    {
+        //        var i = e.VisibleIndex + 1;
+        //        e.DisplayText = (i).ToString();
+        //    }
+        //};
+
+        settings.CellEditorInitialize = (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.Dynamic;
+        };
+
+    });
+}
+@grid.Bind(Model.LoadTests).GetHtml()

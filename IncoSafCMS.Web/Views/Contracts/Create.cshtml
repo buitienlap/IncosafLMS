@@ -1,0 +1,1180 @@
+﻿@model IncosafCMS.Core.DomainModels.Contract
+
+@{
+    Layout = null;
+}
+<script type="text/javascript">
+    function OnButtonAddNewCustomerViaContractCreateClick() {
+        pcCreateNewCustomerViaContractCreate.Show();
+    }
+
+    function OnButtonEditCustomerViaContractCreateClick() {
+        var selectedCustomer = cmbCustomerID_ContractCreate.GetValue();
+        if (selectedCustomer && typeof selectedCustomer === "number") {
+            $.ajax({
+                type: "GET",
+                url: '/Customers/EditViaContractCreate/' + selectedCustomer,
+                success: function (data) {
+                    pcEditCustomerViaContractCreate.SetContentHtml(data);
+                    pcEditCustomerViaContractCreate.Show();
+                },
+            });
+        }
+        else {
+            swal({ title: "Chưa chọn khách hàng", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+
+    function OnCreateSubmitViaContractCreate() {
+        $.ajax({
+            type: "POST",
+            url: '/Customers/CreateViaContractCreate/',
+            data: { ten: txtCustomerName_I.value, diachi: txtCustomerAddress_I.value, daidien: txtCustomerRepresentative_I.value, chucvu: txtCustomerRepresentativePosition_I.value, dienthoai: txtCustomerPhone_I.value, fax: txtCustomerFax_I.value, sotaikhoan: txtCustomerAccountNumber_I.value, nganhang: txtCustomerBankName_I.value, masothue: txtCustomerTaxID_I.value },
+            success: function (data) {
+                if (data[0] == "true") {
+                    swal({ title: "Đã có lỗi xảy ra :)", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                } else {
+                    pcCreateNewCustomerViaContractCreate.Hide();
+                    cmbCustomerID_ContractCreate.PerformCallback();
+                    cmbCustomerID_ContractCreate.SetValue(data[1]);
+                }
+            },
+        });
+    }
+    function OnCreateCancelViaContractCreate() {
+        pcCreateNewCustomerViaContractCreate.Hide();
+    }
+    function OnEditSubmitViaContractCreate() {
+        $.ajax({
+            type: "POST",
+            url: '/Customers/EditViaContractCreate/',
+            data: {
+                id: txtCustomerIDCreate_I.value,
+                ten: txtCustomerNameCreate_I.value,
+                diachi: txtCustomerAddressCreate_I.value,
+                daidien: txtCustomerRepresentativeCreate_I.value,
+                chucvu: txtCustomerRepresentativePositionCreate_I.value,
+                dienthoai: txtCustomerPhoneCreate_I.value,
+                fax: txtCustomerFaxCreate_I.value,
+                sotaikhoan: txtCustomerAccountNumberCreate_I.value,
+                nganhang: txtCustomerBankNameCreate_I.value,
+                masothue: txtCustomerTaxIDCreate_I.value
+            },
+            success: function (data) {
+                if (data) {
+                    if (data[0] == "true") {
+                        swal({ title: "Lỗi rồi :)", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                        cmbCustomerID_ContractCreate.SetValue(data[1]);
+                    } else if (data[0] == "true_1") {
+                        // 03-may-2024. Lapbt k0 cho sua
+                        swal({ title: "Lỗi rồi :)", text: "Bạn không có quyền thực hiện thao tác này. (Admin)", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                        cmbCustomerID_ContractCreate.SetValue(data[1]);
+                    } else {
+                        pcEditCustomerViaContractCreate.Hide();
+                        cmbCustomerID_ContractCreate.PerformCallback();
+                        //cmbCustomerID_ContractEdit.SetValue(data[1]);
+                    }
+                }
+                else {
+                    pcEditCustomerViaContractCreate.Hide();
+                    swal({ title: "Bạn không có quyền", text: "Bạn không có quyền thực hiện thao tác này.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                }
+            },
+        });
+    }
+    function OnEditCancelViaContractCreate() {
+        pcEditCustomerViaContractCreate.Hide();
+    }
+
+    //8.5.2025 Hưng thêm bắt buộc nhập ngày thực hiện
+    function OnNgayThuchienValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Ngày thực hiện (dự kiến) Không được để trống";
+            swal({ title: "Ngày thực hiện (dự kiến ) không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+    //8.5.2025 Hưng thêm bắt buộc nhập SĐT liên hệ
+    function OnSdtlienheValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Số ĐT Người liên hệ Không được để trống";
+            swal({ title: "Số ĐT người liên hệ không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+
+    function OnNameValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Tên hợp đồng không được để trống";
+            swal({ title: "Tên hợp đồng không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+        var name = String(e.value);
+        if (name == "") {
+            e.isValid = false;
+            e.errorText = "Tên hợp đồng không được để trống";
+            swal({ title: "Tên hợp đồng không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+
+    function OnChuTriValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Không được để trống";
+        }
+    }
+    function OnNgayKhoiTaoValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Không được để trống";
+            swal({ title: "Ngày khởi tạo không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+    function OnNgayKyHDValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Không được để trống";
+            swal({ title: "Ngày ký hợp đồng không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+    function OnDiaDiemTHValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Không được để trống";
+            swal({ title: "Địa điểm thực hiện không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+    function OnKhachHangValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Không được để trống";
+            swal({ title: "Khách hàng không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+
+    //8.5.2025 Hưng thêm bắt buộc nhập Tên người liên hệ
+    function OnNguoilienheValidation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Người liên hệ Không được để trống";
+            swal({ title: "Tên Người liên hệ không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+    function PrepareValidationScripts(form) {
+        if (!form)
+            return;
+        if (form.attr("data-executed"))
+            return;
+        form.removeData("validator");
+        $.validator.unobtrusive.parse(form);
+        form.attr("data-executed", "true");
+    }
+    //17.06.2025 Đổi màu label ô texbbox Tên HĐ khi chưa nhập
+    function onDoimauInitTextBoxTenhopdong(s, e) {
+        updateLabelColorTextBoxTenhopdong(s.GetText());
+    }
+
+    function onDoimauChangedTextBoxTenhopdong(s, e) {
+        updateLabelColorTextBoxTenhopdong(s.GetText());
+    }
+
+    function updateLabelColorTextBoxTenhopdong(value) {
+        var label = document.getElementById("DoimauLabelTextBoxTenhopdong");
+        if (!value || value.trim() === "") {
+            label.classList.add("text-danger");   // đỏ khi chưa nhập
+        } else {
+            label.classList.remove("text-danger"); // màu bình thường khi có nội dung
+        }
+    }
+
+    //17.06.2025 Đổi màu label ô texbbox Tên người liên hệ khi chưa nhập
+    function onDoimauInitTextBoxTenNguoiLH(s, e) {
+        updateLabelColorTextBoxTenNguoiLH(s.GetText());
+    }
+
+    function onDoimauChangedTextBoxTenNguoiLH(s, e) {
+        updateLabelColorTextBoxTenNguoiLH(s.GetText());
+    }
+
+    function updateLabelColorTextBoxTenNguoiLH(value) {
+        var label = document.getElementById("DoimauLabelTextBoxTenNguoiLH");
+        if (!value || value.trim() === "") {
+            label.classList.add("text-danger");   // đỏ khi chưa nhập
+        } else {
+            label.classList.remove("text-danger"); // màu bình thường khi có nội dung
+        }
+    }
+
+    //17.06.2025 Đổi màu label ô texbbox Điện thoại người liên hệ khi chưa nhập
+    function onDoimauInitTextBoxDTNguoiLH(s, e) {
+        updateLabelColorTextBoxDTNguoiLH(s.GetText());
+    }
+
+    function onDoimauChangedTextBoxDTNguoiLH(s, e) {
+        updateLabelColorTextBoxDTNguoiLH(s.GetText());
+    }
+
+    function updateLabelColorTextBoxDTNguoiLH(value) {
+        var label = document.getElementById("DoimauLabelTextBoxDTNguoiLH");
+        if (!value || value.trim() === "") {
+            label.classList.add("text-danger");   // đỏ khi chưa nhập
+        } else {
+            label.classList.remove("text-danger"); // màu bình thường khi có nội dung
+        }
+    }
+
+    //17.06.2025 Đổi màu label cho combobox Ngày ký HĐ
+    function onDoimauInitNgayky(s, e) {
+        updateDoimauLabelNgayky(s);
+    }
+
+    function onDoimauChangedNgayky(s, e) {
+        updateDoimauLabelNgayky(s);
+    }
+
+    function updateDoimauLabelNgayky(s) {
+        var label = document.getElementById("DoimauLabelNgayky");
+        var date = s.GetDate(); // lấy ngày đã chọn, nếu chưa chọn sẽ là null
+
+        if (date === null) {
+            label.classList.add("text-danger"); // chưa nhập => đỏ
+        } else {
+            label.classList.remove("text-danger"); // đã chọn => màu thường
+        }
+    }
+
+    //17.06.2025 Đổi màu label cho combobox Ngày thực hiện
+    function onDoimauInitNgaythuchien(s, e) {
+        updateDoimauLabelNgaythuchien(s);
+    }
+
+    function onDoimauChangedNgaythuchien(s, e) {
+        updateDoimauLabelNgaythuchien(s);
+    }
+
+    function updateDoimauLabelNgaythuchien(s) {
+        var label = document.getElementById("DoimauLabelNgaythuchien");
+        var date = s.GetDate(); // lấy ngày đã chọn, nếu chưa chọn sẽ là null
+
+        if (date === null) {
+            label.classList.add("text-danger"); // chưa nhập => đỏ
+        } else {
+            label.classList.remove("text-danger"); // đã chọn => màu thường
+        }
+    }
+
+    //25.12.2025 Hưng thêm bắt buộc nhập KĐV1
+    function OnKDV1Validation(s, e) {
+        if (e.value == null) {
+            e.isValid = false;
+            e.errorText = "Không được để trống";
+            swal({ title: "Tên KĐV1 không được để trống", text: "Vui lòng thực hiện lại.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+        }
+    }
+    //25.12.2025 Đổi màu label cho combobox KĐV1
+    function onComboCheckKDV1(s, e) {
+        var label = document.getElementById("lblComboBoxKDV1");
+        var value = s.GetValue();
+
+        if (value === null || value === "" || value === undefined) {
+            label.classList.add("text-danger"); // chưa chọn => đỏ
+        } else {
+            label.classList.remove("text-danger"); // đã chọn => bình thường
+        }
+    }
+
+
+    //17.06.2025 Đổi màu label cho combobox Địa điểm thực hiện
+    function onComboCheckDiadiem(s, e) {
+        var label = document.getElementById("lblComboBoxDiadiem");
+        var value = s.GetValue();
+
+        if (value === null || value === "" || value === undefined) {
+            label.classList.add("text-danger"); // chưa chọn => đỏ
+        } else {
+            label.classList.remove("text-danger"); // đã chọn => bình thường
+        }
+    }
+
+    //17.06.2025 Đổi màu label cho combobox Khách hàng
+    function onComboCheckKH(s, e) {
+        var label = document.getElementById("lblComboBoxKH");
+        var value = s.GetValue();
+
+        if (value === null || value === "" || value === undefined) {
+            label.classList.add("text-danger"); // chưa chọn => đỏ
+        } else {
+            label.classList.remove("text-danger"); // đã chọn => bình thường
+        }
+    }
+
+    //17.06.2025 Xử lý đổi màu khi chọn Khách hàng
+    function onKhachHangChanged(s, e) {
+        var value = s.GetValue();
+        var label = document.getElementById("lblKhachHang");
+
+        if (value == null || value === "" || value === 0) {
+            label.classList.add("text-danger");
+        } else {
+            label.classList.remove("text-danger");
+        }
+    }
+
+    //17.06.2025 Check KH khi load để kiểm tra ban đầu
+    function initKhachHang() {
+        var combo = cmbKhachHang; // dùng ClientInstanceName
+        if (combo) {
+            onKhachHangChanged(combo);
+        }
+    }
+
+    function OnNgayKyHDChangedCreateContract(s, e) {
+        var ngayKyHD = s.date;
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Tạo giới hạn ngày
+        var maxDate = new Date(today);
+        maxDate.setDate(today.getDate() + 15);
+
+        var minDate = new Date(today);
+        minDate.setDate(today.getDate() - 60);
+
+        if (ngayKyHD > maxDate || ngayKyHD < minDate) {
+            swal({
+                title: "Ngày ký HĐ/GĐN không hợp lệ",
+                text: "Không được vượt quá 15 ngày và không trước 60 ngày so với hiện tại.",
+                type: "error",
+                confirmButtonText: "Đồng ý"
+            });
+            s.SetValue(null);
+            return;
+        }
+    }
+
+    function OnNgayThucHienChangedCreateContract(s, e) {
+        var ngayThucHien = s.date;
+        var ngayKyHD = SignDate.GetDate(); // ⬅️ Đặt đúng tên control ngày ký HĐ
+
+        if (!ngayKyHD) {
+            swal({
+                title: "Thiếu thông tin",
+                text: "Vui lòng nhập Ngày ký HĐ trước.",
+                type: "warning",
+                confirmButtonText: "Đồng ý"
+            });
+            s.SetValue(null); // Xóa giá trị Ngày thực hiện vừa nhập
+            return;
+        }
+
+        // Chuẩn hóa về 00:00 để so sánh không sai lệch do giờ
+        ngayKyHD.setHours(0, 0, 0, 0);
+        ngayThucHien.setHours(0, 0, 0, 0);
+
+        if (ngayThucHien < ngayKyHD) {
+            swal({
+                title: "Ngày không hợp lệ",
+                text: "Ngày thực hiện phải bằng hoặc sau ngày ký HĐ.",
+                type: "error",
+                confirmButtonText: "Đồng ý"
+            });
+            s.SetValue(null);
+        }
+    }
+
+    function OnNgayThucHienDenChangedCreateContract(s, e) {
+        var ngayThucHienDen = s.date;
+        var ngayThucHien = NgayThucHien.GetDate();
+        var loaiHD = cboContractTypeId.GetValue();
+
+        if (loaiHD == null || ngayThucHienDen == null)
+            return;
+
+        loaiHD = parseInt(loaiHD);
+
+        if (!ngayThucHien) {
+            swal({
+                title: "Thiếu thông tin",
+                text: "Vui lòng nhập Ngày thực hiện (từ ngày) trước.",
+                type: "warning",
+                confirmButtonText: "Đồng ý"
+            });
+            s.SetValue(null);
+            return;
+        }
+
+        // Chuẩn hóa để so sánh
+        ngayThucHienDen.setHours(0, 0, 0, 0);
+        ngayThucHien.setHours(0, 0, 0, 0);
+
+        var maxDate = new Date(ngayThucHien);
+        maxDate.setDate(ngayThucHien.getDate() + 30);
+
+        var minDate = new Date(ngayThucHien);
+
+        if (ngayThucHienDen < minDate) {
+            swal({
+                title: "Ngày thực hiện (đến ngày) không hợp lệ",
+                text: "Ngày thực hiện (đến ngày) không được trước Ngày thực hiện (từ ngày).",
+                type: "error",
+                confirmButtonText: "Đồng ý"
+            });
+            s.SetValue(null);
+        } else {
+            // Chỉ kiểm tra khi loại hợp đồng = 2 (GĐN)
+            if (loaiHD == 2) {
+                if (ngayThucHienDen > maxDate) {
+                    swal({
+                        title: "Ngày thực hiện (đến ngày) không hợp lệ",
+                        text: "Thời gian thực hiện không được quá 30 ngày (đối với GĐN thường).",
+                        type: "error",
+                        confirmButtonText: "Đồng ý"
+                    });
+                    s.SetValue(null);
+                }
+            }
+        }
+
+    }
+
+    function OnLoaiHDChangedCreateContract(s, e) {
+        var loaiHD = s.GetValue();
+        var ngayThucHien = NgayThucHien.GetDate();
+        var ngayThucHienDen = NgayThucHienDen.GetDate();
+
+        if (loaiHD == null || ngayThucHienDen == null || ngayThucHien == null)
+            return;
+
+        loaiHD = parseInt(loaiHD);
+
+        // Chuẩn hóa về 00:00 để so sánh không sai lệch do giờ
+        ngayThucHienDen.setHours(0, 0, 0, 0);
+        ngayThucHien.setHours(0, 0, 0, 0);
+
+        var maxDate = new Date(ngayThucHien);
+        maxDate.setDate(ngayThucHien.getDate() + 30);
+
+        if (loaiHD == 2) {
+            if (ngayThucHienDen > maxDate) {
+                swal({
+                    title: "Ngày thực hiện (đến ngày) không hợp lệ",
+                    text: "Thời gian thực hiện không được quá 30 ngày (đối với GĐN thường).",
+                    type: "error",
+                    confirmButtonText: "Đồng ý"
+                });
+                NgayThucHienDen.SetValue(null);
+            }
+        }
+    }
+
+
+</script>
+
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+
+@using (Html.BeginForm("Create", "Contracts", FormMethod.Post, new { id = "createContractForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-12 hidden" style="align-items:end">
+                <div class="form-group">
+                    @Html.DevExpress().CheckBoxFor(model => model.IsGiayDeNghi,
+                        settings =>
+                        {
+                            settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                            settings.Text = "Là giấy đề nghị?";
+                            settings.Checked = Model.IsGiayDeNghi;
+                        }
+                    ).Bind(Model.IsGiayDeNghi).GetHtml()
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-6">
+                            <label>Loại hình hợp đồng</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.contractType,
+                                    settings =>
+                                    {
+                                        settings.Name = "cboContractTypeId";
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                        settings.Properties.DropDownStyle = DropDownStyle.DropDownList;
+                                        settings.Properties.Items.Add("Hợp đồng kinh tế", 1);
+                                        settings.Properties.Items.Add("Giấy đề nghị thường", 2);
+                                        settings.Properties.Items.Add("Giấy đề nghị theo Đơn hàng", 3);
+                                        settings.Properties.Items.Add("Giấy đề nghị theo Hợp đồng nguyên tắc", 4);
+                                        settings.Properties.Items.Add("Hợp đồng nguyên tắc", 5);
+                                        settings.Properties.ClientSideEvents.ValueChanged = "OnLoaiHDChangedCreateContract";
+                                    }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Trạng thái hợp đồng</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.Status,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.SelectedIndex = 0;
+                                        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                        settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                        settings.Properties.TextField = "Text";
+                                        settings.Properties.ValueField = "Value";
+                                        settings.Properties.ValueType = typeof(string);
+                                        settings.Enabled = !User.IsInRole("KDV");
+                                    }
+                                ).BindList(HMTLHelperExtensions.EnumWithDescription(typeof(IncosafCMS.Core.DomainModels.ApproveStatus))).GetHtml()
+                                @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-6">
+                            <label>Chủ trì</label>
+                            <div>
+                                @Html.Action("EmployeesCallbackRouteValuesForCreate", "Contracts")
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label id="lblComboBoxDiadiem" class="text-danger">Địa điểm thực hiện</label>
+                            <div>
+                                @Html.DevExpress().ComboBox(
+                                settings =>
+                                {
+                                    settings.Name = "cmbProvinceOfContractCreate";
+                                    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                    //settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                    settings.Properties.DropDownStyle = DropDownStyle.DropDownList;//Bắt buộc chọn từ danh sách
+                                    settings.Properties.ValueField = "Id";
+                                    settings.Properties.TextField = "ProvinceName";
+                                    settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(200);
+                                    settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+                                    settings.Properties.ValueType = typeof(int);
+                                    settings.Properties.ClientSideEvents.Validation = "OnDiaDiemTHValidation";
+                                    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+                                    settings.Properties.ClientSideEvents.Init = "onComboCheckDiadiem";
+                                    settings.Properties.ClientSideEvents.SelectedIndexChanged = "onComboCheckDiadiem";
+                                }).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Province>)ViewData["Provinces"]).GetHtml()
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden">
+                    <label>ID hợp đồng</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Id,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Enabled = false;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row align-items-right" style="margin-bottom:-2px; margin-top:-2px">
+                        <!-- Label -->
+                        <label id="DoimauLabelTextBoxTenhopdong"
+                               class="col-sm-2 col-form-label text-danger" style="gap: 0px; padding-left: 12px; padding-right: 0px">
+                            Tên HĐ
+                        </label>
+
+                        <!-- Textbox -->
+                        <div class="col-sm-10">
+                            @Html.DevExpress().TextBoxFor(model => model.Name,
+                                settings =>
+                                {
+                                    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                    settings.Properties.ClientSideEvents.Validation = "OnNameValidation";
+                                    settings.Properties.ClientSideEvents.Init = "onDoimauInitTextBoxTenhopdong";
+                                    settings.Properties.ClientSideEvents.LostFocus = "onDoimauChangedTextBoxTenhopdong";
+                                }
+                            ).GetHtml()
+
+                            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-6">
+                            <label>Ngày khởi tạo</label>
+                            <div>
+                                @Html.DevExpress().DateEditFor(model => model.CreateDate,
+                                    settings =>
+                                    {
+                                        settings.Properties.EditFormat = EditFormat.Date;
+                                        settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatInEditMode = true;
+                                        settings.Properties.CalendarProperties.ShowWeekNumbers = false;
+                                        settings.Properties.CalendarProperties.ShowClearButton = false;
+                                        settings.Properties.CalendarProperties.ShowTodayButton = false;
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        //settings.Properties.ClientSideEvents.Validation = "OnChuTriValidation";
+                                        settings.Properties.ValidationSettings.Display = Display.Dynamic;
+                                        // 04-may-2021 added by lapbt
+                                        // settings.ReadOnly = User.IsInRole("Admin") == false;
+                                        settings.ReadOnly = !User.IsInRole("Admin");
+                                    }
+                                ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.CreateDate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label id="DoimauLabelNgayky" class="text-danger">Ngày ký HĐ/GĐN</label>
+                            <div>
+                                @Html.DevExpress().DateEditFor(model => model.SignDate,
+                                    settings =>
+                                    {
+                                        settings.Properties.EditFormat = EditFormat.Date;
+                                        settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                        settings.Properties.DisplayFormatInEditMode = true;
+                                        settings.Properties.CalendarProperties.ShowWeekNumbers = false;
+                                        settings.Properties.CalendarProperties.ShowClearButton = false;
+                                        settings.Properties.CalendarProperties.ShowTodayButton = false;
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.ClientSideEvents.Validation = "OnNgayKyHDValidation";
+                                        settings.Properties.ValidationSettings.Display = Display.Dynamic;
+                                        settings.Properties.ClientSideEvents.Init = "onDoimauInitNgayky";
+                                        settings.Properties.ClientSideEvents.LostFocus = "onDoimauChangedNgayky";
+                                        settings.Properties.ClientSideEvents.ValueChanged = "OnNgayKyHDChangedCreateContract";
+
+                                    }
+                                ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.SignDate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-6">
+                            <label id="DoimauLabelNgaythuchien" class="text-danger">Ngày thực hiện (Từ ngày)</label>
+                            <div>
+                                @Html.DevExpress().DateEditFor(model => model.NgayThucHien,
+                            settings =>
+                            {
+                                settings.Properties.EditFormat = EditFormat.Date;
+                                settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.Properties.CalendarProperties.ShowWeekNumbers = false;
+                                settings.Properties.CalendarProperties.ShowClearButton = false;
+                                settings.Properties.CalendarProperties.ShowTodayButton = false;
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.ClientSideEvents.Validation = "OnNgayThuchienValidation";
+                                settings.Properties.ValidationSettings.Display = Display.Dynamic;
+                                settings.Properties.ClientSideEvents.Init = "onDoimauInitNgaythuchien";
+                                settings.Properties.ClientSideEvents.LostFocus = "onDoimauChangedNgaythuchien";
+                                settings.Properties.ClientSideEvents.ValueChanged = "OnNgayThucHienChangedCreateContract";
+                            }
+                        ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.NgayThucHien, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Ngày thực hiện (Đến ngày)</label>
+                            <div>
+                                @Html.DevExpress().DateEditFor(model => model.NgayThucHienDen,
+                            settings =>
+                            {
+                                settings.Properties.NullText = "Nhập ngày thực hiện: đến ngày";
+                                settings.Properties.EditFormat = EditFormat.Date;
+                                settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.Properties.CalendarProperties.ShowWeekNumbers = false;
+                                settings.Properties.CalendarProperties.ShowClearButton = false;
+                                settings.Properties.CalendarProperties.ShowTodayButton = false;
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.ClientSideEvents.ValueChanged = "OnNgayThucHienDenChangedCreateContract";
+                            }
+                        ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.NgayThucHienDen, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-6">
+                            <label id="lblComboBoxKDV1" class="text-danger">Người thực hiện 1</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.KDV1, settings =>
+                           {
+                               settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                               settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                               settings.Properties.DropDownStyle = DropDownStyle.DropDownList;
+                               settings.Properties.ValueField = "Id";
+                               settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Percentage(100);
+                               settings.Properties.DisplayFormatString = "{1}";
+                               settings.Properties.Columns.Add("MaNV", "Mã NV", 5);
+                               settings.Properties.Columns.Add("DisplayName", "Tên nhân viên", System.Web.UI.WebControls.Unit.Percentage(100));
+                               settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+                               settings.Properties.ValueType = typeof(int);
+                               settings.SelectedIndex = (int)(Model.KDV1 != null ? Model.KDV1.Id : -1);
+
+                               settings.Properties.ClientSideEvents.Validation = "OnKDV1Validation";
+                               settings.Properties.ValidationSettings.Display = Display.Dynamic;
+                               settings.Properties.ClientSideEvents.Init = "onComboCheckKDV1";
+                               settings.Properties.ClientSideEvents.SelectedIndexChanged = "onComboCheckKDV1";
+
+                               settings.PreRender = (s, e) =>
+                               {
+                                   if (Model.KDV1 != null)
+                                   {
+                                       MVCxComboBox c = s as MVCxComboBox;
+                                       c.SelectedItem = c.Items.FindByValue(Model.KDV1.Id);
+                                   }
+                               };
+
+                           }).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppUser>)ViewData["AppUsersKDV1"]).GetHtml()
+                                @Html.ValidationMessageFor(m => m.KDV1, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Người thực hiện 2</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.KDV2,
+                                    settings =>
+                                    {
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                        settings.Properties.DropDownStyle = DropDownStyle.DropDownList;
+                                        settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(250);
+                                        settings.Properties.ValueField = "Id";
+                                        settings.Properties.TextField = "DisplayName";
+
+                                        settings.Properties.ValueType = typeof(int);
+                                    }
+                                ).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppUser>)ViewData["AppUsersKDV2"]).GetHtml()
+                                @Html.ValidationMessageFor(m => m.KDV2, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden">
+                    <label>Giá trị HĐ</label>
+                    <div>
+                        @Html.DevExpress().SpinEditFor(model => model.Value,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập giá trị hợp đồng";
+                                settings.Properties.NumberType = SpinEditNumberType.Integer;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N0";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Value, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group hidden">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Loại thuế VAT</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.vatType,
+                                    settings =>
+                                    {
+                                        settings.Name = "cmbVATTypeCreate";
+                                        settings.Properties.AllowNull = false;
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                        settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                        settings.Properties.TextField = "Text";
+                                        settings.Properties.ValueField = "Value";
+                                        settings.Properties.ValueType = typeof(string);
+                                        settings.SelectedIndex = (int)Model.vatType;
+                                        settings.Properties.ClientSideEvents.SelectedIndexChanged = "function(s, e) { cmbContractVATCreate.SetEnabled(cmbVATTypeCreate.GetSelectedIndex() === 0); cmbContractVATCreate.SetValue(cmbVATTypeCreate.GetSelectedIndex() === 0 ? 8 : 0) }";
+                                    }
+                                ).BindList(HMTLHelperExtensions.EnumWithDescription(typeof(IncosafCMS.Core.DomainModels.VATType))).GetHtml()
+                                @Html.ValidationMessageFor(m => m.vatType, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Thuế VAT (%)</label>
+                            <div>
+                                @Html.DevExpress().ComboBoxFor(model => model.VAT,
+                                    settings =>
+                                    {
+                                        settings.Name = "cmbContractVATCreate";
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                        settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                        settings.Properties.ValueType = typeof(int);
+                                        settings.Properties.Items.Add("8%", 8);
+                                        settings.Properties.Items.Add("10%", 10);
+                                        settings.Properties.Items.Add("5%", 5);
+                                        settings.Properties.Items.Add("0%", 0);
+                                    }
+                                ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.VAT, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-md-12">
+                            <div class="bg-success b-r-xs"
+                                 style="padding:4px 8px; line-height:18px; font-size:13px;">
+                                Thông tin Khách hàng
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">  
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-12">
+                            <!-- Header: Label trái - Nút phải -->
+                            <div class="customer-header">
+                                <label id="lblKhachHang" class="text-danger mb-0">
+                                    Khách hàng
+                                </label>
+                                <div class="customer-actions">
+                                    <button type="button"
+                                            class="link-btn"
+                                            onclick="OnButtonEditCustomerViaContractCreateClick()">
+                                        Sửa đổi
+                                    </button>
+
+                                    <button type="button"
+                                            class="link-btn"
+                                            onclick="OnButtonAddNewCustomerViaContractCreateClick()">
+                                        Tạo mới
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Combobox full width -->
+                            <div>
+                                @Html.Action("GetAllCustomersForContractCreate", "Contracts")
+                            </div>
+                            <div id="editCustomerViaContractCreatePopup">
+                                @Html.DevExpress().PopupControl(
+                                settings =>
+                                {
+                                    settings.Name = "pcEditCustomerViaContractCreate";
+                                    settings.Width = 900;
+                                    settings.AllowDragging = true;
+                                    settings.CloseAction = CloseAction.CloseButton;
+                                    settings.CloseOnEscape = true;
+                                    settings.PopupAnimationType = AnimationType.None;
+                                    settings.HeaderText = "Chỉnh sửa khách hàng";
+                                    settings.ShowHeader = false;
+                                    settings.Modal = true;
+                                    settings.PopupHorizontalAlign = PopupHorizontalAlign.WindowCenter;
+                                    settings.PopupVerticalAlign = PopupVerticalAlign.WindowCenter;
+                                    settings.ClientSideEvents.CloseUp = "function(s, e){ ASPxClientEdit.ClearEditorsInContainer(editCustomerViaContractCreatePopup, '', true); }";
+                                }).GetHtml()
+                            </div>
+                            <div id="addnewCustomerViaContractCreatePopup">
+                                @Html.DevExpress().PopupControl(
+                                settings =>
+                                {
+                                    settings.Name = "pcCreateNewCustomerViaContractCreate";
+                                    settings.Width = 900;
+                                    settings.AllowDragging = true;
+                                    settings.CloseAction = CloseAction.CloseButton;
+                                    settings.CloseOnEscape = true;
+                                    settings.PopupAnimationType = AnimationType.None;
+                                    settings.HeaderText = "Tạo mới khách hàng";
+                                    settings.ShowHeader = false;
+                                    settings.Modal = true;
+                                    settings.PopupHorizontalAlign = PopupHorizontalAlign.WindowCenter;
+                                    settings.PopupVerticalAlign = PopupVerticalAlign.WindowCenter;
+                                    settings.SetContent(() =>
+                                    {
+                                        Html.RenderAction("CreateViaContractCreate", "Customers");
+                                    });
+                                    settings.ClientSideEvents.CloseUp = "function(s, e){ ASPxClientEdit.ClearEditorsInContainer(addnewCustomerViaContractCreatePopup, '', true); }";
+                                }).GetHtml()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-6">
+                            <label id="DoimauLabelTextBoxTenNguoiLH" class="text-danger">Tên người liên hệ</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.NguoiLienHe,
+                                    settings =>
+                                    {
+                                        settings.Name = "txtNguoiLienHeCreate";
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Nhập tên người liên hệ";
+                                        settings.Properties.ClientSideEvents.Validation = "OnNguoilienheValidation";
+                                        settings.Properties.ClientSideEvents.Init = "onDoimauInitTextBoxTenNguoiLH";
+                                        settings.Properties.ClientSideEvents.LostFocus = "onDoimauChangedTextBoxTenNguoiLH";
+                                    }
+                                ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.NguoiLienHe, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label id="DoimauLabelTextBoxDTNguoiLH" class="text-danger">Điện thoại liên hệ</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.DienThoaiNguoiLienHe,
+                                    settings =>
+                                    {
+                                        settings.Name = "txtDienThoaiNguoiLienHeCreate";
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.NullText = "Số điện thoại người liên hệ";
+                                        settings.Properties.ClientSideEvents.Validation = "OnSdtlienheValidation";
+                                        settings.Properties.ClientSideEvents.Init = "onDoimauInitTextBoxDTNguoiLH";
+                                        settings.Properties.ClientSideEvents.LostFocus = "onDoimauChangedTextBoxDTNguoiLH";
+                                    }
+                                ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.DienThoaiNguoiLienHe, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-md-12">
+                            <div class="bg-success b-r-xs"
+                                 style="padding:4px 8px; line-height:18px; font-size:13px;">
+                                Thông tin người sử dụng
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <!-- Label bên trái -->
+                        <div class="col-xs-6">
+                            <label style="margin-bottom:0;">Tên Đơn vị sử dụng</label>
+                        </div>
+                        <!-- Checkbox bên phải -->
+                        <div class="col-xs-6 text-right">
+                            <label style="margin-bottom: 0; color: #0d6efd; text-decoration: underline;
+                                            font-size: 14px; font-weight: 600; white-space: nowrap;">
+                                <input type="checkbox"
+                                       id="chkUseCustomerInfo"
+                                       onchange="OnUseCustomerInfoChanged(this)" />
+                                <span style="margin-left:4px">Lấy từ thông tin khách hàng</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom:-2px; margin-top:-2px">
+                        @Html.DevExpress().ComboBoxFor(model => model.Proprietor.PropDepartment,
+                        settings =>
+                        {
+                            settings.Name = "cmbProprietorsOfContractCreate";
+                            settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                            settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                            settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                            settings.Properties.ValueField = "Id";
+                            settings.Properties.TextField = "PropName";
+                            settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(500);
+                            settings.Properties.TextFormatString = "{0}";
+                            settings.Properties.Columns.Add("PropName", "Họ và tên", System.Web.UI.WebControls.Unit.Percentage(50));
+                            settings.Properties.Columns.Add("PropAddress", "Địa chỉ", 50);
+                            //settings.Properties.Columns.Add("PropPhoneNumber", "Điện thoại", 150);
+                            settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+                            settings.Properties.ValueType = typeof(int);
+                            settings.Properties.CallbackPageSize = 20;
+                            //Đặt txtPropAddressCreate.SetEnabled(true) để cho phép sửa địa chỉ ĐVSD
+                            settings.Properties.ClientSideEvents.SelectedIndexChanged = "function(s, e) { txtPropNameCreate.SetEnabled(cmbProprietorsOfContractCreate.GetValue() === -1); txtPropAddressCreate.SetEnabled(true); txtPropPhoneNumberCreate.SetEnabled(cmbProprietorsOfContractCreate.GetValue() === -1); txtPropNameCreate.SetText(cmbProprietorsOfContractCreate.GetSelectedItem().GetColumnText('PropName')); txtPropAddressCreate.SetText(cmbProprietorsOfContractCreate.GetSelectedItem().GetColumnText('PropAddress')); txtPropPhoneNumberCreate.SetText(cmbProprietorsOfContractCreate.GetSelectedItem().GetColumnText('PropPhoneNumber')); }";
+                            settings.PreRender = (s, e) =>
+                            {
+                                if (Model.Proprietor != null)
+                                {
+                                    MVCxComboBox c = s as MVCxComboBox;
+                                    c.SelectedItem = c.Items.FindByValue(Model.Proprietor.Id);
+                                }
+                            };
+                        }).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Proprietor>)ViewData["Proprietors"]).GetHtml()
+                    </div>
+                </div>               
+
+                <div class="form-group">
+                    <div class="row" style="margin-bottom:-2px; margin-top:-2px">
+                        <div class="col-sm-12">
+                            <label>Địa chỉ ĐV sử dụng</label>
+                            <div>
+                                @Html.DevExpress().TextBoxFor(model => model.Proprietor.PropAddress,
+                                             settings =>
+                                             {
+                                                 settings.Name = "txtPropAddressCreate";
+                                                 settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                             }
+                                         ).GetHtml()
+                                @Html.ValidationMessageFor(m => m.Proprietor.PropAddress, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Tên người sử dụng</label>
+                            <div>
+                                @Html.DevExpress().TextBox(
+                                settings =>
+                                {
+                                    settings.Name = "txtPropNameCreate";
+                                    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Điện thoại người sử dụng</label>
+                            <div>
+                                @Html.DevExpress().TextBox(
+                                settings =>
+                                {
+                                    settings.Name = "txtPropPhoneNumberCreate";
+                                    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                }
+                                ).GetHtml()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12" style="margin-bottom: -4px; margin-top: 0px">
+                <div class="bg-success p-xs b-r-xs" hidden>Nội dung công việc</div>
+                @Html.Action("TaskViewCreateActionPartial")
+            </div>
+        </div>
+    </div>
+    <br />
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group text-right" style="margin-bottom: 0px; margin-top: -4px">               
+                @Html.DevExpress().Button(settings =>
+               {
+                   settings.Name = "btnSave";
+                   settings.Text = "Lưu lại";
+                   settings.UseSubmitBehavior = true;
+                   settings.ClientSideEvents.Click = "function(s,e){ PrepareValidationScripts($('#createContractForm'));}";
+               }).GetHtml()
+
+                <button id="CancelCreateContract" type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .link-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #0d6efd; /* xanh giống link */
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+            .link-btn:hover {
+                color: #0a58ca;
+            }
+
+        .customer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .customer-actions button {
+            margin-left: 12px;
+        }
+    </style>
+    <script>
+        function OnUseCustomerInfoChanged(chk) {
+
+            var cmbCustomer = ASPxClientControl.GetControlCollection()
+                .GetByName("cmbCustomerID_ContractCreate");
+
+            var cmbProprietor = ASPxClientControl.GetControlCollection()
+                .GetByName("cmbProprietorsOfContractCreate");
+
+            if (!cmbCustomer || cmbCustomer.GetSelectedItem() == null) {
+                chk.checked = false;
+                alert("Vui lòng chọn khách hàng trước.");
+                return;
+            }
+
+            if (chk.checked) {
+
+                var customerItem = cmbCustomer.GetSelectedItem();
+
+                // Lấy thông tin KH
+                var customerName = customerItem.GetColumnText("Name");
+                var customerAddress = customerItem.GetColumnText("Address");
+
+                // 🔥 GÁN SANG ĐƠN VỊ SỬ DỤNG
+                cmbProprietor.SetText(customerName);   // ← QUAN TRỌNG
+                txtPropAddressCreate.SetText(customerAddress);
+
+                // Cho phép sửa
+                cmbProprietor.SetEnabled(true);
+                txtPropAddressCreate.SetEnabled(true);
+            }
+        }
+    </script>
+
+
+
+
+}
+
+@section Styles {
+
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+
+
+        });
+    </script>
+
+}

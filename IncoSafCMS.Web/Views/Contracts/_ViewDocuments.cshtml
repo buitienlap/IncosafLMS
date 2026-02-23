@@ -1,0 +1,50 @@
+﻿
+@model List<IncosafCMS.Core.DomainModels.Contract_Doc>
+@{
+    Layout = null;
+    // Lấy file đầu tiên để load vào iframe
+    var firstDoc = Model.FirstOrDefault();
+    var firstUrl = firstDoc != null ? "https://hoso.incosaf.com" + firstDoc.path_save + firstDoc.filename_save : "";
+}
+
+<div class="row">
+    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+    <div class="col-md-10">
+        <div class="embed-responsive" style="height:95vh;">
+            <iframe id="docPreviewFrame"
+                    src="@firstUrl"
+                    style="width:100%; height:100%; border:none;">
+            </iframe>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <h5 Style="font-size: 16px; font-weight: bold; color: blue">Danh sách hồ sơ</h5>
+        <h5 Style="font-size: 14px; color: red">(Chỉ xóa trong vòng 2 ngày từ khi upload)</h5>
+        <ul id="docList" class="list-unstyled">
+            @foreach (var doc in Model)
+            {
+                var fileUrl = "https://hoso.incosaf.com" + doc.path_save + doc.filename_save;
+                <li class="d-flex justify-content-between align-items-center mb-2">
+                    <a href="javascript:void(0);"
+                       onclick="changePreview('@fileUrl')">
+                        @doc.filename_text
+                    </a>
+
+                    <a href="javascript:void(0);"
+                       class="text-danger"
+                       style="text-decoration: underline;"
+                       onclick="deleteDoc(@doc.Id)">
+                        Xóa H.sơ
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<script>
+    function changePreview(url) {
+        $("#docPreviewFrame").attr("src", url);
+    }
+</script>
+

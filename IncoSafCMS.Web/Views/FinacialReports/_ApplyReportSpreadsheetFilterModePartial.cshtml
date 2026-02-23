@@ -1,0 +1,174 @@
+﻿<script type="text/javascript">
+    function OnApplyFilter(s, e) {
+        var filterType = 0;
+        var employeeID = -1;
+        var employeeName = "";
+        var departmentID = -1;
+        var departmentName = "";
+        if (cmbFilterType.GetValue()) filterType = parseInt(cmbFilterType.GetValue());
+        if (cmbEmployees.GetValue()) {
+            employeeID = parseInt(cmbEmployees.GetValue());
+            employeeName = cmbEmployees.GetSelectedItem().GetColumnText('DisplayName');
+        }
+        if (cmbDepartments.GetValue()) {
+            departmentID = parseInt(cmbDepartments.GetValue());
+            departmentName = cmbDepartments.GetSelectedItem().GetColumnText('MaDV');
+        }
+
+        $.ajax(
+            {
+                type: 'POST',
+                url: '/FinacialReports/ApplyReportSpreadsheetFilterModePartial/',
+                data: {
+                    "FilterType": filterType,
+                    "FromDate": dteFromDate.GetText(),
+                    "ToDate": dteToDate.GetText(),
+                    "EmployeeID": employeeID,
+                    "DepartmentID": departmentID,
+                    "DepartmentName": departmentName,
+                    "EmployeeName": employeeName
+                },
+                success: function (response) {
+                    if (response === "success") location.reload();
+                },
+                error: function () {
+                    alert("error");
+                }
+            }
+        );
+    }
+</script>
+
+@using (@Html.BeginForm("ApplyReportSpreadsheetFilterModePartial", "FinacialReports", FormMethod.Post, new { id = "reportSpreadsheetFilterForm" }))
+{
+    <div class="scroll_content">
+        <div class="row">
+            <div class="col-md-12">
+                <label>Loại báo cáo</label>
+                @Html.DevExpress().ComboBox(settings =>
+           {
+               settings.Name = "cmbFilterType";
+               settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+               settings.Properties.ValueType = typeof(int);
+               settings.Properties.Items.Add("Tổng hợp", 0);
+               settings.Properties.Items.Add("Hợp đồng đang thực hiện", 1);
+               settings.Properties.Items.Add("Công nợ", 2);
+               settings.Properties.Items.Add("Tiền về", 3);
+               settings.Properties.Items.Add("Doanh thu", 4);
+               settings.Properties.Items.Add("Sản lượng", 5);
+               settings.Properties.Items.Add("Hạn kiểm định", 6);
+               settings.PreRender = (s, e) =>
+               {
+                   MVCxComboBox cmb = (MVCxComboBox)s;
+                   if (GridViewHelper.FinacialReportFilterType > 0)
+                       cmb.Value = GridViewHelper.FinacialReportFilterType;
+                   else cmb.Value = 0;
+               };
+           }).GetHtml()
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Từ ngày</label>
+                @Html.DevExpress().DateEdit(settings =>
+           {
+               settings.Name = "dteFromDate";
+               settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+               settings.PreRender = (s, e) =>
+               {
+                   MVCxDateEdit dte = (MVCxDateEdit)s;
+                   dte.Date = GridViewHelper.FinacialReportFilterFromDate;
+               };
+           }).GetHtml()
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Đến ngày</label>
+                @Html.DevExpress().DateEdit(settings =>
+           {
+               settings.Name = "dteToDate";
+               settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+               settings.PreRender = (s, e) =>
+               {
+                   MVCxDateEdit dte = (MVCxDateEdit)s;
+                   dte.Date = GridViewHelper.FinacialReportFilterToDate;
+               };
+           }).GetHtml()
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Phòng ban</label>
+                @Html.DevExpress().ComboBox(settings =>
+           {
+               settings.Name = "cmbDepartments";
+               settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+               settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+               settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+               settings.Properties.ValueField = "Id";
+               settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Percentage(100);
+               settings.Properties.DisplayFormatString = "{1}";
+               settings.Properties.Columns.Add("MaDV", "Mã PB", 100);
+               settings.Properties.Columns.Add("Name", "Tên phòng ban", System.Web.UI.WebControls.Unit.Percentage(100));
+               settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+               settings.Properties.ValueType = typeof(int);
+               settings.Properties.DropDownRows = 3;
+
+               settings.Properties.ClientSideEvents.SelectedIndexChanged = "function () { cmbEmployees.PerformCallback(); }";
+               settings.Properties.ClientSideEvents.ValueChanged = "function () { cmbEmployees.PerformCallback(); }";
+               settings.PreRender = (s, e) =>
+               {
+                   MVCxComboBox cmb = (MVCxComboBox)s;
+                   if (GridViewHelper.FinacialReportFilterDepartmentID > 0)
+                       cmb.Value = GridViewHelper.FinacialReportFilterDepartmentID;
+               };
+           }).BindList((List<IncosafCMS.Core.DomainModels.Department>)ViewData["Departments"]).GetHtml()
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label>Nhân viên</label>
+                @Html.DevExpress().ComboBox(settings =>
+           {
+               settings.Name = "cmbEmployees";
+               settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+               settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+               settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+               settings.Properties.ValueField = "Id";
+               settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Percentage(100);
+               settings.Properties.DisplayFormatString = "{1}";
+               settings.Properties.Columns.Add("MaNV", "Mã NV", 50);
+               settings.Properties.Columns.Add("DisplayName", "Tên nhân viên", System.Web.UI.WebControls.Unit.Percentage(100));
+               settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+               settings.Properties.ValueType = typeof(int);
+               settings.Properties.DropDownRows = 3;
+
+               settings.Properties.ClientSideEvents.BeginCallback = "function(s, e) { e.customArgs['DepartmentID'] = cmbDepartments.GetValue(); }";
+               settings.CallbackRouteValues = new { Action = "EmployeesCallbackRouteValues", Controller = "FinacialReports" };
+               settings.PreRender = (s, e) =>
+               {
+                   MVCxComboBox cmb = (MVCxComboBox)s;
+                   if (GridViewHelper.FinacialReportFilterEmployeeID > 0)
+                       cmb.Value = GridViewHelper.FinacialReportFilterEmployeeID;
+               };
+           }).BindList((List<IncosafCMS.Core.DomainModels.Identity.AppUser>)ViewData["Employees"]).GetHtml()
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-12" @*style="margin-top: 22px"*@>
+                @Html.DevExpress().Button(settings =>
+           {
+               settings.Name = "btnApply";
+               settings.Text = "Áp dụng";
+               settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+               settings.ClientSideEvents.Click = "OnApplyFilter";
+           }).GetHtml()
+            </div>
+        </div>
+    </div>
+
+}

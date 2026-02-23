@@ -1,0 +1,173 @@
+﻿@model IncosafCMS.Core.DomainModels.Customer
+
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("Create", "Customers", FormMethod.Post, new { id = "createCustomerForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group hidden">
+                    <label>ID Khách hàng</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Id,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Enabled = false;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mã Khách hàng</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.MaKH,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập mã khách hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(model => model.MaKH, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tên Khách hàng</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Name,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập tên khách hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Address,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập địa chỉ khách hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Đại diện</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Representative,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập tên người đại diện";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="">Chức vụ</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.RepresentativePosition,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập chức vụ của người đại diện";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.RepresentativePosition, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Điện thoại</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Phone,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập số điện thoại của khách hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Fax</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Fax,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập số Fax của khách hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Fax, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Số tài khoản</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.AccountNumber,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập số tài khoản của khách hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.AccountNumber, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ngân hàng</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.BankName,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập tên ngân hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.BankName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mã số thuế</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.TaxID,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập mã số thuế của khách hàng";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.TaxID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+        <input type="submit" value="Lưu lại" class="btn btn-primary" />
+        <button type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

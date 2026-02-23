@@ -1,0 +1,154 @@
+﻿@model IncosafCMS.Core.DomainModels.Customer
+
+@{
+    Layout = null;
+}
+
+<div class="scroll_content">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>ID Khách hàng</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.Id,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerIDEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Enabled = false;
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Tên Khách hàng</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.Name,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerNameEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập tên khách hàng";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Địa chỉ</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.Address,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerAddressEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập địa chỉ khách hàng";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Đại diện</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.Representative,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerRepresentativeEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập tên người đại diện";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="">Chức vụ</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.RepresentativePosition,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerRepresentativePositionEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập chức vụ của người đại diện";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Điện thoại</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.Phone,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerPhoneEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập số điện thoại của khách hàng";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Fax</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.Fax,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerFaxEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập số Fax của khách hàng";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Số tài khoản</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.AccountNumber,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerAccountNumberEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập số tài khoản của khách hàng";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Ngân hàng</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.BankName,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerBankNameEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập tên ngân hàng";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Mã số thuế</label>
+                <div>
+                    @Html.DevExpress().TextBoxFor(model => model.TaxID,
+                            settings =>
+                            {
+                                settings.Name = "txtCustomerTaxIDEdit";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NullText = "Nhập mã số thuế của khách hàng";
+                            }
+                        ).GetHtml()
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+    <button type="button" class="btn btn-primary" onclick="OnEditSubmitViaContractEdit()">Lưu lại</button>
+    <button type="button" class="btn btn-white" onclick="OnEditCancelViaContractEdit()">Hủy bỏ</button>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

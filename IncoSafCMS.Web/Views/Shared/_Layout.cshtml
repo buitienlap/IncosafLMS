@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+
+<html>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    /* Gỡ bỏ ảnh hưởng Inspinia cũ */
+    #wrapper, #page-wrapper, .gray-bg {
+        min-height: 0 !important;
+        height: 100% !important;
+        overflow: hidden;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* Cho phần RenderBody tràn hết khung */
+    #main-content {
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+   
+</style>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>IncosafCMS | @ViewBag.Title</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+    <!-- Add local styles, mostly for plugins css file -->
+    @if (IsSectionDefined("Styles"))
+    {@RenderSection("Styles", required: false)}
+
+    <!-- Add jQuery Style direct - used for jQGrid plugin -->
+    <link href="@Url.Content("~/Scripts/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" type="text/css" />
+
+    <!-- Primary Inspinia style -->
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/font-awesome/css")
+
+    @Html.DevExpress().GetStyleSheets(
+        //new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+        //new StyleSheet { ExtensionSuite = ExtensionSuite.CardView },
+        new StyleSheet { ExtensionSuite = ExtensionSuite.Editors },
+        //new StyleSheet { ExtensionSuite = ExtensionSuite.VerticalGrid },
+        //new StyleSheet { ExtensionSuite = ExtensionSuite.Report },
+        new StyleSheet { ExtensionSuite = ExtensionSuite.GridView },
+        new StyleSheet { ExtensionSuite = ExtensionSuite.Spreadsheet }
+    )
+
+    @Scripts.Render("~/bundles/jquery")
+
+    @Html.DevExpress().GetScripts(
+        //new Script { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+        //new Script { ExtensionSuite = ExtensionSuite.CardView },
+        new Script { ExtensionSuite = ExtensionSuite.Editors },
+        //new Script { ExtensionSuite = ExtensionSuite.VerticalGrid },
+        //new Script { ExtensionSuite = ExtensionSuite.Report },
+        new Script { ExtensionSuite = ExtensionSuite.GridView },
+        new Script { ExtensionSuite = ExtensionSuite.Spreadsheet }
+    )
+
+
+</head>
+<body class="pace-done fixed-nav fixed-nav-basic mini-navbar">
+    @Html.DevExpress().LoadingPanel(
+        settings =>
+        {
+            settings.Name = "LoadingPanel";
+            settings.Modal = true;
+            settings.Text = "Đang tải...";
+            settings.Styles.LoadingDiv.BackColor = System.Drawing.Color.FromArgb(41, 56, 70);
+        }
+    ).GetHtml()
+    <!-- Wrapper-->
+    <div id="wrapper" class="@Html.PageClass()">
+
+        <!-- Navigation -->
+        @Html.Partial("_Navigation")
+
+        @*
+        <!-- Page wraper -->
+        <div id="page-wrapper" class="gray-bg" style="padding: 0px; margin-top: 40px; margin-bottom: 0px">
+
+            <!-- Top Navbar -->
+            @Html.Partial("_TopNavbar")
+
+            <!-- Main view  -->
+            @RenderBody()
+
+
+            <!-- Footer -->
+            @Html.Partial("_Footer")
+
+        </div>
+        <!-- End page wrapper-->
+        *@
+
+        @**@
+        @**@
+
+        <div id="page-wrapper" class="gray-bg" style="padding:0; margin:0; height:100vh; display:flex; flex-direction:column; overflow:hidden;">
+            @**@
+            @Html.Partial("_TopNavbar")
+            <div id="main-content" style="flex: 1; overflow: hidden; display: flex; flex-direction: column; margin-top: 30px;">
+                @RenderBody()
+            </div>
+
+
+        </div>
+        <!-- End wrapper-->
+
+        @Scripts.Render("~/bundles/bootstrap")
+
+        @Scripts.Render("~/plugins/slimScroll")
+        @Scripts.Render("~/bundles/inspinia")
+        @Scripts.Render("~/bundles/app")
+
+        @Scripts.Render("~/bundles/signalr")
+        @Scripts.Render("/signalr/hubs")
+        <!-- ✅ Chart.js: dùng cho Dashboard -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- cho vẽ biểu đồ cột -->
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script> <!-- cho vẽ biểu đồ tròn -->
+
+        @RenderSection("scripts", required: false)
+</body>
+</html>
+<style>   
+    /* 1.11.2025 Giảm chiều cao thanh Top Navbar (đang dùng class navbar-fixed-top) */
+    .navbar.navbar-fixed-top {
+        min-height: 30px !important;
+        height: 30px !important;
+        line-height: 30px !important;
+        padding: 0 10px !important;
+        background-color: #fff; /* giữ màu nếu cần */
+        align-items: center !important;
+        justify-content: center !important; /* tuỳ chọn: căn giữa ngang luôn */
+    }
+   
+</style>
+<script type="text/javascript">
+    $(function () {
+        // Declare a proxy to reference the hub.
+        var notifications = $.connection.notificationHub;
+
+        //debugger;
+        // Create a function that the hub can call to broadcast messages.
+        notifications.client.updateMessages = function () {
+            getAllMessages();
+
+        };
+        // Start the connection.
+        $.connection.hub.start().done(function () {
+            //alert("connection started");
+            getAllMessages();
+        }).fail(function (e) {
+            alert(e);
+        });
+    });
+
+
+    function getAllMessages() {
+        //$.ajax({
+        //    url: '/notifications/GetAllMessages',
+        //    contentType: 'application/html ; charset:utf-8',
+        //    type: 'GET',
+        //    dataType: 'html'
+        //}).success(function (result) {
+        //    $('#notifications-center').html(result);
+        //    $('#notifiCount').html(result.count);
+        //}).error(function () {
+
+        //});
+    }
+</script>

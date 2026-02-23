@@ -1,0 +1,43 @@
+﻿
+    <script type="text/javascript">
+        function _init(s, e) {
+
+            $.ajax({
+                url: '/Contracts/GetCurrentUser/', // The method name + paramater
+                data: { },
+                success: function (data) {
+                    //s.SetSelectedIndex(1);
+                    console.log(data);
+                    //s.SetSelectedValue(data);
+                }
+            });
+        }
+    </script>
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "cmbEmployees_CreateKDV1";
+    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+    settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+    settings.Properties.ValueField = "Id";
+    settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(250);
+    settings.Properties.DisplayFormatString = "{1}";
+    settings.Properties.Columns.Add("MaNV", "Mã NV", 10);
+    settings.Properties.Columns.Add("DisplayName", "Tên nhân viên", System.Web.UI.WebControls.Unit.Percentage(100));
+    settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+    settings.Properties.ValueType = typeof(int);
+
+    settings.CallbackRouteValues = new { Action = "EmployeesCallbackRouteValuesForCreate", Controller = "Contracts" };
+    settings.Properties.ClientSideEvents.Validation = "OnKDV1Validation";  // old code: OnChuTriValidation, co le sai
+    settings.Properties.ValidationSettings.Display = Display.Dynamic;
+
+    //settings.Properties.ClientSideEvents.Init = "_init";
+    settings.PreRender = (s, e) =>
+    {
+        MVCxComboBox c = s as MVCxComboBox;
+        c.SelectedItem = c.Items.FirstOrDefault(u => (u.GetDataItem() as IncosafCMS.Core.DomainModels.Identity.AppUser).UserName == User.Identity.Name);
+    };
+
+}).BindList((List<IncosafCMS.Core.DomainModels.Identity.AppUser>)ViewData["Employees"]).GetHtml()

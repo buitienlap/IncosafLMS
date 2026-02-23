@@ -1,0 +1,269 @@
+﻿@{
+    var grid = Html.DevExpress().GridView(settings => {
+        settings.Name = "grvInvoiceProductCreateAction";
+        settings.CallbackRouteValues = new { Controller = "Contracts", Action = "InvoiceProductCreateActionPartial" };
+
+        settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Contracts", Action = "InvoiceProductCreateActionPartialAddNew" };
+        settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Contracts", Action = "InvoiceProductCreateActionPartialUpdate" };
+        settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Contracts", Action = "InvoiceProductCreateActionPartialDelete" };
+
+        settings.KeyFieldName = "Id";
+
+        settings.SettingsText.CommandNew = "Thêm";
+        settings.SettingsText.CommandEdit = "Sửa";
+        settings.SettingsText.CommandDelete = "Xóa";
+        settings.SettingsText.PopupEditFormCaption = "Thêm/Sửa dữ liệu";
+        settings.SettingsText.SearchPanelEditorNullText = "Nhập từ khóa tìm kiếm...";
+        settings.SettingsText.EmptyDataRow = "Không có kết quả nào";
+        settings.CommandColumn.VisibleIndex = 8;
+        settings.CommandColumn.Caption = " ";
+        settings.CommandColumn.ShowNewButton = false;
+        settings.CommandColumn.Width = System.Web.UI.WebControls.Unit.Pixel(60);
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.PageSize = 4;
+        settings.SettingsBehavior.AllowFocusedRow = true;
+        settings.SettingsPager.AllButton.Visible = false;
+        settings.SettingsPager.LastPageButton.Visible = false;
+        settings.SettingsPager.FirstPageButton.Visible = false;
+
+        settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+        settings.SettingsBehavior.ConfirmDelete = true;
+
+        settings.CommandColumn.Visible = false;
+        settings.CommandColumn.ShowNewButton = true;
+        settings.CommandColumn.ShowDeleteButton = true;
+        settings.CommandColumn.ShowEditButton = true;
+
+
+        settings.SettingsPager.Visible = true;
+        settings.Settings.ShowGroupPanel = false;
+        settings.Settings.ShowFilterRow = false;
+        settings.SettingsBehavior.AllowSelectByRowClick = false;
+
+
+        settings.Toolbars.Add(toolbar =>
+        {
+            toolbar.Enabled = true;
+            toolbar.Position = GridToolbarPosition.Top;
+            toolbar.ItemAlign = GridToolbarItemAlign.Justify;
+            toolbar.Items.Add(GridViewToolbarCommand.New).Text = "Tạo mới";
+            toolbar.Items.Add(GridViewToolbarCommand.Edit).Text ="Chỉnh sửa";
+            toolbar.Items.Add(GridViewToolbarCommand.Delete).Text = "Xóa";
+            toolbar.Items.Add(GridViewToolbarCommand.Refresh, true).Text = "Làm mới";
+        });
+
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "STT";
+            column.FieldName = "STT";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(20);
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.EditFormSettings.Visible = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "ID";
+            column.FieldName = "Id";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tên hàng hóa, dịch vụ";
+            column.FieldName = "Name";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Đơn vị tính";
+            column.FieldName = "Unit";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(20);
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.String;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Số lượng";
+            column.FieldName = "Amount";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(20);
+            column.PropertiesEdit.DisplayFormatString = "N1";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-warning\">" + cell.Text + "</span>");
+
+            });
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+            column.ColumnType = MVCxGridViewColumnType.SpinEdit;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Đơn giá";
+            column.FieldName = "Price";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.ColumnType = MVCxGridViewColumnType.SpinEdit;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Thanh tiền";
+            column.FieldName = "Value";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Loại thuế";
+            column.FieldName = "VATType";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+
+            ComboBoxProperties c = column.PropertiesEdit as ComboBoxProperties;
+            c.ClientInstanceName = "cmbTaskVATType";
+            c.Items.Add("Có thuế", IncosafCMS.Core.DomainModels.VATType.cothue);
+            c.Items.Add("Không thuế", IncosafCMS.Core.DomainModels.VATType.khongthue);
+            c.ClientSideEvents.SelectedIndexChanged = "function(s, e) { cmbTaskVAT.SetEnabled(cmbTaskVATType.GetSelectedIndex() === 0); cmbTaskVAT.SetValue(cmbTaskVATType.GetSelectedIndex() === 0 ? 8 : 0) }";
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Thuế VAT";
+            column.FieldName = "VAT";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (!string.IsNullOrWhiteSpace(cell.Text))
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+
+            });
+
+            column.ColumnType = MVCxGridViewColumnType.ComboBox;
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+
+            ComboBoxProperties c = column.PropertiesEdit as ComboBoxProperties;
+            c.ClientInstanceName = "cmbTaskVAT";
+            c.Items.Add("8%", 8);
+            c.Items.Add("10%", 10);
+            c.Items.Add("5%", 5);
+            c.Items.Add("0%", 0);
+        });
+
+
+        settings.EditFormLayoutProperties.ColCount = 2;
+        settings.EditFormLayoutProperties.Items.Add("Name");
+        settings.EditFormLayoutProperties.Items.Add("Unit");
+        settings.EditFormLayoutProperties.Items.Add("Amount");
+        settings.EditFormLayoutProperties.Items.Add("Price");
+        settings.EditFormLayoutProperties.Items.Add("VATType");
+        settings.EditFormLayoutProperties.Items.Add("VAT");
+        settings.EditFormLayoutProperties.Items.AddCommandItem(itemSettings =>
+        {
+            itemSettings.ColSpan = 2;
+            itemSettings.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+        });
+
+        settings.BeforeGetCallbackResult = (sender, e) =>
+        {
+            MVCxGridView gridView = sender as MVCxGridView;
+            if (gridView.IsNewRowEditing)
+            {
+                gridView.SettingsText.CommandUpdate = "Lưu lại";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+            else
+            {
+                gridView.SettingsText.CommandUpdate = "Cập nhật";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+        };
+
+        settings.CustomColumnDisplayText = (sender, e) =>
+        {
+            if (e.Column.FieldName == "STT")
+            {
+                if (e.VisibleIndex < 0)
+                {
+                    e.DisplayText = " ";
+                }
+                else
+                {
+                    var i = e.VisibleIndex + 1;
+                    e.DisplayText = (i).ToString();
+                }
+            }
+        };
+
+        settings.CellEditorInitialize = (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.Dynamic;
+        };
+
+    });
+    if (ViewData["EditError"] != null){
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+    }
+}
+@grid.Bind(Model).GetHtml()

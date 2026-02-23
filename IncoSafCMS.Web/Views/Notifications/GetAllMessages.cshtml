@@ -1,0 +1,64 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Notification>
+
+@{
+    ViewBag.Title = "GetAllMessages";
+    Layout = null;
+    var notifications = Model.Where(x => x.targetUsers.Where(s => s.UserName == User.Identity.Name).Count() > 0).OrderByDescending(x => x.SentTime).OrderBy(e=>e.read).ToList();
+    var notificationCount = notifications.Where(x => !x.read).Count();
+}
+
+@foreach (var item in notifications)
+{
+    var dic = new RouteValueDictionary();
+    dic.Add("theDate", item.SentTime);
+    var relateTime = @Html.Action("RelativeDate", "Notifications", dic);
+
+    <li>
+        @if (@item.read)
+        {
+            <a onclick="notificationRedirect('@item.target_url')">
+                <div>
+                    <i class="fa fa-envelope fa-fw"></i> @item.content<br />
+                    <i class="pull-left text-muted small">@relateTime</i>
+                </div>
+            </a>
+        }
+        else
+        {
+            <a onclick="notificationClick(@item.Id, '@item.target_url')">
+                <div>
+                    <i class="fa fa-envelope fa-fw"></i> <b>@item.content</b><br />
+                    <i class="pull-left text-muted small">@relateTime</i>
+                </div>
+            </a>
+        }
+    </li>
+    <br />
+    <li class="divider"></li>
+}
+
+@*<li>
+    <div class="text-center link-block">
+        <a href="notification-hub.html">
+            <strong>See All Alerts</strong>
+            <i class="fa fa-angle-right"></i>
+        </a>
+    </div>
+</li>*@
+
+<script type="text/javascript">
+    $('#notifiCount').html(@notificationCount);
+
+    function notificationClick(id, url) {
+        $.ajax({
+            url: '/Notifications/ReadNotification/' + id,
+            type: "POST",
+            success: function (data) {                
+                window.location.href = url;
+            }
+        });
+    }
+    function notificationRedirect(url) {
+        window.location.href = url;
+    }
+</script>

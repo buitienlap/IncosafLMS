@@ -1,0 +1,222 @@
+﻿@*@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    Html.RenderAction("Index", "Departments");
+}*@
+
+@model IEnumerable<IncosafCMS.Core.DomainModels.Department>
+
+@{
+    ViewBag.Title = "Danh sách đơn vị";
+}
+<script type="text/javascript">
+    var selecteddepartment;
+
+    function OnGridFocusedRowChanged(s, e) {
+        s.GetRowValues(s.GetFocusedRowIndex(), 'Id;Name;Phone;Email', OnGetRowValues);
+    }
+
+    function OnGetRowValues(values) {
+        if (values[0]) {
+            selecteddepartment = values[0];
+            if (selecteddepartment && typeof selecteddepartment === "number") {
+                gvEmployeesOfDepartment.PerformCallback({
+                    selecteddepartment: parseInt(selecteddepartment)
+                });
+            }
+            else {
+                selecteddepartment = -1;
+                gvEmployeesOfDepartment.PerformCallback({
+                    selecteddepartment: parseInt(selecteddepartment)
+                });
+            }
+        }
+        else {
+            selecteddepartment = -1;
+            gvEmployeesOfDepartment.PerformCallback({
+                selecteddepartment: parseInt(selecteddepartment)
+            });
+        }
+
+        DepartmentName.textContent = "Tên đơn vị: " + (values[1] ? values[1] : "N/A");
+        dPhone.textContent = "Điện thoại: " + (values[2] ? values[2] : "N/A");
+        dEmail.textContent = "Email: " + (values[3] ? values[3] : "N/A");
+    }
+
+    function editContract() {
+        if (selecteddepartment && typeof selecteddepartment === "number") {
+            $.ajax({
+                url: '/Departments/Edit/' + selecteddepartment, // The method name + paramater
+                success: function (data) {
+                    $('#modalEditWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+                }
+            });
+        }
+        else {
+            swal("Máy chủ chưa phản hồi", "Vui lòng thực hiện lại!", "warning")
+        }
+    }
+    function addnewContract() {
+        $.ajax({
+            url: '/Departments/Create/', // The method name + paramater
+            success: function (data) {
+                $('#modalAddNewWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+            }
+        });
+    }
+</script>
+<style>
+    .list-group-item {
+        height: 30px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .dxgvGroupRow_Material td.dxgv, .dxgvFocusedGroupRow_Material td.dxgv, .dxgvDataRow_Material td.dxgv {
+        padding: 5px !important;
+    }
+</style>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-7">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách đơn vị</h5>
+                        <div class="text-right">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <button class="btn btn-primary btn-rounded btn-xs" data-toggle="modal" data-target="#addnewModal" onclick="addnewContract()">Tạo mới</button>
+                                <div class="modal inmodal" id="addnewModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Tạo mới đơn vị</h4>
+                                            </div>
+                                            <div class="modal-body" id="modalAddNewWrapper" style="padding: 10px">
+                                                @*@Html.Action("Create", "Departments")*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-info btn-rounded btn-xs" data-toggle="modal" data-target="#editModal" onclick="editContract()">Chỉnh sửa</button>
+                                <div class="modal inmodal" id="editModal" tabindex="-2" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Chỉnh sửa đơn vị</h4>
+                                            </div>
+                                            <div class="modal-body" id="modalEditWrapper" style="padding: 10px">
+                                                @*@Html.Partial("_DepartmentDetailsPartial")*@
+                                            </div>
+                                            @*<div class="modal-footer">
+                                                    <button type="button" class="btn btn-primary">Lưu lại</button>
+                                                    <button type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+                                                </div>*@
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-danger btn-rounded btn-xs deleteDepartment" href="#">Xóa</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary btn-rounded btn-xs accessDeny">Tạo mới</button>
+                                <button class="btn btn-info btn-rounded btn-xs accessDeny">Chỉnh sửa</button>
+                                <button class="btn btn-danger btn-rounded btn-xs accessDeny" href="#">Xóa</button>
+                            }
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            @Html.Action("DepartmentViewPartial", "Departments")
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Chi tiết đơn vị</h5>
+                        @*<div class="text-right">
+                                <a class="btn btn-warning btn-rounded btn-xs" href="@Url.Action("CustomerDetails","Home")">Xem chi tiết ></a>
+                            </div>*@
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            <ul class="list-group" style="text-overflow: ellipsis">
+                                <li class="list-group-item"><b id="DepartmentName"></b></li>
+                                @*<li class="list-group-item" style="height: 30px; padding-top:5px; padding-bottom:5px; word-wrap: break-word"><p id="dRepresentative"></p></li>*@
+                                <li class="list-group-item"><p id="dPhone"></p></li>
+                                <li class="list-group-item"><p id="dEmail"></p></li>
+                            </ul>
+                            <div class="bg-success p-xs b-r-xs">Danh sách nhân viên</div>
+                            @Html.Action("EmployeesOfDepartmentPartial", "Departments")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 205px)'
+            });
+        });
+
+        $('.deleteDepartment').click(function () {
+            if (selecteddepartment && typeof selecteddepartment === "number") {
+                swal({
+                    title: "Bạn có muốn xóa?",
+                    text: "Thao tác này sẽ không thể khôi phục lại",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Đồng ý",
+                    cancelButtonColor: "#23C6C8",
+                    cancelButtonText: "Hủy bỏ",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+
+                            url: '/Departments/Delete/' + selecteddepartment, // The method name + paramater
+                            type: "POST",
+                            success: function (data) {
+                                swal({ title: "Đã xóa!", text: "Đã xóa thành công.", type: "success", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                                window.location.href = '@Url.Action("Department", "Home")';
+                            }
+                        });
+                    } else {
+                        swal({ title: "Đã hủy bỏ", text: "Đã hủy bỏ thao tác.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                });
+            }
+        });
+
+        $('.accessDeny').click(function () {
+            swal({ title: "Bạn không có quyền", text: "Bạn bị giới hạn quyền cho tác vụ này", type: "warning", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" })
+        });
+    </script>
+}

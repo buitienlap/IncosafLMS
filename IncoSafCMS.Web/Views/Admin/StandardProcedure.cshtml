@@ -1,0 +1,117 @@
+﻿@{
+    ViewBag.Title = "Tiêu chuẩn - Phạm vi";
+}
+
+<style>
+    .dxgvControl .dxgvTitlePanel {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        margin-bottom: 0px !important;
+    }
+    .dxgvTitlePanel, .dxgvTitlePanel td {
+        height: auto !important;
+        line-height: 1.2em !important;
+    }
+    .list-group-item {
+        height: inherit;
+        padding-top: -2px;
+        padding-bottom: 0px;
+        padding-right: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+    }
+
+        .list-group-item:first-child {
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+
+        .list-group-item:last-child {
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
+
+    .dxgvGroupRow_Material td.dxgv, .dxgvFocusedGroupRow_Material td.dxgv, .dxgvDataRow_Material td.dxgv {
+        padding: 5px !important;
+    }
+
+    .dxmLite_Material .dxm-main.dxmtb {
+        padding: 0px;
+    }
+
+    .dxmLite_Material .dxctToolbar_Material.dxm-main.dxmtb {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    /* Giảm padding và cho label vừa nội dung */
+    .dxgvToolbarItem_Material {
+        padding: 2px 8px !important;
+        min-width: auto !important;
+        white-space: nowrap;
+    }
+
+    /* Nếu dùng icon kèm text, giảm khoảng cách */
+    .dxgvToolbar_Material .dxgvToolbarItem_Material span {
+        margin-right: 4px !important;
+    }
+    /*giảm chiều cao textbox ô SearchPanel*/
+    .dxgvSearchPanel input {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        height: 14px !important;
+        font-size: 12px;
+    }
+
+</style>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-6">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách Tiêu chuẩn áp dụng</h5>                        
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            @Html.Action("StandardViewPartial", "Standards")
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách Phạm vi KĐV</h5>
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            @Html.Action("ProcedureViewPartial", "Procedures")
+                        </div>   
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/plugins/sweetAlert")
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        // Add slimscroll to element
+        $('.scroll_content').slimscroll({
+            height: 'calc(100vh - 205px)'
+        });
+    });    
+        
+</script>
+}

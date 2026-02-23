@@ -1,0 +1,113 @@
+﻿@model IncosafCMS.Web.Models.RoleViewModel
+
+@{
+    ViewBag.Title = "Chỉnh sửa nhóm người dùng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IncosafCMS | @ViewBag.Title</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Fonts/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="~/Content/animate.css" rel="stylesheet">
+    <link href="~/Content/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+
+    <div class="passwordBox animated fadeInDown" style="max-width: 700px; padding-top: 15px">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Chỉnh sửa nhóm người dùng</h5>
+                    </div>
+                    <div class="ibox-content"><div class="row">
+    <div class="col-lg-12">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true)
+                @Html.HiddenFor(model => model.Id)
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.TextBoxFor(model => model.Name, new { @readonly = "readonly", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.Name)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">Quyền hạn</label>
+                    <div class="col-md-10">
+                        @Html.DevExpress().CheckBoxList(settings =>
+                         {
+                             settings.Name = "selectedPermission";
+                             settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                             settings.Properties.RepeatLayout = System.Web.UI.WebControls.RepeatLayout.Table;
+                             settings.Properties.RepeatDirection = System.Web.UI.WebControls.RepeatDirection.Horizontal;
+                             settings.Properties.EnableFocusedStyle = false;
+                             settings.Properties.RepeatColumns = 4;
+                             settings.Properties.TextField = "Name";
+                             settings.Properties.ValueField = "Id";
+                             settings.Properties.ValueType = typeof(int);
+                             var listPermission = (IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppPermission>)ViewData["Permissions"];
+                             settings.PreRender = (sender, e) =>
+                             {
+                                 ASPxCheckBoxList cbl = (ASPxCheckBoxList)sender;
+                                 foreach (ListEditItem item in cbl.Items)
+                                 {
+                                     var permission = listPermission.Where(x => x.Id == (int)item.Value).FirstOrDefault();
+                                     item.Selected = permission.Roles.Where(x => x.RoleId == Model.Id).FirstOrDefault() != null;
+                                 }
+                             };
+                         }).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppPermission>)ViewData["Permissions"]).GetHtml()
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Lưu" class="btn btn-w-m btn-primary" />
+                        <a class="btn btn-w-m btn-default" href="@Url.Action("UserGroups", "Admin")">Quay lại</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 205px)'
+            });
+
+
+        });
+    </script>
+}

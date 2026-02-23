@@ -1,0 +1,641 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Equipment>
+
+@{
+    ViewBag.Title = "Danh sách thiết bị - Đã KĐ 02 năm gần đây";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    var selectedequipment;
+
+    function OnGridFocusedRowChanged(s, e) {
+        $("#btnEdit").prop('disabled', true);
+        $("#btnDelete").prop('disabled', true);
+        // 14-apr-2025. Bỏ triệt để filter
+        //$("#btnAccreditation").prop('disabled', true);
+        //$('#equipmentDetailsLink').attr('disabled', 'disabled');
+        //$('#contractDetailsLink').attr('disabled', 'disabled');
+
+        /* 17-apr-2025 thay đổi để tăng tốc độ
+         
+        s.GetRowValues(s.GetFocusedRowIndex(), 'Id;ContractID', OnGetRowValues);
+
+        - K0 sử dụng phương thức trên nữa. Bởi bản chất toàn bộ hàm dưới cũng chỉ là lấy ra selectedequipment. 
+        - Trong khi đó gọi vào phương thức trên sẽ gặp fai 1 lần reload vào `EquipmentController.EquipmentViewPartial()`
+        - Nên sẽ mất thời gian
+
+        - Dùng kiểu GetRowKey để lấy ra trường Id (đã setting ở grid)
+        - Id này sẽ dùng vào menu Edit/Del tbi
+        */
+
+        selectedequipment = parseInt(s.GetRowKey(s.GetFocusedRowIndex()));
+        console.log("added by lapbt. current select equipment id = " + selectedequipment);
+
+        if (selectedequipment && typeof selectedequipment === "number") {
+            $("#btnEdit").prop('disabled', false);
+            $("#btnDelete").prop('disabled', false);
+        }
+        else {
+            selectedequipment = -1;
+
+            $("#btnEdit").prop('disabled', true);
+            $("#btnDelete").prop('disabled', true);
+        }
+    }
+
+    // 17-apr-2025. Hàm này sẽ k0 đc sử dụng, do chỉ lấy selectedequipment thì đã đc thực hiện luôn ở OnGridFocusedRowChanged
+    function OnGetRowValues(values) {
+        if (values[0]) {
+            selectedequipment = values[0];
+            console.log("added by lapbt. Select equipment in gridview. selectedequipment = " + selectedequipment);
+
+            if (selectedequipment && typeof selectedequipment === "number") {
+                //gvLoadTestsOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+                //gvSpecificationsOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+                //gvPartionsOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+
+                //gvTechnicalDocumentOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+
+                // 14-apr-2025. Bỏ triệt để filter. K0 xử lý gen dyn link ở menu nữa, khi mà rowchange
+                @*
+                var urlEquipmentDetails = '@Url.Action("EquipmentDetails", "Home", new { id = "_id_" })'.replace('_id_', selectedequipment);
+                equipmentDetailsLink.href = urlEquipmentDetails;
+                //equipmentDetailsNavigationLink.href = urlEquipmentDetails;
+
+                if (values[1] && typeof values[1] === "number") {
+                    var urlcontract = '@Url.Action("ContractDetails", "Home", new { id = "_id_" })'.replace('_id_', values[1]);
+                    contractDetailsLink.href = urlcontract;
+                }
+
+                var urlAccreditationCertificateReport = '@Url.Action("AccreditationCertificateReport", "Reports", new { id = "_id_" })'.replace('_id_', selectedequipment);
+                accreditationCertificateReportLink.href = urlAccreditationCertificateReport;
+
+                var urlAccreditationCertificateReportA5 = '@Url.Action("AccreditationCertificateReportA5", "Reports", new { id = "_id_" })'.replace('_id_', selectedequipment);
+                accreditationCertificateReportA5Link.href = urlAccreditationCertificateReportA5;
+
+                var urlAccreditationReport = '@Url.Action("AccreditationReport", "Reports", new { id = "_id_" })'.replace('_id_', selectedequipment);
+                accreditationReportLink.href = urlAccreditationReport;*@
+
+                
+                $("#btnEdit").prop('disabled', false);
+                $("#btnDelete").prop('disabled', false);
+                //$("#btnAccreditation").prop('disabled', false);
+                //$("#equipmentDetailsLink").removeAttr('disabled');
+                //$("#contractDetailsLink").removeAttr('disabled');
+
+            }
+            else {
+                selectedequipment = -1;
+                //gvLoadTestsOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+                //gvSpecificationsOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+                //gvPartionsOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+                //gvTechnicalDocumentOfEquipment.PerformCallback({
+                //    selectedequipment: parseInt(selectedequipment)
+                //});
+
+
+                $("#btnEdit").prop('disabled', true);
+                $("#btnDelete").prop('disabled', true);
+                //$("#btnAccreditation").prop('disabled', true);
+                //$('#equipmentDetailsLink').attr('disabled', 'disabled');
+                //$('#contractDetailsLink').attr('disabled', 'disabled');
+            }
+        }
+        else {
+            selectedequipment = -1;
+            //gvLoadTestsOfEquipment.PerformCallback({
+            //    selectedequipment: parseInt(selectedequipment)
+            //});
+            //gvSpecificationsOfEquipment.PerformCallback({
+            //    selectedequipment: parseInt(selectedequipment)
+            //});
+            //gvPartionsOfEquipment.PerformCallback({
+            //    selectedequipment: parseInt(selectedequipment)
+            //});
+            //gvTechnicalDocumentOfEquipment.PerformCallback({
+            //    selectedequipment: parseInt(selectedequipment)
+            //});
+
+            
+            $("#btnEdit").prop('disabled', true);
+            $("#btnDelete").prop('disabled', true);
+            //$("#btnAccreditation").prop('disabled', true);
+            //$('#equipmentDetailsLink').attr('disabled', 'disabled');
+            //$('#contractDetailsLink').attr('disabled', 'disabled');
+        }
+
+        //eqCodeAndNo.textContent = "Mã hiệu: " + (values[1] ? values[1] : "N/A") + " - " + "Số quản lý (TT): " + (values[2] ? values[2] : "N/A");
+        //eqName.textContent = "Tên thiết bị: " + (values[3] ? values[3] : "N/A");
+        //eqYearAndManufac.textContent = "Năm sản xuất: " + (values[4] ? values[4] : "N/A") + " - " + "Nhà chế tạo: " + (values[5] ? values[5] : "N/A");
+
+    }
+
+    function OnGridEquipmentsEndCallBack(s, e) {
+        if (s.cpIsCustomCallback) {
+            s.cpIsCustomCallback = false;
+            OnGridFocusedRowChanged(s, e);
+        }
+    }
+    function OnRadioButtonSelectedIndexChanged(s, e) {
+        var index = s.GetSelectedIndex();
+        grvEquipments.PerformCallback({ filtermode: parseInt(index) });
+        grvEquipments.ExpandAll();
+    }
+
+    function editEquipment() {
+        $('#modalEditWrapper').html("");
+        if (selectedequipment && typeof selectedequipment === "number") {
+            $('#loading_panel').show();
+            $.ajax({
+                url: '/Equipments/Edit/' + selectedequipment, // The method name + paramater
+                success: function (data) {
+                    $('#modalEditWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+                    $('#loading_panel').hide();
+                }
+
+            });
+
+        }
+        else {
+            //swal("Máy chủ chưa phản hồi", "Vui lòng thực hiện lại!", "warning");
+            swal({
+                title: "Máy chủ chưa có phản hồi",
+                text: "Vui lòng thực hiện lại!",
+                type: "warning",
+                showCancelButton: false,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Đồng ý",
+                closeOnConfirm: true,
+                closeOnCancel: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    $('#editModal').modal('hide');
+                }
+            });
+        }
+    }
+    function addnewEquipment() {
+        $('#modalAddNewWrapper').html("");
+        $.ajax({
+            url: '/Equipments/Create/', // The method name + paramater
+            success: function (data) {
+                $('#modalAddNewWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+            }
+        });
+    }
+
+    function addnewEquipmentFromLib() {
+        $('#modalAddNewFromLibWrapper').html("");
+        $.ajax({
+            url: '/Equipments/CreateFromLib/', // The method name + paramater
+            success: function (data) {
+                $('#modalAddNewFromLibWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+            }
+        });
+    }
+
+    function accreditationView() {
+        $('#modalAccreditation').html("");
+        if (selectedequipment && typeof selectedequipment === "number") {
+            $('#accreditation_loading_panel').show();
+            $.ajax({
+                url: '/Equipments/AccreditationView/' + selectedequipment, // The method name + paramater
+                success: function (data) {
+                    $('#modalAccreditation').html(data); // This should be an empty div where you can inject your new html (the partial view)
+                    $('#accreditation_loading_panel').hide();
+                }
+            });
+
+        }
+        else {
+            //swal("Máy chủ chưa phản hồi", "Vui lòng thực hiện lại!", "warning");
+            swal({
+                title: "Máy chủ chưa có phản hồi",
+                text: "Vui lòng thực hiện lại!",
+                type: "warning",
+                showCancelButton: false,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Đồng ý",
+                closeOnConfirm: true,
+                closeOnCancel: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    $('#accreditationModal').modal('hide');
+                }
+            });
+        }
+
+    }
+    function OnSoKQDKChanged(s, e) {
+        $.ajax({
+            url: '/Equipments/CheckNumberAccreditationAvailable/', // The method name + paramater
+            data: { NumberAccre: s.GetValue() },
+            success: function (data) {
+                if (data == "NotAvailable") {
+                    swal({ title: "Số KQKĐ này đã có!", text: "Vui lòng điền lại để tiếp tục.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                }
+            }
+        });
+    }
+    /*
+    function EquipmentToolBarClick(s, e) {
+        if (e.item.name === "RefreshEquipmentData") {
+            $.ajax({
+                url: '/Equipments/RefresEquipmentData/', // The method name + paramater
+                success: function (data) {
+                    var index = 0;  // 14-apr-2025. Bỏ triệt để filter. rdbGridEquipmentFilter.GetSelectedIndex();
+                    grvEquipments.PerformCallback({ filtermode: parseInt(index) });
+                },
+                error: function (data) {
+                    swal({ title: "Lỗi rồi :)", text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                }
+            });
+        }
+        else {
+            if (!IsExportToolbarCommand(e.item.name))
+                return;
+
+            if (e.item.name == "Xls")
+                grvEquipments.ExportTo(ASPxClientGridViewExportFormat.Xls);
+            else if (e.item.name == "Xlsx")
+                grvEquipments.ExportTo(ASPxClientGridViewExportFormat.Xlsx);
+
+            return;
+
+            var $exportFormat = $('#exportFormat');
+            $exportFormat.val(e.item.name);
+            $('#exporttoForm').submit();
+            window.setTimeout(function () {
+                $exportFormat.val("");
+            }, 0);
+        }
+    }
+
+    function IsExportToolbarCommand(command) {
+        return command == "Pdf" || command == "Xlsx" || command == "Xls";
+    }
+    */
+    function OnSubmitEditAccreditation() {
+        var dataToPost = $("#accreditationViewForm").serialize()
+        $.ajax(
+            {
+                type: "POST",
+                data: dataToPost,
+                url: '/Equipments/AccreditationView/',
+                success: function (data) {
+                    if (data === "success") {
+                        $('#accreditationModal').modal('hide');
+                        swal({ title: "Hoàn thành", text: "Đã chỉnh sửa thành công.", type: "success", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+
+                        var index = 0;  // 14-apr-2025. Bỏ triệt để filter. rdbGridEquipmentFilter.GetSelectedIndex();
+                        grvEquipments.PerformCallback({ filtermode: parseInt(index) });
+                    }
+                    else if (data === "required") {
+                        swal({ title: "Không được bỏ trống", text: "Vị trí lắp đặt, Số tem KĐ không được bỏ trống.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                    else {
+                        swal({ title: "Lỗi rồi :)", text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                },
+                error: function (data) {
+                    swal({ title: "Lỗi rồi :)", text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                }
+            })
+    }
+
+    function advancedFilter() {
+        $('#modalAdvancedFilterWrapper').html("");
+        $.ajax({
+            url: '/Equipments/AdvancedEquipmentFilterPartial/', // The method name + paramater
+            success: function (data) {
+                $('#modalAdvancedFilterWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+            }
+        });
+    }
+
+    function removeAdvancedFilter() {
+        swal({
+            title: "Bạn có muốn xóa?",
+            text: "Xóa bộ lọc danh sách thiết bị hiện thời.",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Đồng ý",
+            cancelButtonColor: "#23C6C8",
+            cancelButtonText: "Hủy bỏ",
+            closeOnConfirm: true,
+            closeOnCancel: true
+        }, function (isConfirm) {
+            if (isConfirm) {
+                $.ajax({
+                    url: '/Equipments/RemoveAdvancedEquipmentFilterPartial/',
+                    success: function (data) {
+                        if (data === "success") {
+                            var index = 0;  // 14-apr-2025. Bỏ triệt để filter. rdbGridEquipmentFilter.GetSelectedIndex();
+                            grvEquipments.PerformCallback({ filtermode: parseInt(index) });
+                        }
+                    }
+                });
+            } else {
+                swal({ title: "Đã hủy bỏ", text: "Đã hủy bỏ thao tác.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+            }
+        });        
+    }
+</script>
+
+<style>
+    .list-group-item {
+        height: 30px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .dxgvGroupRow_Material td.dxgv, .dxgvFocusedGroupRow_Material td.dxgv, .dxgvDataRow_Material td.dxgv {
+        padding: 5px !important;
+    }
+</style>
+
+<div class="wrapper animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-12" style="padding-left: 0px; padding-right: 0px;">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách thiết bị</h5>
+                        <div class="text-right">
+
+                            <button class="btn btn-danger btn-rounded btn-xs" onclick="removeAdvancedFilter()">Xóa bộ lọc</button>
+                            <button class="btn btn-primary btn-rounded btn-xs" data-toggle="modal" data-target="#advancedFilterModal" onclick="advancedFilter()">Tạo mới bộ lọc</button>
+                            <div class="modal inmodal" id="advancedFilterModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content animated bounceInRight">
+                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                            <h4>Tạo mới bộ lọc</h4>
+                                        </div>
+                                        <div class="modal-body" id="modalAdvancedFilterWrapper" style="padding: 10px">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* 14-apr-2025. Bỏ triệt để filter
+                            <a class="btn btn-warning btn-rounded btn-xs" id="equipmentDetailsLink">Chi tiết thiết bị ></a>
+                            <a class="btn btn-info btn-rounded btn-xs" id="contractDetailsLink">Chi tiết hợp đồng ></a>
+
+                            <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
+                                <button id="btnAccreditation" data-toggle="dropdown" class="btn btn-warning btn-rounded btn-xs" href="#" disabled>
+                                    <span class="clear">
+                                        <span>Kiểm định <b class="caret"></b></span>
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu animated fadeInDown m-t-xs">
+                                    <li>
+                                        <a data-toggle="modal" data-target="#accreditationModal" onclick="accreditationView()">Xem biên bản</a>
+                                        <div class="modal inmodal" id="accreditationModal" tabindex="-2" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content animated bounceInRight">
+                                                    <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                        <h4>Biên bản kiểm định thiết bị</h4>
+                                                    </div>
+                                                    <div class="modal-body scroll_content" style="padding: 10px">
+                                                        <div id="modalAccreditation"></div>
+                                                        <div id="accreditation_loading_panel" class="spiner-example">
+                                                            <div class="sk-spinner sk-spinner-wave">
+                                                                <div class="sk-rect1"></div>
+                                                                <div class="sk-rect2"></div>
+                                                                <div class="sk-rect3"></div>
+                                                                <div class="sk-rect4"></div>
+                                                                <div class="sk-rect5"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <a id="accreditationReportLink" href="#" target="_blank">In biên bản kiểm định</a>
+                                    </li>
+                                    <li>
+                                        <a id="accreditationCertificateReportLink" href="#" target="_blank">In giấy chứng nhận</a>
+                                    </li>
+                                    <li>
+                                        <a id="accreditationCertificateReportA5Link" href="#" target="_blank">In giấy chứng nhận mẫu A5</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
+                                <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                                    <span class="clear">
+                                        <span class="btn btn-primary btn-rounded btn-xs">Tạo mới <b class="caret"></b></span>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu animated fadeInDown m-t-xs">
+                                    <li>
+                                        <a data-toggle="modal" data-target="#addnewModal" onclick="addnewEquipment()">Tạo mới</a>
+                                        <div class="modal inmodal" id="addnewModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content animated bounceInRight">
+                                                    <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                        <h4>Tạo mới thiết bị</h4>
+                                                    </div>
+                                                    <div class="modal-body scroll_content" id="modalAddNewWrapper" style="padding: 10px">
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="modal" data-target="#addnewFromLibModal" onclick="addnewEquipmentFromLib()">Tạo mới từ thư viện</a>
+                                        <div class="modal inmodal" id="addnewFromLibModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content animated bounceInRight">
+                                                    <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                        <h4>Tạo mới thiết bị</h4>
+                                                    </div>
+                                                    <div class="modal-body" id="modalAddNewFromLibWrapper" style="padding: 10px">
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>*@
+
+                            <button id="btnEdit" class="btn btn-info btn-rounded btn-xs" data-toggle="modal" data-target="#editModal" onclick="editEquipment()" disabled>Chỉnh sửa</button>
+                            <div class="modal inmodal" id="editModal" tabindex="-2" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content animated bounceInRight">
+                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                            <h4>Chỉnh sửa thiết bị</h4>
+                                        </div>
+                                        <div class="modal-body scroll_content" style="padding: 10px">
+                                            <div id="modalEditWrapper"></div>
+                                            <div id="loading_panel" class="spiner-example">
+                                                <div class="sk-spinner sk-spinner-wave">
+                                                    <div class="sk-rect1"></div>
+                                                    <div class="sk-rect2"></div>
+                                                    <div class="sk-rect3"></div>
+                                                    <div class="sk-rect4"></div>
+                                                    <div class="sk-rect5"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="btnDelete" class="btn btn-danger btn-rounded btn-xs deleteEquipment" href="#" disabled>Xóa</button>
+                        </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            @* 14-apr-2025. Bỏ triệt để filter
+                            <div>
+                                @Html.DevExpress().RadioButtonList(
+                                    settings =>
+                                    {
+                                        settings.Name = "rdbGridEquipmentFilter";
+                                        settings.Properties.Items.Add(new ListEditItem() { Text = "Tất cả", Value = 0, Index = 0 });
+                                        settings.Properties.Items.Add(new ListEditItem() { Text = "Sắp đến hạn kiểm định", Value = 1, Index = 1 });
+                                        settings.Properties.Items.Add(new ListEditItem() { Text = "Quá hạn kiểm định", Value = 2, Index = 2 });
+                                        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                        settings.Properties.RepeatLayout = System.Web.UI.WebControls.RepeatLayout.Table;
+                                        settings.Properties.RepeatDirection = System.Web.UI.WebControls.RepeatDirection.Horizontal;
+                                        settings.Properties.RepeatColumns = 3;
+                                        settings.SelectedIndex = GridViewHelper.EquipmentGridFilterIndex;
+                                        settings.Properties.ClientSideEvents.SelectedIndexChanged = string.Format("function(s, e) {{ OnRadioButtonSelectedIndexChanged(s, e); }}");
+                                        settings.Properties.EnableFocusedStyle = false;
+                                    }).GetHtml()
+                            </div>
+                            @using (Html.BeginForm("ExportTo", "Equipments", FormMethod.Post, new { id = "exporttoForm" }))
+                            {
+                                @Html.Hidden("exportFormat")
+                                
+                            }
+                            *@
+
+                            @Html.Action("EquipmentViewPartial", "Equipments")
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @*<div class="col-lg-4" style="padding-left: 2px; padding-right: 0px;">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Chi tiết thiết bị</h5>
+                        <div class="text-right">
+                            <a class="btn btn-warning btn-rounded btn-xs" id="equipmentDetailsLink">Chi tiết thiết bị ></a>
+                            <a class="btn btn-info btn-rounded btn-xs" id="contractDetailsLink">Chi tiết hợp đồng ></a>
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            <ul class="list-group">
+                                <li class="list-group-item"><b id="eqCodeAndNo"></b></li>
+                                <li class="list-group-item"><b id="eqName"></b></li>
+                                <li class="list-group-item"><p id="eqYearAndManufac"></p></li>
+                            </ul>
+                            <div class="bg-success p-xs b-r-xs">Các thông số kỹ thuật cơ bản</div>
+                            @Html.Action("SpecificationsOfEquipmentPartial", "Equipments")
+                            <hr />
+                            <div class="bg-success p-xs b-r-xs">Kiểm tra bên ngoài; thử không tải</div>
+                            @Html.Action("PartionsOfEquipmentPartial", "Equipments")
+                            <hr />
+                            <div class="bg-success p-xs b-r-xs">Thử tải</div>
+                            @Html.Action("LoadTestsOfEquipmentPartial", "Equipments")
+                            <hr />
+                            <div class="bg-success p-xs b-r-xs">Hồ sơ kỹ thuật</div>
+                            @Html.Action("TechnicalDocumentOfEquipmentPartial", "Equipments")
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 170px)'
+            });
+        });
+
+        $('.deleteEquipment').click(function () {
+            if (selectedequipment && typeof selectedequipment === "number") {
+                swal({
+                    title: "Bạn có muốn xóa?",
+                    text: "Thao tác này sẽ không thể khôi phục lại",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Đồng ý",
+                    cancelButtonColor: "#23C6C8",
+                    cancelButtonText: "Hủy bỏ",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+
+                            url: '/Equipments/Delete/' + selectedequipment, // The method name + paramater
+                            type: "POST",
+                            success: function (data) {
+                                if (data === "success") {
+                                    var index = 0;  // 14-apr-2025. Bỏ triệt để filter. rdbGridEquipmentFilter.GetSelectedIndex();
+                                    grvEquipments.PerformCallback({ filtermode: parseInt(index) });
+                                    swal({ title: "Đã xóa!", text: "Đã xóa thành công.", type: "success", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });                                    
+                                }
+                                else {
+                                    swal({ title: "Lỗi rồi :)", text: "" + data, type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                                }
+                            }
+                        });
+                    } else {
+                        swal({ title: "Đã hủy bỏ", text: "Đã hủy bỏ thao tác.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,105 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppUser>
+
+@{
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "gvEmployeesOfDepartment";
+        settings.CallbackRouteValues = new { Controller = "Departments", Action = "EmployeesOfDepartmentPartial" };
+        settings.CustomActionRouteValues = new { Controller = "Departments", Action = "CustomCallBackEmployeesOfDepartmentAction" };
+
+        settings.KeyFieldName = "Id";
+
+        settings.SettingsText.EmptyDataRow = "Không có kết quả nào";
+
+        settings.SettingsPopup.EditForm.HorizontalAlign = PopupHorizontalAlign.Center;
+        settings.SettingsPopup.EditForm.VerticalAlign = PopupVerticalAlign.NotSet;
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.SettingsBehavior.AllowFocusedRow = true;
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+        settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Mode = GridViewPagerMode.ShowAllRecords;
+        settings.SettingsPager.PageSize = 8;
+        settings.SettingsPager.AllButton.Visible = true;
+        settings.SettingsPager.LastPageButton.Visible = true;
+        settings.SettingsPager.FirstPageButton.Visible = true;
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "STT";
+            column.FieldName = "STT";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(20);
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.EditFormSettings.Visible = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        //settings.Columns.Add(column =>
+        //{
+        //    column.Caption = "Mã NV";
+        //    column.FieldName = "Id";
+        //    column.Settings.AllowSort = DefaultBoolean.False;
+        //    column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+        //});
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tên nhân viên";
+            column.FieldName = "DisplayName";
+            column.Settings.AllowSort = DefaultBoolean.False;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Chức vụ";
+            column.FieldName = "Position.Name";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (cell.Text == "Tổng gi&#225;m đốc" || cell.Text == "Ph&#243; tổng gi&#225;m đốc")
+                    ViewContext.Writer.Write("<span class=\"badge badge-danger\">" + cell.Text + "</span>");
+                else if (cell.Text == "Gi&#225;m đốc trung t&#226;m" || cell.Text == "Ph&#243; Gi&#225;m đốc trung t&#226;m")
+                    ViewContext.Writer.Write("<span class=\"badge badge-primary\">" + cell.Text + "</span>");
+                else if (cell.Text == "Trưởng ph&#242;ng" || cell.Text == "Ph&#243; ph&#242;ng")
+                    ViewContext.Writer.Write("<span class=\"badge badge-warning\">" + cell.Text + "</span>");
+                else if (cell.Text == "Kiểm định vi&#234;n" || cell.Text == "Nh&#226;n vi&#234;n")
+                    ViewContext.Writer.Write("<span class=\"badge badge-plain\">" + cell.Text + "</span>");
+
+            });
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Điện thoại";
+            column.FieldName = "PhoneNumber";
+            column.Settings.AllowSort = DefaultBoolean.False;
+        });
+
+        settings.CustomColumnDisplayText = (sender, e) =>
+        {
+            if (e.Column.FieldName == "STT")
+            {
+                var i = e.VisibleIndex + 1;
+                e.DisplayText = (i).ToString();
+            }
+        };
+        settings.CellEditorInitialize = (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.Dynamic;
+        };
+    });
+}
+@grid.Bind(Model).GetHtml()

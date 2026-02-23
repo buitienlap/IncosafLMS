@@ -1,0 +1,10 @@
+﻿@model IncosafCMS.Web.Models.InvoiceViewModel
+
+@{
+    Layout = "~/Views/Shared/_ReportLayout.cshtml";
+    ViewBag.Title = "In hóa đơn";
+}
+
+<div class="full-height">
+    @Html.Partial("_InvoiceReportPartialView", Model)
+</div>

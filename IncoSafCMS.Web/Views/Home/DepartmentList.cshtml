@@ -1,0 +1,8 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Department>
+
+@Html.DevExpress().ComboBox(settings =>
+{
+    settings.Name = "cmbPhongBan";
+    settings.Properties.Caption = "Phòng ban";
+    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+}).GetHtml()

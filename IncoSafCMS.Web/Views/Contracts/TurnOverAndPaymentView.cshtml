@@ -1,0 +1,174 @@
+﻿@model IncosafCMS.Core.DomainModels.Contract
+
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("TurnOverAndPaymentView", "Contracts", FormMethod.Post, new { id = "editTurnOverAndPaymentOfContractForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bg-success p-xs b-r-xs">Thanh lý hợp đồng</div>
+                @Html.Action("TurnOversOfContractPartial")
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bg-success p-xs b-r-xs">Tỷ lệ giao khoán</div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Tỷ lệ công ty (%)</label>
+                    <div>
+                        @Html.DevExpress().SpinEditFor(model => model.RatioOfCompany,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NumberType = SpinEditNumberType.Integer;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N3";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.Properties.MinValue = 0;
+                                settings.Properties.MaxValue = 100;
+                            }
+                        ).GetHtml()
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tỷ lệ nội bộ (%)</label>
+                    <div>
+                        @Html.DevExpress().SpinEditFor(model => model.RatioOfInternal,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NumberType = SpinEditNumberType.Integer;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N3";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.Properties.MinValue = 0;
+                                settings.Properties.MaxValue = 100;
+                            }
+                        ).GetHtml()
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tỷ lệ nhóm (%)</label>
+                    <div>
+                        @Html.DevExpress().SpinEditFor(model => model.RatioOfGroup,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.Properties.NumberType = SpinEditNumberType.Integer;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N3";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.Properties.MinValue = 0;
+                                settings.Properties.MaxValue = 100;
+                            }
+                        ).GetHtml()
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Giá trị khoán công ty</label>
+                    <div>
+                        @Html.DevExpress().SpinEditFor(model => model.ValueRoC,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NumberType = SpinEditNumberType.Float;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N3";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Giá trị khoán nội bộ</label>
+                    <div>
+                        @Html.DevExpress().SpinEditFor(model => model.ValueRoI,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NumberType = SpinEditNumberType.Float;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N3";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Giá trị khoán nhóm</label>
+                    <div>
+                        @Html.DevExpress().SpinEditFor(model => model.ValueRoG,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NumberType = SpinEditNumberType.Float;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N3";
+                                settings.Properties.DisplayFormatInEditMode = true;
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bg-success p-xs b-r-xs">Thanh toán hợp đồng</div>
+                @Html.Action("PaymentsOfContractPartial")
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-7">
+            @Html.DevExpress().CheckBoxFor(model => model.Finished,
+                settings =>
+                {
+                    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                    settings.Text = "Kết thúc hợp đồng?";
+                    settings.Checked = Model.Finished;
+                }
+            ).Bind(Model.Finished).GetHtml()
+        </div>
+        <div class="col-md-5">
+            <div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+                <input type="submit" value="Lưu lại" class="btn btn-primary" />
+                <button type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+
+
+        });
+    </script>
+
+}

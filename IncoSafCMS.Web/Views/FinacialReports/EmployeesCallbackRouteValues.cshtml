@@ -1,0 +1,16 @@
+﻿@Html.DevExpress().ComboBox(settings =>
+ {
+     settings.Name = "cmbEmployees";
+     settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+     settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+     settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+     settings.Properties.ValueField = "Id";
+     settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(250);
+     settings.Properties.DisplayFormatString = "{1}";
+     settings.Properties.Columns.Add("MaNV", "Mã NV", 50);
+     settings.Properties.Columns.Add("DisplayName", "Tên nhân viên", System.Web.UI.WebControls.Unit.Percentage(100));
+     settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+     settings.Properties.ClientSideEvents.BeginCallback = "function(s, e) { e.customArgs['DepartmentID'] = cmbDepartments.GetValue(); }";
+     settings.CallbackRouteValues = new { Action = "EmployeesCallbackRouteValues", Controller = "FinacialReports" };
+ }).BindList((List<IncosafCMS.Core.DomainModels.Identity.AppUser>)ViewData["Employees"]).GetHtml()

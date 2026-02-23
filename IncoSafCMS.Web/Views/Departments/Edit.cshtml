@@ -1,0 +1,112 @@
+﻿@model IncosafCMS.Core.DomainModels.Department
+
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("Edit", "Departments", FormMethod.Post, new { id = "editDepartmentForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>ID Khách hàng</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Id,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Enabled = false;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mã đơn vị</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.MaDV,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập mã đơn vị";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.MaDV, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tên đơn vị</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Name,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập tên đơn vị";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                @*<div class="form-group">
+                        <label>Người phụ trách</label>
+                        <div>
+                            @Html.DevExpress().ComboBoxFor(model => model.Representative.Id,
+                                settings =>
+                                {
+                                    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                    //settings.SelectedIndex = 0;
+                                    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                    settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                    settings.Properties.TextField = "UserName";
+                                    settings.Properties.ValueField = "Id";
+                                    settings.Properties.ValueType = typeof(int);
+                                }
+                            ).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Identity.AppUser>)ViewData["Users"]).GetHtml()
+                            @Html.ValidationMessageFor(m => m.Representative.Id, "", new { @class = "text-danger" })
+                        </div>
+                    </div>*@
+                <div class="form-group">
+                    <label>Điện thoại</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Phone,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập số điện thoại đơn vị";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <div>
+                        @Html.DevExpress().TextBoxFor(model => model.Email,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập Email của đơn vị";
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+        <input type="submit" value="Lưu lại" class="btn btn-primary" />
+        <button type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+

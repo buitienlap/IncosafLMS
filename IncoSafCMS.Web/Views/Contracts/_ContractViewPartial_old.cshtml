@@ -1,0 +1,349 @@
+﻿@*@model IEnumerable<IncosafCMS.Core.DomainModels.Contract>*@
+
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "grvContracts";
+        settings.KeyFieldName = "Id";
+        //settings.EnableRowsCache = true;
+        //settings.Settings.ShowFilterRow = true;
+        settings.CallbackRouteValues = new { Controller = "Contracts", Action = "ContractViewPartial" };
+        settings.CustomActionRouteValues = new { Controller = "Contracts", Action = "ChangeContractGridFilterModePartial" };
+
+        settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Contracts", Action = "ContractAddNewPartial" };
+        settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Contracts", Action = "ContractUpdatePartial" };
+        settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Contracts", Action = "ContractDeletePartial" };
+
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+        settings.SettingsText.CommandNew = "Thêm";
+        settings.SettingsText.CommandEdit = "Sửa";
+        settings.SettingsText.CommandDelete = "Xóa";
+        settings.SettingsText.PopupEditFormCaption = "Thêm/Sửa dữ liệu";
+        settings.SettingsText.SearchPanelEditorNullText = "Nhập từ khóa tìm kiếm...";
+        settings.SettingsText.EmptyDataRow = "Không có kết quả nào";
+
+        settings.SettingsEditing.Mode = GridViewEditingMode.PopupEditForm;
+
+        settings.SettingsBehavior.ConfirmDelete = true;
+        settings.SettingsBehavior.AllowFixedGroups = true;
+        settings.SettingsBehavior.AllowFocusedRow = true;
+
+        settings.SettingsPopup.EditForm.Modal = true;
+        settings.SettingsPopup.EditForm.HorizontalAlign = PopupHorizontalAlign.Center;
+        settings.SettingsPopup.EditForm.VerticalAlign = PopupVerticalAlign.NotSet;
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+        settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.PageSize = 30;
+        settings.SettingsPager.AllButton.Visible = false;
+        settings.SettingsPager.LastPageButton.Visible = false;
+        settings.SettingsPager.FirstPageButton.Visible = false;
+        settings.SettingsPager.NumericButtonCount = 4;
+
+        settings.SettingsSearchPanel.Visible = true;
+        settings.SettingsContextMenu.Enabled = false;
+
+        //settings.SettingsResizing.ColumnResizeMode = ColumnResizeMode.NextColumn;
+        settings.SettingsBehavior.AllowEllipsisInText = false;
+        settings.SettingsContextMenu.Enabled = true;
+        settings.SettingsContextMenu.RowMenuItemVisibility.DeleteRow = false;
+        settings.SettingsContextMenu.RowMenuItemVisibility.EditRow = false;
+        settings.SettingsContextMenu.RowMenuItemVisibility.NewRow = false;
+        settings.SettingsContextMenu.RowMenuItemVisibility.ExpandRow = false;
+        settings.SettingsContextMenu.RowMenuItemVisibility.CollapseRow = false;
+        settings.SettingsContextMenu.RowMenuItemVisibility.Refresh = false;
+        settings.SettingsContextMenu.RowMenuItemVisibility.GroupSummaryMenu.Visible = false;
+        settings.SettingsContextMenu.EnableColumnMenu = DefaultBoolean.False;
+        settings.SettingsContextMenu.EnableFooterMenu = DefaultBoolean.False;
+        settings.SettingsContextMenu.EnableGroupFooterMenu = DefaultBoolean.False;
+        settings.SettingsContextMenu.EnableGroupPanelMenu = DefaultBoolean.False;
+
+        settings.FillContextMenuItems = (sender, e) =>
+        {
+            if (e.MenuType == GridViewContextMenuType.Rows) {
+                e.Items.Add("Chờ duyệt", "Waiting", "/Images/waiting.png");
+                e.Items.Add("Đã duyệt", "Approved", "/Images/approved.png");
+                e.Items.Add("Cấp số", "SetContractNumber", "/Images/setcontractnumber.png");
+            }
+        };
+
+        settings.ClientSideEvents.ContextMenuItemClick = "ApprovedMenuClick";
+
+        settings.GroupSummary.Add(new ASPxSummaryItem()
+        {
+            FieldName = "SignDate",
+            ShowInColumn = "SignDate",
+            SummaryType = DevExpress.Data.SummaryItemType.Count,
+            DisplayFormat = "{0} hợp đồng"
+        });
+
+        settings.SetGroupRowContentTemplateContent(c =>
+        {
+            DateTime signdate = (DateTime)c.KeyValue;
+            var displaytext = String.Format("Tháng {0} năm {1}", signdate.Month, signdate.Year);
+            ViewContext.Writer.Write(displaytext + " " + "<span class=\"badge badge-danger\">" + c.SummaryText.Replace("(", "").Replace(")", "") + "</span>");
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Mã HĐ";
+            column.FieldName = "MaHD";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(60);
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tên hợp đồng";
+            column.FieldName = "Name";
+            column.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Ngày ký";
+            column.Name = "SignDateCopy";
+            column.FieldName = "SignDate";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.DateTime;
+            column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy";
+            column.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+
+        });
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Ngày ký";
+            column.FieldName = "SignDate";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.DateTime;
+            column.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy";
+            column.UnboundExpression = "AddMonths(AddDays(Today(), [ReorderLevel]), -1)";
+            column.GroupIndex = 0;
+            column.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+            column.Settings.GroupInterval = DevExpress.XtraGrid.ColumnGroupInterval.DateMonth;
+
+        });
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "KĐV";
+            column.FieldName = "own.DisplayName";
+            //column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Khách hàng";
+            column.FieldName = "customer.Name";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(250);
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Đại diện";
+            column.FieldName = "customer.Representative";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Địa chỉ";
+            column.FieldName = "customer.Address";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Điện thoại";
+            column.FieldName = "customer.Phone";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Fax";
+            column.FieldName = "customer.Fax";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tài khoản";
+            column.FieldName = "customer.AccountNumber";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Giá trị";
+            column.FieldName = "Value";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.PropertiesEdit.DisplayFormatString = "N0";
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Công nợ";
+            column.FieldName = "CongNo";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Khoán Cty";
+            column.FieldName = "RatioOfCompany";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Giá trị khoán Cty";
+            column.FieldName = "ValueRoC";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "H.thành khoán Cty";
+            column.FieldName = "IsCompletedIPoC";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Khoán C.Nhân";
+            column.FieldName = "RatioOfInternal";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "H.thành khoán C.Nhân";
+            column.FieldName = "IsCompletedIPoI";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Giá trị Khoán C.Nhân";
+            column.FieldName = "ValueRoI";
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            column.PropertiesEdit.DisplayFormatString = "N0";
+            column.Visible = false;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "TT";
+            column.FieldName = "Status";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(40);
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.SetDataItemTemplateContent(cell =>
+            {
+                if (cell.Text == "Waiting")
+                {
+                    ViewContext.Writer.Write("<i class=\"fa fa-check-circle-o\" style=\"color: orange; font-size: 20px;\" title=\"Chờ duyệt\"></i>");
+                }
+                else if (cell.Text == "ApprovedLv1")
+                {
+                    ViewContext.Writer.Write("<i class=\"fa fa-check-circle\" style=\"color: deepskyblue; font-size: 20px;\" title=\"Đã duyệt\"></i>");
+                }
+                else if (cell.Text == "ApprovedLv2")
+                {
+                    ViewContext.Writer.Write("<i class=\"fa fa-check-circle\" style=\"color: green; font-size: 20px;\" title=\"Đã cấp số\"></i>");
+                }
+
+            });
+        });
+
+        settings.HtmlDataCellPrepared += (sender, e) =>
+        {
+            if (e.DataColumn.FieldName == "customer.Name" || e.DataColumn.FieldName == "Name")
+            {
+                string text = e.CellValue == null ? string.Empty : e.CellValue.ToString();
+                var lettercount = e.DataColumn.FieldName == "customer.Name" ? 60 : 40;
+                if (!string.IsNullOrEmpty(text) && text.Length > lettercount)
+                {
+                    e.Cell.Text = text.Substring(0, lettercount) + " ...";
+                    e.Cell.ToolTip = e.CellValue.ToString();
+                }
+            }
+        };
+
+        settings.BeforeGetCallbackResult = (sender, e) =>
+        {
+            MVCxGridView gridView = sender as MVCxGridView;
+            if (gridView.IsNewRowEditing)
+            {
+                gridView.SettingsText.CommandUpdate = "Lưu lại";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+            else
+            {
+                gridView.SettingsText.CommandUpdate = "Cập nhật";
+                gridView.SettingsText.CommandCancel = "Hủy bỏ";
+            }
+        };
+
+        settings.PreRender = (sender, e) =>
+        {
+            MVCxGridView gridView = sender as MVCxGridView;
+            if (gridView != null)
+            {
+                gridView.ExpandAll();
+            }
+        };
+
+
+        settings.CellEditorInitialize = (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.Dynamic;
+        };
+
+        settings.ClientSideEvents.FocusedRowChanged = "OnGridFocusedRowChanged";
+        settings.ClientSideEvents.EndCallback = "OnGridContractsEndCallBack";
+
+        settings.AfterPerformCallback = (sender, e) =>
+        {
+            var gridView = ((MVCxGridView)sender);
+            gridView.JSProperties.Add("cpIsCustomCallback", null);
+            gridView.JSProperties["cpIsCustomCallback"] = e.CallbackName == "CUSTOMCALLBACK";
+            //gridView.ExpandAll();
+        };
+    });
+
+    if (ViewData["EditError"] != null)
+    {
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+    }
+
+}
+@grid.Bind(Model).GetHtml()
+@*@grid.BindToLINQ(string.Empty, string.Empty, (s, e) => {
+        e.QueryableSource = IncosafCMS.Web.Providers.ContractDataProvider.Contracts1;
+    }).GetHtml()*@

@@ -1,0 +1,61 @@
+﻿@{ 
+    ViewBag.Title = "Tiêu chuẩn - Quy trình";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="wrapper animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-6" style="padding-left: 0px; padding-right: 2px;">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách Tiêu chuẩn áp dụng</h5>
+                        @*<div class="text-right">
+                                <button class="btn btn-primary btn-rounded btn-xs" onclick="'function(s, e){ grvStandards.CancelEdit(); }'">Tạo mới</button>
+                            <button class="btn btn-info btn-rounded btn-xs">Chỉnh sửa</button>
+                            <button class="btn btn-danger btn-rounded btn-xs deleteContract" href="#">Xóa</button>
+                        </div>*@
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            @Html.Action("StandardViewPartial", "Standards")
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6" style="padding-left: 2px; padding-right: 0px;">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Danh sách Quy trình</h5>
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            @Html.Action("ProcedureViewPartial", "Procedures")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 205px)'
+            });
+        });        
+
+    </script>
+
+}

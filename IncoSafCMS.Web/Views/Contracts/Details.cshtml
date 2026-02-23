@@ -1,0 +1,229 @@
+﻿@model IncosafCMS.Core.DomainModels.Contract
+
+@{ 
+    Layout = null;
+}
+
+@using (Html.BeginForm("Details", "Contracts", FormMethod.Get, new { id = "detailsContractForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="contractname">ID hợp đồng</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().TextBoxFor(model => model.Id,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="contractname">Mã HĐ</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().TextBoxFor(model => model.MaHD,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập mã hợp đồng";                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(model => model.MaHD, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="contractname">Tên HĐ</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().TextBoxFor(model => model.Name,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập tên hợp đồng";
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group" id="datecreate">
+                    <label class="control-label col-sm-3" for="contractname">Ngày ký</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().DateEditFor(model => model.SignDate,
+                            settings =>
+                            {
+                                settings.Properties.NullText = "Nhập ngày ký hợp đồng";
+                                settings.Properties.EditFormat = EditFormat.Custom;
+                                settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                settings.Properties.CalendarProperties.ShowWeekNumbers = false;
+                                settings.Properties.CalendarProperties.ShowClearButton = false;
+                                settings.Properties.CalendarProperties.ShowTodayButton = false;
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.SignDate, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Khách hàng</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().ComboBoxFor(model => model.customer.Id,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                //settings.SelectedIndex = 0;
+                                settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                settings.Properties.TextField = "Name";
+                                settings.Properties.ValueField = "Id";
+                                settings.Properties.ValueType = typeof(int);
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).BindList((IEnumerable<IncosafCMS.Core.DomainModels.Customer>)ViewData["Customers"]).GetHtml()
+                        @Html.ValidationMessageFor(m => m.customer.Id, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Giá trị HĐ</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().SpinEditFor(model => model.Value,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập giá trị hợp đồng";
+                                settings.Properties.NumberType = SpinEditNumberType.Integer;
+                                settings.Properties.NumberFormat = SpinEditNumberFormat.Number;
+                                settings.Properties.DisplayFormatString = "N0";
+                                settings.Properties.DisplayFormatInEditMode = true;
+
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Value, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Tình trạng</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().ComboBoxFor(model => model.Status,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.SelectedIndex = 0;
+                                settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                settings.Properties.TextField = "Text";
+                                settings.Properties.ValueField = "Value";
+                                settings.Properties.ValueType = typeof(string);
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).BindList(HMTLHelperExtensions.EnumWithDescription(typeof(IncosafCMS.Core.DomainModels.ApproveStatus))).GetHtml()
+                        @*@HMTLHelperExtensions.EnumDropDownListFor(Html, m => m.Status, new { @class = "form-control m-b", @disabled = "", @style = "margin-bottom: 0px" })*@
+                        @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Trách nhiệm bên A</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().MemoFor(model => model.ResponsibilityA,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.Rows = 3;
+                                settings.Properties.NullText = "Nhập trách nhiệm của bên A";
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.ResponsibilityA, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Trách nhiệm bên B</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().MemoFor(model => model.ResponsibilityB,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.Rows = 3;
+                                settings.Properties.NullText = "Nhập trách nhiệm của bên B";
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.ResponsibilityB, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Hình thức thanh toán</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().MemoFor(model => model.PaymentMethod,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.Rows = 3;
+                                settings.Properties.NullText = "Nhập hình thức thanh toán";
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.PaymentMethod, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Cam kết chung</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().MemoFor(model => model.Commitments,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.Rows = 3;
+                                settings.Properties.NullText = "Nhập cam kết chung";
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Commitments, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="">Hiệu lực hợp đồng</label>
+                    <div class="col-sm-9">
+                        @Html.DevExpress().MemoFor(model => model.Effective,
+                            settings =>
+                            {
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.Rows = 3;
+                                settings.Properties.NullText = "Nhập hiệu lực hợp đồng";
+                                
+                                settings.ReadOnly = true;
+                            }
+                        ).GetHtml()
+                        @Html.ValidationMessageFor(m => m.Effective, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bg-success p-xs b-r-xs">Nội dung công việc</div>
+                @Html.Action("TasksOfContractPartial", "Contracts")
+            </div>
+        </div>
+    </div>
+}

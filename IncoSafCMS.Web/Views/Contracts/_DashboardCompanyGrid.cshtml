@@ -1,0 +1,306 @@
+﻿@model List<IncosafCMS.Web.Providers.LargeDatabaseDataProvider.FinanceSummary>
+
+@using DevExpress.Web.Mvc.UI
+@using DevExpress.Web
+@{
+    var reportType = ViewBag.ReportType ?? "company";
+    var year = ViewBag.CurrentYear ?? DateTime.Now.Year;
+    // --- TÍNH TỔNG TỪ MODEL (server-side) - tương thích C#5 (không dùng ?. operator) ---
+    double totalSLKH = (Model != null) ? Model.Sum(x => x.SLKeHoach) : 0.0;
+    double totalSLTH = (Model != null) ? Model.Sum(x => x.SLThucHien) : 0.0;
+
+    double totalDTKH = (Model != null) ? Model.Sum(x => x.DTKeHoach) : 0.0;
+    double totalDTTH = (Model != null) ? Model.Sum(x => x.DTThucHien) : 0.0;
+
+    double totalTNKH = (Model != null) ? Model.Sum(x => x.TNKeHoach) : 0.0;
+    double totalTNTH = (Model != null) ? Model.Sum(x => x.TNThucHien) : 0.0;
+}
+@{
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "gvDashboardCompany";
+        settings.CallbackRouteValues = new
+        {
+            Controller = "Contracts",
+            Action = "DashboardCompanyGrid"
+        };
+        
+        settings.Settings.UseFixedTableLayout = true;
+        settings.Styles.Header.Wrap = DefaultBoolean.True;
+        settings.SettingsPager.Visible = false;
+        settings.Settings.ShowFooter = true;
+        settings.SettingsBehavior.AllowSort = false;
+        settings.SettingsPager.PageSize = 120;
+
+        settings.Styles.Header.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        settings.Styles.Header.VerticalAlign = System.Web.UI.WebControls.VerticalAlign.Middle;
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(2);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(2);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(2);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(2);
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "TT";
+            column.FieldName = "STT";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(30);
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.EditFormSettings.Visible = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+
+        });
+        if (reportType == "company")
+        {
+            settings.KeyFieldName = "DepartmentName";
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "DepartmentName";
+                c.Caption = "Tên đơn vị";
+                c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+                c.Width = 160;
+                c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            });
+        }
+        else
+        {
+            settings.KeyFieldName = "EmployeeName";
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "EmployeeName";
+                c.Caption = "Tên nhân viên";
+                c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+                c.Width = 140;
+                c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            });
+        }
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SLKeHoach";
+            c.Caption = "SL kế hoạch";
+            c.Width = 95;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SLThucHien";
+            c.Caption = "SL thực hiện";
+            c.Width = 95;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.ForeColor = System.Drawing.Color.DarkBlue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeSL";
+            c.Caption = "% SL";
+            c.Width = 50;
+            //c.CellStyle.Font.Size = 10;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "DTKeHoach";
+            c.Caption = "DT kế hoạch";
+            c.Width = 95;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "DTThucHien";
+            c.Caption = "DT thực hiện";
+            c.Width = 95;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.ForeColor = System.Drawing.Color.DarkBlue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeDT";
+            c.Caption = "% DT";
+            c.Width = 50;
+            //c.CellStyle.Font.Size = 10;
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TNKeHoach";
+            c.Caption = "Thu nợ KH";
+            c.Width = 95;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TNThucHien";
+            c.Caption = "Thu nợ TH";
+            c.Width = 95;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.ForeColor = System.Drawing.Color.DarkBlue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeTN";
+            c.Caption = "% TN";
+            c.Width = 50;
+            //c.CellStyle.Font.Size = 10;
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "CongNo";
+            c.Caption = "Công nợ " + year;
+            c.Width = System.Web.UI.WebControls.Unit.Pixel(80);
+            c.HeaderStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "CongNo_old";
+            c.Caption = "Nợ trước " + year;
+            c.Width = System.Web.UI.WebControls.Unit.Pixel(80);
+            c.CellStyle.ForeColor = System.Drawing.Color.Red;
+            c.HeaderStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "DoDang";
+            c.Caption = "Dở dang " + year;
+            c.Width = System.Web.UI.WebControls.Unit.Pixel(80);
+            c.HeaderStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "DoDang_old";
+            c.Caption = "Dở dang trước " + year;
+            c.CellStyle.ForeColor = System.Drawing.Color.Red;
+            c.HeaderStyle.Font.Size = 8;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.Width = System.Web.UI.WebControls.Unit.Pixel(80);
+            c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+        // Tổng cộng cuối bảng
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SLKeHoach").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SLThucHien").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "DTKeHoach").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "DTThucHien").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "TNKeHoach").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "TNThucHien").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "CongNo").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "CongNo_old").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "DoDang").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "DoDang_old").DisplayFormat = "{0:N0}";
+
+        // --- Custom summary items for % columns ---
+        // Use Custom summary type; we'll assign values in CustomSummaryCalculate using precomputed totals
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Custom, "TyLeSL").DisplayFormat = "{0:P0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Custom, "TyLeDT").DisplayFormat = "{0:P0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Custom, "TyLeTN").DisplayFormat = "{0:P0}";
+
+        // Custom calculation: simply use the totals computed above (closure captures variables)
+        settings.CustomSummaryCalculate = (sender, e) =>
+        {
+            if (e.SummaryProcess == DevExpress.Data.CustomSummaryProcess.Finalize)
+            {
+                // e.Item.FieldName might not be available strongly typed, so use reflection/dynamic-safe access
+                string fieldName = null;
+
+                var prop = e.Item.GetType().GetProperty("FieldName");
+                if (prop != null)
+                {
+                    var val = prop.GetValue(e.Item, null);
+                    fieldName = val != null ? val.ToString() : null;
+                }
+                else
+                {
+                    fieldName = null;
+                }
+
+                if (fieldName == "TyLeSL")
+                {
+                    e.TotalValue = (totalSLKH == 0.0) ? 0.0 : (totalSLTH / totalSLKH);
+                }
+                else if (fieldName == "TyLeDT")
+                {
+                    e.TotalValue = (totalDTKH == 0.0) ? 0.0 : (totalDTTH / totalDTKH);
+                }
+                else if (fieldName == "TyLeTN")
+                {
+                    e.TotalValue = (totalTNKH == 0.0) ? 0.0 : (totalTNTH / totalTNKH);
+                }
+
+            }
+        };
+
+        settings.Styles.Footer.ForeColor = System.Drawing.Color.Black;
+        settings.Styles.Footer.Font.Bold = true;
+        settings.Styles.Header.Font.Bold = true;
+
+        // Tô màu xanh cho ô footer của 3 cột tỷ lệ
+        settings.HtmlFooterCellPrepared = (s, e) =>
+        {
+            // Lấy caption (tiêu đề cột) — dùng để nhận biết cột vì FieldName có thể không tồn tại
+            string caption = (e.Column != null && e.Column.Caption != null) ? e.Column.Caption.ToString() : "";
+
+            if (caption == "% SL" || caption == "% DT" || caption == "% TN")
+            {
+                // Sử dụng style CSS để chắc chắn tương thích với nhiều phiên bản DevExpress
+                try
+                {
+                    e.Cell.Style.Add("color", "blue");
+                    e.Cell.Style.Add("font-weight", "bold");
+                }
+                catch
+                {
+                    // fallback: nếu e.Cell không hỗ trợ Style.Add, thử dùng Attributes
+                    try { e.Cell.Attributes["style"] = (e.Cell.Attributes["style"] ?? "") + "color:blue;font-weight:bold;"; } catch { }
+                }
+            }
+
+        };
+
+        settings.CustomColumnDisplayText = (sender, e) =>
+        {
+            if (e.Column.FieldName == "STT")
+            {
+                var i = e.VisibleIndex + 1;
+                e.DisplayText = (i).ToString();
+            }
+
+        };
+
+    });
+
+}
+
+@grid.Bind(Model).GetHtml()

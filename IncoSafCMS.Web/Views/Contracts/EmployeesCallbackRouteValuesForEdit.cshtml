@@ -1,0 +1,21 @@
+﻿@model IncosafCMS.Core.DomainModels.Contract
+
+@Html.DevExpress().ComboBoxFor(model => model.own.Id,
+    settings =>
+    {
+        settings.Name = "cmbEmployees_Edit";
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+        settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+        settings.Properties.ValueField = "Id";
+        settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(250);
+        settings.Properties.DisplayFormatString = "{1}";
+        settings.Properties.Columns.Add("MaNV", "Mã NV", 50);
+        settings.Properties.Columns.Add("DisplayName", "Tên nhân viên", System.Web.UI.WebControls.Unit.Percentage(100));
+        settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+        settings.Properties.ValueType = typeof(int);
+        settings.CallbackRouteValues = new { Action = "EmployeesCallbackRouteValues", Controller = "Contracts" };
+        settings.Enabled = !User.IsInRole("KDV");//11.5.2025 Hưng sửa: KDV không sửa được tên chủ trì HĐ
+    }
+).BindList((List<IncosafCMS.Core.DomainModels.Identity.AppUser>)ViewData["Employees"]).GetHtml()

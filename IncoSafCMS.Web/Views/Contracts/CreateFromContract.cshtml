@@ -1,0 +1,81 @@
+﻿@*@model IEnumerable<IncosafCMS.Core.DomainModels.Contract>*@
+
+@{
+    Layout = null;
+}
+
+
+@using (Html.BeginForm("CreateFromContract", "Contracts", FormMethod.Post, new { id = "createFromContractForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="scroll_content">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Hợp đồng</label>
+                    <div>
+                        @Html.DevExpress().ComboBox(
+                            settings =>
+                            {
+                                settings.Name = "cmbContractOld";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+                                settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+                                settings.Properties.ValueField = "Id";
+                                settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(700);
+                                settings.Properties.DisplayFormatString = "{1}";
+                                settings.Properties.Columns.Add("MaHD", "Mã HĐ", 150);
+                                settings.Properties.Columns.Add("Name", "Tên hợp đồng", System.Web.UI.WebControls.Unit.Percentage(100));
+                                settings.Properties.Columns.Add("CustomerName", "Khách hàng", 200);
+                                settings.Properties.Columns.Add("GetSignDate", "Ngày ký", 100);
+                                settings.CallbackRouteValues = new { Controller = "Contracts", Action = "GetAllContractsForCreateFromContract" };
+
+                                settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+                                settings.Properties.ValueType = typeof(int);
+                                settings.Properties.CallbackPageSize = 20;
+                            }
+                        ).BindList(Model).GetHtml()
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Tên hợp đồng</label>
+                    <div>
+                        @Html.DevExpress().TextBox(
+                            settings =>
+                            {
+                                settings.Name = "txtTenHDMoi";
+                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                settings.Properties.NullText = "Nhập tên hợp đồng mới";
+                            }
+                        ).GetHtml()
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="form-group text-right" style="margin-bottom: 5px; margin-top: 5px">
+        <input type="submit" value="Tạo mới" class="btn btn-primary" />
+        <button type="button" class="btn btn-white" data-dismiss="modal">Hủy bỏ</button>
+    </div>
+}
+
+@section Styles {
+
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+
+
+        });
+    </script>
+
+}

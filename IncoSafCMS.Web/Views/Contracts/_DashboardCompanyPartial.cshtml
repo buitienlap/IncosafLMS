@@ -1,0 +1,390 @@
+﻿@model List<IncosafCMS.Web.Providers.LargeDatabaseDataProvider.FinanceSummary>
+
+@{
+    var reportTypeList = new List<SelectListItem> {
+        new SelectListItem { Text = "BC Tổng hợp Cty", Value = "company", Selected = true },
+        new SelectListItem { Text = "BC Tổng hợp đơn vị", Value = "department" }
+    };
+
+    var reportType = ViewBag.ReportType ?? "company";
+    int yNow = DateTime.Now.Year;
+
+    int mNow = DateTime.Now.Month;
+
+    // Nếu tháng < 2 thì lấy năm trước
+    int defaultYear = mNow < 2 ? yNow - 1 : yNow;
+
+    // Ưu tiên ViewBag nếu có (khi reload / chọn lại)
+    int year = ViewBag.CurrentYear ?? defaultYear;
+
+    //var year = ViewBag.CurrentYear ?? yNow;
+    string toDate = DateTime.Now.ToString("dd/MM/yyyy");
+    if (year < yNow)
+    {
+        toDate = "31/12/" + year;
+    }
+
+    bool isChild = ViewBag.IsChild ?? false; // thêm biến này
+    string deptName = ViewBag.DepartmentName ?? "-- Chọn đơn vị --";
+    string MaDV = ViewBag.MaDV ?? "";
+    string tabId = ViewBag.TabId ?? "";
+    string title = "BÁO CÁO TỔNG HỢP " + deptName ?? "BÁO CÁO TỔNG HỢP CÔNG TY";
+}
+
+<style>
+    .dashboard-chart-row {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .chart-bar {
+        flex: 0 0 62%;
+        height: 500px;
+    }
+
+    .chart-pie {
+        flex: 0 0 38%;
+        height: 500px;
+    }
+
+        /* Quan trọng cho Chart.js */
+        .chart-bar canvas,
+        .chart-pie canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+</style>
+
+@if (!isChild)
+{
+<div id="dashboardFiltersWrapper">
+    <div style="border: 1px ridge #ccc; border-radius: 6px; padding: 6px; margin-bottom: 6px;">
+        <div class="row mb-2" style="padding-top: 0px; padding-bottom: 0px; text-align: left;">
+            <div class="col-md-2">
+                <label style="color: blue;">Năm tài chính:</label>
+                @Html.DropDownList("year", Enumerable.Range(2020, DateTime.Now.Year - 2019)
+                .Select(y => new SelectListItem { Text = y.ToString(), Value = y.ToString(), Selected = (y == year) }),
+                new { @class = "form-control input-sm", style = "padding-top:0px;padding-bottom:5px;" })               
+            </div>
+
+            <div class="col-md-2">
+                <label style="color: blue;">Loại báo cáo:</label>
+                @Html.DropDownList("reportType", reportTypeList,
+                    new { @class = "form-control input-sm", style = "padding-top:0px;padding-bottom:5px;" })
+            </div>
+
+            <div class="col-md-3" id="departmentSelectorWrapper">
+                <label style="color: blue;">D.sách đơn vị:</label>
+                <select id="departmentSelector" class="form-control input-sm" style="padding-top:0px;padding-bottom:5px;">
+                    <option value=@MaDV>@deptName</option>
+                </select>
+            </div>
+            
+        </div>
+    </div>
+   
+<div class="dashboard-title"
+     style="position: relative; font-weight:bold; font-size:14px; color:#007bff;
+            text-transform:uppercase; border-bottom:1px solid #ddd; padding:8px 12px; text-align:center;">
+
+    <div style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:12px; color:#555;">
+        (đvt: 1000đ)
+    </div>
+    <span class="dashboard-title-text">@title  @year</span>
+    <!-- DÒNG PHỤ (NGÀY) THÊM MỚI -->
+    <div class="dashboard-title-range"
+         style="font-size: 12px; font-weight: normal; color: #333; text-transform:none; margin-top:3px;">
+        Từ ngày 01/01/@year đến ngày @toDate
+    </div>
+
+    <button class="btn btn-outline-success btn-sm" hidden
+            style="position: absolute; right: 120px; top: 50%; transform: translateY(-50%);"
+            onclick="exportDashboardExcel()">
+        <i class="fa fa-file-excel-o"></i> Xuất Excel
+    </button>
+
+    <button class="btn btn-outline-primary btn-sm"
+            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%);"
+            onclick="printDashboardTab('tab_main')">
+        <i class="fa fa-print"></i> In báo cáo
+    </button>
+</div>
+</div>
+}
+
+<div id="dashboardGridWrapper" style="vertical-align: middle">
+    @Html.Partial("_DashboardCompanyGrid", Model)   
+</div>
+
+<div id="dashboardGridWrapper" style="vertical-align: middle">
+    <div class="dashboard-title-text" style="position: relative; font-weight:bold; font-size:18px; color:#007bff;
+            text-transform:uppercase; border-bottom:1px solid #ddd; margin-top:20px; padding:12px 12px; text-align:center;">
+        <h5>TỔNG HỢP SẢN LƯỢNG THEO LOẠI HÌNH CÔNG VIỆC</h5>
+        <button class="btn btn-outline-success btn-sm" hidden
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%);"
+                onclick="exportDashboardExcelLH()">
+            <i class="fa fa-file-excel-o"></i> Xuất Excel
+        </button>
+    </div>
+    @Html.Partial("_DashboardCompanyGridLoaiHinh", Model)
+</div>
+
+
+<div class="ibox" style="margin-top:20px;">
+    <div class="ibox-title" style="font-weight:bold; font-size:18px; text-transform:uppercase">
+        <h5>BIỂU ĐỒ CÁC CHỈ TIÊU KINH TẾ - @deptName</h5>
+    </div>
+
+    <div class="ibox-content dashboard-chart-row">
+        <!-- BIỂU ĐỒ CỘT – 60% -->
+        <div class="chart-bar">
+            <canvas id="productionChart_@ViewBag.TabId"></canvas>
+        </div>
+
+        <!-- BIỂU ĐỒ PIE – 40% -->
+        <div class="chart-pie">
+            <canvas id="pieLoaiHinhChart_@ViewBag.TabId"></canvas>
+        </div>
+    </div>
+
+    <div class="ibox-content">
+        <canvas id="productionChartLH_@ViewBag.TabId" height="500"></canvas>
+    </div>
+    @*
+
+        <div style="height: 500px; margin-top: 10px;">
+            <canvas id="pieLoaiHinhChart_@ViewBag.TabId"></canvas>
+        </div>
+    *@
+
+</div>
+
+@*
+    else
+    {
+        <div style="font-weight: bold; font-size: 16px; color: #007bff; text-transform: uppercase; margin-bottom: 10px;">
+            @if (reportType == "company")
+            {
+                <text>BÁO CÁO TỔNG HỢP CÔNG TY @year</text>
+            }
+            else
+            {
+                <text>BÁO CÁO TỔNG HỢP ĐƠN VỊ - @deptName @year</text>
+            }
+        </div>
+    }
+*@
+
+
+@*
+        <script>
+        $(document).ready(function () {
+            onReportTypeChange(); // khởi tạo ngay khi dashboard load
+        });
+
+    </script>
+
+        $('#yearSelector').off('change').on('change', function () {
+                var y = $(this).val();
+                if (typeof loadDashboardView === 'function') {
+                    loadDashboardView(y);
+                } else {
+                $('#dashboardGridWrapper').load('@Url.Action("DashboardCompanyPartial", "Contracts")?year=' + y);
+                }
+            });
+
+
+
+        /*
+        function onReportTypeChange() {
+            const type = $('#reportType').val();
+
+            if (type === 'department') {
+                $('#departmentSelectorWrapper').show();
+
+                $.get('/Contracts/GetDepartments', function (data) {
+                    const ddl = $('#departmentSelector');
+                    ddl.empty();
+                    ddl.append('<option value="">-- Chọn đơn vị --</option>');
+                    $.each(data, function (i, item) {
+                        ddl.append('<option value="' + item.Value + '">' + item.Text + '</option>');
+                    });
+
+                    ddl.off('change').on('change', function () {
+                        if ($(this).val()) {
+                            reloadDashboardCompany();
+                        }
+                    });
+                });
+            } else {
+                $('#departmentSelectorWrapper').hide();
+                reloadDashboardCompany();
+            }
+        }
+
+        function reloadDashboardCompany() {
+            const year = $('#year').val();
+            const type = $('#reportType').val();
+            const deptId = $('#departmentSelector').val();
+
+            $("#dashboardGridWrapper").html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải...</div>');
+
+            $.get('/Contracts/DashboardCompanyGrid',
+                { year: year, reportType: type, departmentId: deptId },
+                function (data) {
+                    $("#dashboardGridWrapper").html(data);
+                });
+        }
+
+        */
+*@
+
+@*
+        <div id="dashboardGridWrapper">
+        <div class="ibox">
+            <div class="ibox-title bg-primary text-white">
+                <h5>BẢNG TỔNG HỢP TÀI CHÍNH NĂM @year</h5>
+            </div>
+            <div class="ibox-content" style="padding: 10px">
+                @Html.DevExpress().GridView(settings =>
+           {
+               settings.Name = "gvDashboardCompany";
+               // callback lên action partial (không gọi full view)
+               settings.CallbackRouteValues = new { Controller = "Contracts", Action = "_DashboardCompanyPartial" };
+               if (reportType == "company")
+               {
+                   settings.KeyFieldName = "DepartmentName";
+                   settings.SettingsPager.Visible = false;
+                   settings.Settings.ShowFooter = true;
+                   settings.SettingsBehavior.AllowSort = false;
+
+                   settings.Columns.Add(c =>
+                   {
+                       c.FieldName = "DepartmentName";
+                       c.Caption = "Tên đơn vị";
+                       c.Width = 400;
+                   });
+
+               }
+
+               if (reportType == "department")
+               {
+                   settings.KeyFieldName = "EmployeeName";
+                   settings.SettingsPager.Visible = false;
+                   settings.Settings.ShowFooter = true;
+                   settings.SettingsBehavior.AllowSort = false;
+
+                   settings.Columns.Add(c =>
+                   {
+                       c.FieldName = "EmployeeName";
+                       c.Caption = "Tên Nhân viên";
+                       c.Width = 400;
+                   });
+
+               }
+
+
+               settings.Columns.Add("SLKeHoach", "SL kế hoạch").PropertiesEdit.DisplayFormatString = "N0";
+               settings.Columns.Add("SLThucHien", "SL thực hiện").PropertiesEdit.DisplayFormatString = "N0";
+               settings.Columns.Add(c =>
+               {
+                   c.FieldName = "TyLeSL";
+                   c.Caption = "% SL";
+                   c.PropertiesEdit.DisplayFormatString = "P1/100";
+                   c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+               });
+
+               settings.Columns.Add("DTKeHoach", "DT kế hoạch").PropertiesEdit.DisplayFormatString = "N0";
+               settings.Columns.Add("DTThucHien", "DT thực hiện").PropertiesEdit.DisplayFormatString = "N0";
+               settings.Columns.Add(c =>
+               {
+                   c.FieldName = "TyLeDT";
+                   c.Caption = "% DT";
+                   c.PropertiesEdit.DisplayFormatString = "P1%";
+               });
+
+               settings.Columns.Add("TNKeHoach", "TN kế hoạch").PropertiesEdit.DisplayFormatString = "N0";
+               settings.Columns.Add("TNThucHien", "TN thực hiện").PropertiesEdit.DisplayFormatString = "N0";
+               settings.Columns.Add(c =>
+               {
+                   c.FieldName = "TyLeTN";
+                   c.Caption = "% TN";
+                   c.PropertiesEdit.DisplayFormatString = "P1";
+               });
+
+               // Tổng cộng cuối bảng
+               settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SLKeHoach").DisplayFormat = "{0:N0}";
+               settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SLThucHien").DisplayFormat = "{0:N0}";
+               settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "DTKeHoach").DisplayFormat = "{0:N0}";
+               settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "DTThucHien").DisplayFormat = "{0:N0}";
+               settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "TNKeHoach").DisplayFormat = "{0:N0}";
+               settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "TNThucHien").DisplayFormat = "{0:N0}";
+
+               settings.Styles.Footer.Font.Bold = true;
+               settings.Styles.Footer.ForeColor = System.Drawing.Color.Black;
+               settings.Styles.Header.Font.Bold = true;
+           }).Bind(Model).GetHtml()
+            </div>
+        </div>
+    </div>
+
+        <script>
+            // khi chọn năm trong partial -> gọi loadDashboardView (được định nghĩa trong index.cshtml)
+            $('#yearSelector').off('change').on('change', function () {
+                var y = $(this).val();
+                if (typeof loadDashboardView === 'function') {
+                    loadDashboardView(y);
+                } else {
+                    // fallback: load chỉ phần grid wrapper
+                    $('#dashboardGridWrapper').load('@Url.Action("_DashboardCompanyPartial", "Contracts")?year=' + y);
+                }
+            });
+        </script>
+
+        <script>
+            function onReportTypeChange() {
+                const type = $('#reportType').val();
+
+                if (type === 'department') {
+                    $('#departmentSelectorWrapper').show();
+
+                    // Gọi AJAX load danh sách đơn vị
+                    $.get('/Contracts/GetDepartments', function (data) {
+                        const ddl = $('#departmentSelector');
+                        ddl.empty();
+                        ddl.append('<option value="">-- Chọn đơn vị --</option>');
+                        $.each(data, function (i, item) {
+                            ddl.append('<option value="' + item.Value + '">' + item.Text + '</option>');
+                        });
+
+                        // Gắn sự kiện chọn đơn vị
+                        ddl.off('change').on('change', function () {
+                            if ($(this).val()) {
+                                reloadDashboardCompany();
+                            }
+                        });
+                    });
+                } else {
+                    $('#departmentSelectorWrapper').hide();
+                    reloadDashboardCompany(); // reload lại BC Tổng hợp Cty
+                }
+            }
+
+
+            function reloadDashboardCompany() {
+                const year = $('#year').val();
+                const type = $('#reportType').val();
+                const deptId = $('#departmentSelector').val();
+
+                $("#dashboardGridWrapper").html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải...</div>');
+
+                $.get('/Contracts/DashboardCompanyPartial', { year: year, reportType: type, departmentId: deptId }, function (data) {
+                    $("#dashboardGridWrapper").html(data);
+                });
+            }
+        </script>
+
+
+
+*@

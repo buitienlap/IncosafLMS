@@ -1,0 +1,23 @@
+﻿@*@model IEnumerable<IncosafCMS.Core.DomainModels.Contract>*@
+
+@Html.DevExpress().ComboBox(
+    settings =>
+    {
+        settings.Name = "cmbContractOld";
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.Contains;
+        settings.Properties.DropDownStyle = DropDownStyle.DropDown;
+        settings.Properties.ValueField = "Id";
+        settings.Properties.DropDownWidth = System.Web.UI.WebControls.Unit.Pixel(700);
+        settings.Properties.DisplayFormatString = "{1}";
+        settings.Properties.Columns.Add("MaHD", "Mã HĐ", 150);
+        settings.Properties.Columns.Add("Name", "Tên hợp đồng", System.Web.UI.WebControls.Unit.Percentage(100));
+        settings.Properties.Columns.Add("CustomerName", "Khách hàng", 200);
+        settings.Properties.Columns.Add("GetSignDate", "Ngày ký", 100);
+        settings.CallbackRouteValues = new { Controller = "Contracts", Action = "GetAllContractsForCreateFromContract" };
+
+        settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+        settings.Properties.ValueType = typeof(int);
+        settings.Properties.CallbackPageSize = 20;
+    }
+).BindList(Model).GetHtml()

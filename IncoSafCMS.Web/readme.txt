@@ -1,0 +1,1 @@
+Thư mục chứa ảnh upload cho thiết bị.

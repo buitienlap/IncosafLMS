@@ -1,0 +1,106 @@
+﻿@using Microsoft.AspNet.Identity
+
+<nav class="navbar-default navbar-static-side" role="navigation" style="padding: 0px; margin-top: -10px; margin-bottom: -10px">
+    <div class="sidebar-collapse" style="padding: 0px; margin-top: 0px; margin-bottom: 0px">
+        <ul class="nav" id="side-menu">
+            <li class="nav-header">
+                <div class="dropdown profile-element">
+                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                        <span class="clear">
+                            <span>
+                                <img alt="image" class="img-circle" src="~/Images/profile_small.jpg">
+                            </span>
+                            <span class="block m-t-xs">
+                                @if (Request.IsAuthenticated)
+                                {
+                                    <strong class="font-bold">Xin chào @User.Identity.GetUserName()</strong>
+                                }
+                                else
+                                {
+                                    <strong class="font-bold">Khách</strong>
+                                }
+                            </span>
+                            <span class="text-muted text-xs block">Cài đặt <b class="caret"></b></span>
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                        <li><a href="@Url.Action("Manage","Account")">Đổi mật khẩu</a></li>
+                        <li><a href="javascript:document.getElementById('logoutForm').submit()">Đăng xuất</a></li>
+                    </ul>
+                </div>
+                <div class="logo-element">
+                    IN+
+                </div>
+            </li>
+
+            <li class="@Html.IsSelected(action: "Index,Create,Edit,Details,Delete", controller: "Admin,admin,UsersAdmin")">
+                <a href="@Url.Action("Index", "Admin")"><i class="fa fa-address-book-o"></i><span class="nav-label">Người dùng</span>@*<span class="fa arrow"></span>*@</a>
+                @*<ul class="nav nav-second-level collapse @Html.IsSelected(controller:"UsersAdmin", action: "Index,Edit,Details,Delete", cssClass: "in")">
+                    <li class="@Html.IsSelected(controller:"UsersAdmin", action: "Index,Edit,Details,Delete")"><a href="@Url.Action("Index", "UsersAdmin")">Người dùng</a></li>
+                    <li class="@Html.IsSelected(action: "UserApprove")"><a href="@Url.Action("UserApprove", "Admin")">Xác thực Người dùng</a></li>
+                </ul>*@
+            </li>
+
+            <li class="@Html.IsSelected(action: "RolesAdmin,Index,Create,Details,Delete", controller: "RolesAdmin")">
+                <a href="@Url.Action("UserGroups", "Admin")"><i class="fa fa-users"></i><span class="nav-label">Nhóm Người dùng</span></a>
+            </li>
+
+            <li class="@Html.IsSelected(action: "Permission,Create,Details,Delete,Edit", controller: "Admin,admin,Permissions")">
+                <a href="@Url.Action("Permission", "Admin")"><i class="fa fa-universal-access"></i><span class="nav-label">Quyền hạn</span></a>
+            </li>
+
+            <li class="@Html.IsSelected(action: "Department", controller: "Admin,admin,Departments")">
+                <a href="@Url.Action("Department", "Admin")"><i class="fa fa-user-circle-o"></i><span class="nav-label">Phòng ban</span></a>
+            </li>
+
+            <li class="@Html.IsSelected(action: "EquipLibrary", controller: "Admin,admin,EquipAdmin")">
+                <a href="@Url.Action("EquipLibrary", "Admin")"><i class="fa fa-subway"></i><span class="nav-label">Thư viện thiết bị</span></a>
+            </li>
+
+            <li class="@Html.IsSelected(action: "Customer", controller: "Admin,admin,CustomerAdmin")">
+                <a href="@Url.Action("Customer", "Admin")"><i class="fa fa-address-book-o"></i><span class="nav-label">Khách hàng</span></a>
+            </li>
+
+            <li class="@Html.IsSelected(action: "StandardProcedure", controller: "Admin,admin,Departments")">
+            <a href="@Url.Action("StandardProcedure", "Admin")"><i class="fa fa-address-book-o"></i><span class="nav-label">Tiêu chuẩn &amp; Quy trình</span></a>
+            </li>
+
+            <li class="@Html.IsSelected(action: "Backup", controller: "Admin,admin")">
+                <a href="@Url.Action("Backup", "Admin")"><i class="fa fa-cog"></i><span class="nav-label">Sao lưu hệ thống</span></a>
+            </li>
+
+            @*<li class="@Html.IsSelected(action: "Index,ContractDetails", controller: "Home")">
+                <a href="@Url.Action("Index", "Home")"><i class="fa fa-address-book-o"></i><span class="nav-label">Hợp đồng aa</span><span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level collapse @Html.IsSelected(action: "Index", cssClass: "in")">
+                    <li class="@Html.IsSelected(action: "Index")"><a href="@Url.Action("Index", "Home")">Danh sách hợp đồng</a></li>
+                    <li class="@Html.IsSelected(action: "ContractDetails")"><a id="contractDetailsNavigationLink">Chi tiết hợp đồng</a></li>
+                </ul>
+            </li>
+            <li class="@Html.IsSelected(action: "Customer,CustomerDetails", controller: "Home")">
+                <a href="@Url.Action("Customer", "Home")"><i class="fa fa-address-card-o"></i><span class="nav-label">Khách hàng</span><span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level collapse @Html.IsSelected(action: "Customer", cssClass: "in")">
+                    <li class="@Html.IsSelected(action: "Customer")"><a href="@Url.Action("Customer", "Home")">Danh sách khách hàng</a></li>
+                    <li class="@Html.IsSelected(action: "CustomerDetails")"><a id="customerDetailsNavigationLink">Chi tiết khách hàng</a></li>
+                </ul>
+            </li>
+            <li class="@Html.IsSelected(action: "Equipment,EquipmentDetails,EquipmentLib", controller: "Home")">
+                <a href="@Url.Action("Equipment", "Home")"><i class="fa fa-subway"></i><span class="nav-label">Thiết bị</span><span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level collapse @Html.IsSelected(action: "Equipment", cssClass: "in")">
+                    <li class="@Html.IsSelected(action: "Equipment")"><a href="@Url.Action("Equipment", "Home")">Danh sách thiết bị</a></li>
+                    <li class="@Html.IsSelected(action: "EquipmentDetails")"><a id="equipmentDetailsNavigationLink">Chi tiết thiết bị</a></li>
+                    <li class="@Html.IsSelected(action: "EquipmentLib")"><a href="@Url.Action("EquipmentLib", "Home")">Thư viện thiết bị</a></li>
+                </ul>
+            </li>
+            @if (Request.IsAuthenticated && User.IsInRole("Admin"))
+            {
+                <li class="@Html.IsSelected(action: "Employee,Department", controller: "Home")">
+                    <a href="@Url.Action("Employee", "Home")"><i class="fa fa-user-circle-o"></i><span class="nav-label">Nhân sự</span><span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level collapse @Html.IsSelected(action: "Employee", cssClass: "in")">
+                        <li class="@Html.IsSelected(action: "Employee")"><a href="@Url.Action("Employee", "Home")">Danh sách nhân sự</a></li>
+                        <li class="@Html.IsSelected(action: "Department")"><a href="@Url.Action("Department", "Home")">Danh sách đơn vị</a></li>
+                    </ul>
+                </li>
+            }*@
+        </ul>
+    </div>
+</nav>

@@ -1,0 +1,61 @@
+﻿@model IEnumerable<IncosafCMS.Web.Models.CongNoViewModel>
+
+@{ var pathToTemplateXlsx = Server.MapPath("~/App_Data/Cong no.xlsx"); }
+
+@Html.DevExpress().Spreadsheet(settings => {
+    settings.Name = "cnReportSpreadsheet";
+    settings.CallbackRouteValues = new { Controller = "FinacialReports", Action = "CNReportSpreadsheetPartial" };
+    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+    //settings.Height = 400;
+    settings.ActiveTabIndex = 0;
+    settings.ReadOnly = true;
+    settings.RibbonMode = SpreadsheetRibbonMode.OneLineRibbon;
+    settings.ShowConfirmOnLosingChanges = false;
+    settings.ShowFormulaBar = false;
+    settings.ShowSheetTabs = false;
+    settings.SettingsDialogs.SaveFileDialog.DisplaySectionMode = SaveFileDialogDisplaySectionMode.ShowDownloadSection;
+    settings.SettingsDocumentSelector.UploadSettings.Enabled = false;
+
+    settings.PreRender = (s, e) =>
+    {
+        DevExpress.Web.ASPxSpreadsheet.ASPxSpreadsheet spreadsheet = (DevExpress.Web.ASPxSpreadsheet.ASPxSpreadsheet)s;
+
+        spreadsheet.CreateDefaultRibbonTabs(true);
+        spreadsheet.BorderTop.BorderStyle = System.Web.UI.WebControls.BorderStyle.Solid;
+        spreadsheet.BorderTop.BorderWidth = 1;
+        spreadsheet.BorderTop.BorderColor = System.Drawing.Color.LightGray;
+        spreadsheet.BorderBottom.BorderStyle = System.Web.UI.WebControls.BorderStyle.Solid;
+        spreadsheet.BorderBottom.BorderWidth = 1;
+        spreadsheet.BorderBottom.BorderColor = System.Drawing.Color.LightGray;
+
+        var sheet = spreadsheet.Document.Worksheets.ActiveWorksheet;
+        var topLeft = sheet.Range["$A$4"];
+        sheet.FreezeRows(4);
+        sheet.Columns[0].Visible = false;
+        sheet.Rows[0].Visible = false;
+        sheet.Rows[1].Visible = false;
+
+        sheet.PrintOptions.FitToWidth = 1;
+        sheet.PrintOptions.FitToPage = true;
+        sheet.ActiveView.PaperKind = System.Drawing.Printing.PaperKind.A4;
+        sheet.ActiveView.Orientation = DevExpress.Spreadsheet.PageOrientation.Landscape;
+        sheet.ActiveView.ShowHeadings = false;
+
+        var maxRowCount = Model.Count() == 0 ? 6 : Model.Count() + 5;
+        spreadsheet.WorksheetDisplayArea.SetSize(0, 13, maxRowCount);
+
+        for (int i = 0; i < spreadsheet.RibbonTabs.Count; i++)
+        {
+            if (i == 0) { spreadsheet.RibbonTabs[0].Text = "TỆP TIN"; continue; }
+            spreadsheet.RibbonTabs[i].Visible = false;
+        }
+
+        DevExpress.Web.RibbonTab fileTab = spreadsheet.RibbonTabs[0];
+        fileTab.Groups[0].Items[0].Visible = false;
+        fileTab.Groups[0].Items[1].Visible = false;
+        fileTab.Groups[0].Items[2].Visible = false;
+        fileTab.Groups[0].Items[3].Text = "Lưu tệp";
+        fileTab.Groups[0].Items[4].Text = "In ấn";
+    };
+
+}).PerformMailMerge(pathToTemplateXlsx, Model).GetHtml()

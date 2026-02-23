@@ -1,0 +1,95 @@
+﻿@model IncosafCMS.Core.DomainModels.Identity.AppPermission
+
+@{
+    ViewBag.Title = "Chỉnh sửa quyền hạn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IncosafCMS | @ViewBag.Title</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Fonts/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="~/Content/animate.css" rel="stylesheet">
+    <link href="~/Content/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+
+    <div class="passwordBox animated fadeInDown" style="max-width: 700px; padding-top: 15px">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Chỉnh sửa nhóm người dùng</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                @using (Html.BeginForm())
+                                {
+                                    @Html.AntiForgeryToken()
+
+                                    <div class="form-horizontal">
+                                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                        @Html.HiddenFor(model => model.Id)
+
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Tên</label>@*@Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })*@
+                                            <div class="col-md-10">
+                                                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                                                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Mô tả</label>@*@Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })*@
+                                            <div class="col-md-10">
+                                                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+                                                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-md-offset-2 col-md-10">
+                                                <input type="submit" value="Lưu" class="btn btn-w-m btn-primary" />
+                                                <a class="btn btn-w-m btn-default" href="@Url.Action("Permission", "Admin")">Quay lại</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 205px)'
+            });
+
+
+        });
+    </script>
+}

@@ -1,0 +1,166 @@
+﻿@using Microsoft.AspNet.Identity
+
+@if (Request.IsAuthenticated)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <ul class="nav navbar-top-links navbar-right" style="margin-top: -15px; margin-bottom: 0px; padding-bottom: 0px; padding-top: -15px;">
+            <li>
+                <span class="m-r-sm" data-i18n="topnav.welcometext"><i class="fa fa-book">@Html.ActionLink("Tài liệu", "Docman", "Account", routeValues: null, htmlAttributes: new { title = "Tài liệu", target = "_blank" })</i></span>
+            </li>
+
+            <li>
+                <span class="m-r-sm text-muted welcome-message" data-i18n="topnav.welcometext">@Html.ActionLink("Xin chào " + User.Identity.GetUserName() + "!", "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })</span>
+            </li>
+
+            @*----------------Notifications-------------------*@
+            @*<li class="dropdown">
+                    <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#" aria-expanded="false">
+                        <i class="fa fa-bell"></i>  <span class="label label-primary" id="notifiCount"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-alerts" id="notifications-center">
+
+                    </ul>
+                </li>*@
+            @*----------------Notifications-------------------*@
+
+            <li><a href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-sign-out"> Đăng xuất</i></a></li>
+        </ul>
+
+        @* --- 26.10.2025 thử đẩy các nút ở index lên nhưng không ok do không truyền được ContractID ---
+            <div class="navbar-top">
+                <!-- Bên trái: Combobox + nút thao tác -->
+                <div class="navbar-left">
+                    @Html.DevExpress().ComboBox(settings =>
+                    {
+                        settings.Name = "cmbNhanVien2";
+                        settings.Width = System.Web.UI.WebControls.Unit.Pixel(120);
+                        settings.Properties.NullText = "Nhân viên";
+                    }).BindList(ViewBag.UsersByDepartment).GetHtml()
+
+                    @Html.DevExpress().ComboBox(settings =>
+                    {
+                        settings.Name = "rdbGridContractFilter2";
+                        settings.Width = System.Web.UI.WebControls.Unit.Pixel(100);
+                        settings.Properties.NullText = "Trạng thái";
+                        settings.Properties.Items.Add("Toàn bộ", "");
+                        settings.Properties.Items.Add("Chưa cấp số", "1");
+                        settings.Properties.Items.Add("Đã cấp số", "2");
+                    }).GetHtml()
+
+                    <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
+                        <button id="btnContractReport" data-toggle="dropdown" class="btn btn-warning btn-rounded btn-xs" href="#" disabled>
+                            <span class="clear">
+                                <span>Báo cáo H.đồng <b class="caret"></b></span>
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu animated fadeInDown m-t-xs">
+                            <li>
+                                <a href="#" onclick="printContractReport('ContractSuggestReport')">In giấy đề nghị</a>
+                            </li>
+                            <li>
+                                <a id="turnOverSuggestReportLink" href="#" target="_blank">In giấy đề nghị xuất chứng từ</a>
+                            </li>
+                            <li>
+                                <a id="contractAcceptanceReportLink" href="#" target="_blank">In biên bản nghiệm thu</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <button id="btnAddNew" class="btn btn-primary btn-xs">Tạo mới</button>
+                    <button id="btnEditContract" class="btn btn-info btn-xs" disabled>Sửa</button>
+                    <button id="btnDelete" class="btn btn-danger btn-xs" disabled>Xóa</button>
+                    <button id="btnToggleDetail" class="btn btn-light btn-xs"><i class="fa fa-angle-double-right"></i></button>
+
+                    <!-- Thanh tìm kiếm nhỏ -->
+                    <input type="text" id="txtSearch" placeholder="Tìm kiếm..." class="form-control input-sm" style="width: 150px; display:inline-block;" />
+                </div>
+
+                <!-- Bên phải: Tài liệu, Xin chào, Đăng xuất -->
+                <ul class="nav navbar-top-links navbar-right" style="margin:0;">
+                    <li><i class="fa fa-book">@Html.ActionLink("Tài liệu", "Docman", "Account", null, new { target = "_blank" })</i></li>
+                    <li><span class="text-muted">@Html.ActionLink("Xin chào " + User.Identity.GetUserName() + "!", "Manage", "Account")</span></li>
+                    <li><a href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-sign-out"> Đăng xuất</i></a></li>
+                </ul>
+            </div>
+        *@
+
+    }
+}
+else
+{
+    <ul class="nav navbar-top-links navbar-right">
+        <li>@Html.ActionLink("Đăng ký", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
+        <li>@Html.ActionLink("Đăng nhập", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+}
+
+<style>
+    .nav navbar-top-links navbar-right {
+        display: flex;
+        align-items: center; /* căn giữa theo chiều dọc */
+        justify-content: space-between;
+        flex-wrap: nowrap; /* không cho xuống hàng */
+        padding: 0px 0px;        
+        background-color: #f5f5f5;
+        min-height: 0px; /* chiều cao vừa phải */
+        border-bottom: -2px solid #ddd;
+    }
+
+    .navbar-left {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 6px; /* khoảng cách đều giữa các ô */        
+    }
+
+        .navbar-left > * {
+            margin: 0;
+            vertical-align: middle;
+        }
+
+    .navbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: -5px;
+        padding-top: -5px;
+    }
+
+        .navbar-right li {
+            list-style: none;            
+        }
+
+    /*Giảm kích thước nút vuông bên trái thanh Topnavbar*/
+    .navbar-minimalize {
+        padding: 1px 4px !important; /* giảm khoảng trong nút */
+        font-size: 10px !important; /* kích thước icon */
+        height: 20px !important; /* chiều cao nút */
+        line-height: 20px !important; /* căn giữa icon */
+        border-radius: 2px !important;
+    }
+
+        .navbar-minimalize i {
+            font-size: 10px !important; /* kích thước icon */
+        }
+</style>
+
+<script type="text/javascript">
+    /*
+    function printContractReport(reportType) {
+        // ✅ Lấy ID từ biến JS hoặc input ẩn
+        var contractId = window.currentContractId || $("#currentContractIdHidden").val();
+
+        console.log("currentContractId = ", contractId);
+
+        if (!contractId || isNaN(contractId)) {
+            alert("Vui lòng chọn hợp đồng trước.");
+            return;
+        }
+
+        var url = '/Reports/' + reportType + '/' + contractId;
+        window.open(url, '_blank');
+    }
+    */
+</script>

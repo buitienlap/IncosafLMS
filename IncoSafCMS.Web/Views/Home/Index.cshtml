@@ -1,0 +1,2395 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Contract>
+
+@{
+    bool showExtraColumns = Session["ShowContractExtraColumns"] as bool? ?? false;
+    ViewBag.Title = "Danh sách hợp đồng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .list-group-item {
+        height: inherit;
+        padding-top: -2px;
+        padding-bottom: 0px;
+        padding-right: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+    }
+
+        .list-group-item:first-child {
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+
+        .list-group-item:last-child {
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
+
+    .dxgvGroupRow_Material td.dxgv, .dxgvFocusedGroupRow_Material td.dxgv, .dxgvDataRow_Material td.dxgv {
+        padding: 5px !important;
+    }
+
+    .dxmLite_Material .dxm-main.dxmtb {
+        padding: 0px;
+    }
+
+    .dxmLite_Material .dxctToolbar_Material.dxm-main.dxmtb {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    /* Giảm padding và cho label vừa nội dung */
+    .dxgvToolbarItem_Material {
+        padding: 2px 8px !important;
+        min-width: auto !important;
+        white-space: nowrap;
+    }
+
+    /* Nếu dùng icon kèm text, giảm khoảng cách */
+    .dxgvToolbar_Material .dxgvToolbarItem_Material span {
+        margin-right: 4px !important;
+    }
+
+    .modal-xxl {
+        max-width: 95% !important; /* 90% chiều rộng màn hình */
+        width: 95% !important;
+        height: 100% !important; /* 100% chiều cao màn hình */
+    }
+
+        .modal-xxl .modal-content {
+            height: 100% !important;
+        }
+
+        .modal-xxl .modal-body {
+            height: calc(100%) !important; /* trừ khoảng header/footer nếu có */
+            overflow-y: auto;
+        }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+
+@*<div class="wrapper animated fadeInRight">*@
+<div class="wrapper animated fadeInRight">
+    <!-- Modal hiển thị hồ sơ -->
+    <div class="modal fade" id="contractDocumentsModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xxl" role="document">
+            <div class="modal-content">
+
+                <div class="modal-body" id="modalContractDocumentsWrapper">
+                    @* Nội dung sẽ được load động từ ViewDocuments *@
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal upload hồ sơ -->
+    <div class="modal fade" id="contractUploadModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-body" id="modalContractUploadWrapper">
+                    @* Nội dung sẽ được load động từ UploadDocument *@
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Container để Ajax load modal -->
+    <div id="modalViewDocWrapper"></div>
+
+    <div class="row">
+        <div class="full-height">
+            <div id="list-panel" class="col-lg-8" style="padding-left: 0px; padding-right: 0px; ">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        @*<h5 id="cGridContractTitle" style="padding-left: 0px; padding-right: 0px;"></h5>*@
+                        <!-- 2.11.2025 xử lý thanh công cụ chia 2 phần: gom các ô combo thành 1 nhóm căn lề trái; gom các nút thành 1 nhóm căn lề phải -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <!-- Nhóm bên trái: ô combobox + ô tìm kiếm -->
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 4px; display: flex;">
+                                <div class="col-lg-2 hidden" style="gap: 2px; padding-left: 0px; margin-top: -4px; display:@((Session["ShowContractExtraColumns"] as bool? ?? false) ? "block" : "none")" id="cmbPhongBanWrapper">
+                                    @Html.DevExpress().ComboBox(settings =>
+                               {
+                                   settings.Name = "cmbPhongBan";
+                                   settings.Width = System.Web.UI.WebControls.Unit.Percentage(95);
+                                   settings.Width = System.Web.UI.WebControls.Unit.Pixel(200);
+                                   settings.Properties.NullText = "Đơn vi: Toàn bộ";
+                                   settings.Properties.ValueField = "MaDV";
+                                   settings.Properties.TextField = "Name";
+                                   if (User.IsInRole("Admin"))
+                                       settings.ClientVisible = true;
+                                   else
+                                       settings.ClientVisible = false;
+                                   settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
+                                   settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
+                                   settings.Properties.ClientSideEvents.SelectedIndexChanged = string.Format("function(s, e) {{ OnDepartmentListSelectedIndexChanged(s, e); }}");
+
+                               }).BindList(ViewBag.Departments).GetHtml()
+                                </div>
+
+                                <div style="font-size: 13; gap: 0px; padding: 0px; margin-top: -4px">
+
+                                    @Html.DevExpress().ComboBox(settings =>
+                               {
+                                   settings.Name = "cmbNhanVien";
+                                   settings.Width = System.Web.UI.WebControls.Unit.Percentage(95);
+                                   settings.Width = 150;
+                                   settings.Properties.ValueField = "Value";
+                                   settings.Properties.TextField = "Text";
+                                   settings.Properties.NullText = "Toàn bộ NV";
+                                   if (User.IsInRole("Admin") || User.IsInRole("DeptDirector"))
+                                       settings.ClientVisible = true;
+                                   else
+                                       settings.ClientVisible = false;
+                                   settings.Properties.ValueType = typeof(string);
+                                   settings.Properties.EnableFocusedStyle = false;
+                                   settings.Properties.ClientSideEvents.SelectedIndexChanged = "OnNhanVienSelectedIndexChanged";
+                                   settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
+                               }).BindList(ViewBag.UsersByDepartment).GetHtml()
+
+                                </div>
+                                <div style="font-size: 13; gap: 0px; padding-left: 0px; margin-top: -4px;">
+
+                                    @Html.DevExpress().ComboBox(settings =>
+                               {
+                                   settings.Name = "rdbGridContractFilter";
+                                   settings.Width = System.Web.UI.WebControls.Unit.Percentage(95);
+                                   settings.Width = 120;
+                                   settings.Properties.Items.Add("HĐ: Toàn bộ", "0");
+                                   settings.Properties.Items.Add("Chưa cấp số", "1");
+                                   settings.Properties.Items.Add("Đã cấp số (SL)", "2");
+
+                                   //settings.Properties.Items.Add("Xuất H.đơn (DT)", "3");
+                                   //settings.Properties.Items.Add("Thu nợ (TV)", "4");
+                                   //settings.Properties.Items.Add("Công nợ (từ trước -> nay) ", "5");
+                                   //settings.Properties.Items.Add("HĐ dở dang", "6");
+
+                                   settings.SelectedIndex = GridViewHelper.ContractGridFilterIndex;
+                                   settings.Properties.ClientSideEvents.SelectedIndexChanged = string.Format("function(s, e) {{ OnRadioButtonSelectedIndexChanged(s, e); }}");
+                                   settings.Properties.EnableFocusedStyle = false;
+                                   settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
+                               }).GetHtml()
+                                </div>
+
+                                <div style="padding-left: 10px; margin-top: -4px; display: @((Session["ShowContractExtraColumns"] as bool? ?? false) ? "block" : "none")" id="cmbFinancialYearWrapper">
+                                    @Html.DevExpress().ComboBox(settings =>
+                                   {
+                                       settings.Name = "cmbFinancialYear";
+                                       settings.Properties.ClientInstanceName = "cmbFinancialYear";
+                                       settings.Properties.Caption = "Năm TC";
+                                       settings.Width = 80;
+                                       settings.Properties.ValueType = typeof(int);
+                                       settings.SelectedIndex = GridViewHelper.FinancialYearFilter;
+                                       settings.Properties.TextField = "Text";
+                                       settings.Properties.ValueField = "Value";
+                                       settings.SelectedIndex = 0;
+                                       settings.Properties.ClientSideEvents.SelectedIndexChanged = "OnFinancialYearChanged";
+                                       settings.Properties.EnableFocusedStyle = false;
+                                       settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
+                                   }).BindList(new[] {
+                                                new { Text = "2026", Value = 2025 },
+                                                new { Text = "2025", Value = 2025 },
+                                                new { Text = "2024", Value = 2024 },
+                                                new { Text = "2023", Value = 2023 },
+                                                new { Text = "2022", Value = 2022 },
+                                                new { Text = "2021", Value = 2021 },
+
+                                   }).GetHtml()
+                                </div>
+
+                                <div style="gap: 2px; padding: 0px; margin-top: -4px">
+                                    @*<span style="color: blue; padding: 1px">Tìm:</span>*@
+                                    <div style="position: relative; display: inline-block; color: blue">
+                                        <input type="text" id="txtContractSearch" placeholder="Tìm kiếm..."
+                                               style="width: 170px; height: 31px; font-size: 14px; padding: 0 5px 0 5px; border: 1px solid #ccc; border-radius: 3px;">
+                                        <span id="clearSearch"
+                                              style="position: absolute; right: 5px; top: 2px; color: #888; cursor: pointer; font-weight: bold; font-size: 14px;">×</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 hidden" style="padding-left: -15px; padding-right: -15px; margin-top: -4px; display: @((Session["ShowContractExtraColumns"] as bool? ?? false) ? "block" : "none")" id="cmbTaiChinhWrapper">
+
+                                    @Html.DevExpress().ComboBox(settings =>
+                               {
+                                   settings.Name = "rdbGridContractTaiChinh";
+                                   settings.Width = System.Web.UI.WebControls.Unit.Percentage(95);
+                                   settings.Width = System.Web.UI.WebControls.Unit.Pixel(130);
+                                   settings.Properties.NullText = "Báo cáo tài chính";
+                                   settings.Properties.Items.Add("BC tài chính", "");
+                                   settings.Properties.Items.Add("BC Sản lượng", "1");
+                                   settings.Properties.Items.Add("BC Doanh thu", "2");
+                                   settings.Properties.Items.Add("BC Thu nợ", "3");
+                                   settings.SelectedIndex = GridViewHelper.ContractGridFilterIndex;
+                                   settings.ClientVisible = false;
+                                   settings.Properties.EnableFocusedStyle = false;
+                                   settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
+                               }).GetHtml()
+                                </div>
+
+                            </div>
+
+                            <!-- Nhóm bên phải: Nút -->
+                            <div class="d-flex align-items-center flex-wrap text-right" style="gap: 4px; text-align: right;">
+                                @*
+                                    <button class="btn btn-primary btn-rounded btn-xs" style="background-color: cornflowerblue" onclick="openDashboard('company')">
+                                        <i class="fa fa-bar-chart"></i> T.hợp
+                                    </button>
+                                *@
+                                @if (User.IsInRole("Admin") || User.IsInRole("DeptDirector"))
+                                {
+                                    <button class="btn btn-primary btn-rounded btn-xs" style="background-color: cornflowerblue" onclick="openDashboard('company')">
+                                        <i class="fa fa-bar-chart"></i> T.hợp
+                                    </button>
+                                }
+
+                                <div class="modal inmodal" id="dashboardModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog" style="width: 95%; max-width: none;">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color:white; padding: 2px 5px;">
+                                                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                <h4>📊 DASHBOARD TỔNG HỢP</h4>
+                                            </div>
+
+                                            <div class="modal-body" style="padding: 5px;">
+                                                <ul class="nav nav-tabs" id="dashboardTabs">
+                                                    <!-- Tabs sẽ được tạo động ở đây -->
+                                                </ul>
+                                                <div class="tab-content" id="dashboardTabContent" style="margin-top:5px;">
+                                                    <!-- Nội dung dashboard từng loại sẽ nằm ở đây -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
+                                    <button id="btnContractReport" data-toggle="dropdown" class="btn btn-warning btn-rounded btn-xs" href="#" disabled>
+                                        <span class="clear">
+                                            <span>H.đồng <b class="caret"></b></span>
+                                        </span>
+                                    </button>
+                                    <ul class="dropdown-menu animated fadeInDown m-t-xs">
+                                        <li class="hidden">
+                                            <a id="contractReportLink" href="#" target="_blank">In hợp đồng</a>
+                                        </li>
+                                        <li>
+                                            <a id="contractSuggestReportLink" href="#" target="_blank">In giấy đề nghị thực hiện</a>
+                                        </li>
+                                        <li>
+                                            <a id="turnOverSuggestReportLink" href="#" target="_blank">In giấy đề nghị xuất chứng từ</a>
+                                        </li>
+                                        <li class="hidden">
+                                            <a data-toggle="modal" data-target="#invoiceCreateModal" onclick="invoiceCreate()">In hóa đơn</a>
+                                            <div class="modal inmodal" id="invoiceCreateModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content animated bounceInRight">
+                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                            <h4>In hóa đơn</h4>
+                                                        </div>
+                                                        <div class="modal-body scroll_content" id="modalInvoiceCreateWrapper" style="padding: 10px">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <a id="contractAcceptanceReportLink" href="#" target="_blank" style="color: blue">In biên bản nghiệm thu</a>
+                                        </li>
+                                        <!-- ✅ Thêm dòng này vào cuối -->
+                                        <li class="divider"></li>
+                                        <li>
+                                            <a href="#" id="btnDelete" class="text-danger deleteContract" onclick="deleteContract()" style="font-weight: bold;">
+                                                <i class="fa fa-trash"></i> Xóa hợp đồng
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
+                                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                                        <span class="clear">
+                                            <span class="btn btn-primary btn-rounded btn-xs">Tạo mới <b class="caret"></b></span>
+                                        </span>
+                                    </a>
+                                    <ul class="dropdown-menu animated fadeInDown m-t-xs">
+                                        <li>
+                                            <a id="btnAddNew" data-toggle="modal" data-target="#addnewModal" onclick="addnewContract()">Tạo mới HĐ/GĐN</a>
+                                            <div class="modal inmodal" id="addnewModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                                <div class="modal-dialog" style="width: 1000px; max-width: 95vw;">
+                                                    <div class="modal-content animated bounceInRight">
+                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                            <h4>Tạo mới hợp đồng</h4>
+                                                        </div>
+                                                        <div class="modal-body scroll_content" style="padding: 10px">
+                                                            <div id="modalAddNewWrapper"></div>
+                                                            <div id="loading_panel_create" class="spiner-example">
+                                                                <div class="sk-spinner sk-spinner-wave">
+                                                                    <div class="sk-rect1"></div>
+                                                                    <div class="sk-rect2"></div>
+                                                                    <div class="sk-rect3"></div>
+                                                                    <div class="sk-rect4"></div>
+                                                                    <div class="sk-rect5"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <a data-toggle="modal" data-target="#addnewFromOldContractModal" onclick="addnewFromOldContract()">Tạo từ hợp đồng cũ</a>
+                                            <div class="modal inmodal" id="addnewFromOldContractModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                                <div class="modal-dialog" style="width: 1000px; max-width: 95vw;">
+                                                    <div class="modal-content animated bounceInRight">
+                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                            <h4>Tạo mới hợp đồng</h4>
+                                                        </div>
+                                                        <div class="modal-body" id="modalAddNewFromOldContractWrapper" style="padding: 10px">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
+                                    <button id="btnEditContract" data-toggle="dropdown" class="btn btn-info btn-rounded btn-xs" href="#" disabled>
+                                        <span class="clear">
+                                            <span>Chỉnh sửa <b class="caret"></b></span>
+                                        </span>
+                                    </button>
+                                    <ul class="dropdown-menu animated fadeInDown m-t-xs">
+                                        <li>
+                                            <a data-toggle="modal" data-target="#editModal" onclick="editContract()">Chỉnh sửa thông tin</a>
+                                            <div class="modal inmodal" id="editModal" tabindex="-2" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                                <div class="modal-dialog" style="width: 1000px; max-width: 95vw;">
+                                                    <div class="modal-content animated bounceInRight">
+                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                            <h4>Chỉnh sửa hợp đồng</h4>
+                                                        </div>
+                                                        <div class="modal-body scroll_content" style="padding: 10px">
+                                                            <div id="modalEditWrapper"></div>
+                                                            <div id="loading_panel_edit" class="spiner-example">
+                                                                <div class="sk-spinner sk-spinner-wave">
+                                                                    <div class="sk-rect1"></div>
+                                                                    <div class="sk-rect2"></div>
+                                                                    <div class="sk-rect3"></div>
+                                                                    <div class="sk-rect4"></div>
+                                                                    <div class="sk-rect5"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <a data-toggle="modal" data-target="#editcontractnumberModal" onclick="editContractNumber()">Cấp số hợp đồng</a>
+                                            <div class="modal inmodal" id="editcontractnumberModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                                <div class="modal-dialog modal-sm">
+                                                    <div class="modal-content animated bounceInRight">
+                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                            <h4>Cấp số hợp đồng</h4>
+                                                        </div>
+                                                        <div class="modal-body" id="modalEditContractNumberWrapper" style="padding: 10px">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <a data-toggle="modal" data-target="#deregisterContractNumberModal" onclick="deregisterContractNumber()">Hủy cấp số hợp đồng</a>
+                                            <div class="modal inmodal" id="deregisterContractNumberModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                                <div class="modal-dialog modal-sm">
+                                                    <div class="modal-content animated bounceInRight">
+                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                            <h4>Hủy cấp số hợp đồng</h4>
+                                                        </div>
+                                                        <div class="modal-body" id="modalDeregisterContractNumberWrapper" style="padding: 10px">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </li>
+                                    </ul>
+                                    <div class="modal inmodal" id="equipmentModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                        <div class="modal-dialog" style="width: 98%; max-width: none; padding-bottom: 0px; padding-top: 0px">
+                                            <div class="modal-content animated bounceInRight">
+                                                <div class="modal-header" style="background-color:#1ab394; color: white; padding: 0px">
+                                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                    <h4>DANH SÁCH THIẾT BỊ CỦA HỢP ĐỒNG (Nhập trực tiếp vào bảng - bấm SAVECHANGES khi có thay đổi)</h4>
+                                                </div>
+                                                <div class="modal-body" style="padding: 0px;">
+                                                    <div id="equipmentGridWrapper">Đang tải dữ liệu...</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*<a href="#" class="btn btn-success btn-rounded btn-xs" onclick="showEquipmentsOfContract()">Thông tin T.bị</a>*@
+                                    <a href="#" class="btn btn-success btn-rounded btn-xs" onclick="showEquipmentsOfContract()">Thiết bị</a>
+
+                                    <div class="modal fade" id="modalSpecifications" tabindex="-1" role="dialog">
+                                        <div class="modal-dialog modal-xl" style="max-width:95vw;">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-primary text-white">
+                                                    <h5 class="modal-title">Thông số kỹ thuật (bấm SAVECHANGES khi có thay đổi)</h5>
+                                                    <button type="button" class="btn-close" data-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body" id="modalSpecificationsContent">
+                                                    <p>Đang tải dữ liệu...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal inmodal" id="stampModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                        <div class="modal-dialog" style="width: 95%; max-width: none;">
+                                            <div class="modal-content animated bounceInRight">
+                                                <div class="modal-header" style="background-color: #1ab394; color: white; padding: 5px">
+                                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                    <h4>DANH SÁCH TEM</h4>
+                                                </div>
+                                                <div class="modal-body" style="padding: 5px;" id="stampModalBody">
+                                                    @Html.Action("StampViewPartial", "Equipments")   <!-- Grid -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @*<a href="#" class="btn btn-primary btn-rounded btn-xs" onclick="showStampsOfContract()">Quản lý tem</a>*@
+                                    <a href="#" class="btn btn-primary btn-rounded btn-xs" onclick="showStampsOfContract()">Tem</a>
+
+                                </div>
+                                @*<button id="btnDelete" class="btn btn-danger btn-rounded btn-xs deleteContract" href="#" disabled>Xóa</button>*@
+
+                                <button id="btnToggleDetail" class="btn btn-light btn-sm">
+                                    <i class="fa fa-angle-double-right"></i>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                    <div class="ibox-content" style="padding: 0px">
+                        <div class="scroll_content">
+                            <div id="contractGridContainer">
+                                @Html.Action("ContractViewPartial", "Contracts")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="detail-panel" class="col-lg-4" style="padding-left: 2px; padding-right: 0px;">
+                <div class="ibox">
+                    <div class="ibox-title" style="background-color: #1ab394; color: white">
+                        <h5>Chi tiết hợp đồng</h5>
+                        <div class="text-right">
+                            <button id="btnpriceQuotationDetail" class="btn btn-info btn-rounded btn-xs" data-toggle="modal" data-target="#pricequotationdetailModal" onclick="priceQuotationDetail()">Xem báo giá ></button>
+                            <div class="modal inmodal" id="pricequotationdetailModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content animated bounceInRight">
+                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                            <h4>Chi tiết báo giá</h4>
+                                        </div>
+                                        <div class="modal-body scroll_content" id="modalPriceQuotationDetailWrapper" style="padding: 10px">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a class="btn btn-warning btn-rounded btn-xs hidden" id="contractDetailsLink">Xem chi tiết ></a>
+
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="padding: 0px">
+                        <div class="scroll_content">
+                            <ul class="list-group" style="text-overflow: ellipsis; margin-bottom: 0px">
+                                <li class="list-group-item"><p><b>Người chủ trì: </b><strong><i><span class="text-danger" id="cOwnName"></span></i></strong></p></li>
+                                @*<li class="list-group-item hidden"><p><b>Kiểm định viên 1: </b><strong><i><span class="text-danger" id="cKDV1Name"></span></i></strong></p></li>*@
+                                @* <li class="list-group-item"><p><b>Kiểm định viên 2: </b><strong><i><span class="text-danger" id="cKDV2Name"></span></i></strong></p></li>*@
+                                <li class="list-group-item"><p><b>Tên hợp đồng: </b><i id="cContractName"></i></p></li>
+                                <li class="list-group-item"><p><b>Khách hàng: </b><i id="cName"></i></p></li>
+                                @*<li class="list-group-item"><p><b>Đại diện bên A: </b><i id="cRepresentative"></i></p></li>*@
+                                <li class="list-group-item"><p><b>Địa chỉ: </b><i id="cAddress"></i></p></li>
+                                @* <li class="list-group-item"><p><b>Điện thoại: </b><i id="cPhone"></i> - <b>Fax: </b><i id="cFax"></i></p></li>*@
+                                @*<li class="list-group-item"><p><b>Tài khoản: </b><i id="cAccountNumber"></i></p></li>*@
+                                <li class="list-group-item"><p><b>MST: </b><i id="cTaxID"></i></p></li> @* added by lapbt *@
+                                <li class="list-group-item"><p><b>Loại hợp đồng: </b><strong><i><span class="text-danger" id="cContractTypeID"></span></i></strong></p></li>
+                            </ul>
+                            <div class="bg-muted p-xs b-r-xs">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <p><strong>Giá trị hợp đồng: <i><span class="text-danger" id="cValue"></span> VNĐ</i></strong></p>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p><strong>Ngày ký: <i><span class="text-danger" style="padding: 0px" id="cSignDate"></span></i></strong></p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 hidden" style="margin-top: -5px; padding-left: 0px">
+                                        @Html.DevExpress().CheckBox(settings =>
+                                            {
+                                                settings.Name = "IsGiayDeNghi_Home";
+                                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                                settings.Text = "Là giấy đề nghị?";
+                                                if (true)   // User.IsInRole("Admin") || User.IsInRole("DeptDirector") || User.IsInRole("Accountant")
+                                                    settings.Enabled = true;
+                                                else
+                                                    settings.Enabled = false; ;
+                                                settings.Properties.ClientSideEvents.CheckedChanged = string.Format("function(s, e) {{ OnChangeIsGiayDeNghiClicked(s, e); }}");
+                                                //settings.Checked = true;        // value set on index.js
+                                            }).GetHtml()
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p><strong>Người thực hiện: <i><span class="text-danger" id="cKDV1Name"></span> ;  <span class="text-danger" id="cKDV2Name"></span></i></strong></p>
+                                    </div>
+                                </div>
+
+
+                                <div class="row" hidden>
+                                    @*Hưng ẩn 13.5.2025*@
+                                    <div class="col-md-7">
+                                        <p><strong>Khoán Công ty: <i><span class="text-danger" id="labelKhoanCongty"></span> %</i></strong></p>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p><strong>Khoán Cá nhân: <i><span class="text-danger" id="labelKhoanCanhan"></span> %</i></strong></p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 hidden" style="margin-top: -5px; padding-left: 5px">
+                                        @Html.DevExpress().TextBox(settings =>
+                                            {
+                                                settings.Name = "textBox1";
+                                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                                settings.Properties.NullText = "";
+                                                settings.ReadOnly = true;
+                                            }).GetHtml()
+                                    </div>
+                                    <div class="col-md-4" hidden style="text-align: left; margin-left: 0px; padding-left: 2px">
+                                        <strong>
+                                            <i>
+                                                <span class="text-danger" id="cKhoanCongTy"></span>
+                                            </i>
+                                        </strong>
+                                        <img id="imgPaymentIPoCStatus" hidden title="" src="" style="vertical-align: text-top; padding-left: 5px;" />
+                                    </div>
+                                    <div class="col-md-3 hidden" style="margin-top: -5px; text-align: left">
+                                        @Html.DevExpress().Button(settings =>
+                                        {
+                                           settings.Name = "btnApDungKhoanCT";
+                                           settings.Text = "Áp dụng";
+                                           settings.ClientSideEvents.Click = string.Format("function(s, e) {{ OnBtnApDungKhoanCTClicked(s, e); }}");
+                                           settings.Enabled = false;
+                                       }).GetHtml()
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12" hidden>
+                                        <p><strong>Khoán cá nhân:</strong></p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 hidden" style="margin-top: -5px; padding-left: 5px">
+                                        @Html.DevExpress().TextBox(settings =>
+                                            {
+                                                settings.Name = "textBox2";
+                                                settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                                settings.Properties.NullText = "";
+                                                settings.ReadOnly = true;
+                                            }).GetHtml()
+                                    </div>
+                                    <div class="col-md-4" hidden style="text-align: left; margin-left: 0px; padding-left: 2px">
+                                        <strong>
+                                            <i>
+                                                <span class="text-danger" id="cKhoanCaNhan"></span>
+                                            </i>
+                                        </strong>
+                                        <img id="imgPaymentIPoIStatus" hidden title="" src="" style="vertical-align: text-top; padding-left: 5px;" />
+                                    </div>
+                                    <div class="col-md-3 hidden style="margin-top: -5px; text-align: left">
+                                        @Html.DevExpress().Button(settings =>
+                                            {
+                                               settings.Name = "btnApDungKhoanCN";
+                                               settings.Text = "Áp dụng";
+                                               settings.ClientSideEvents.Click = string.Format("function(s, e) {{ OnBtnApDungKhoanCNClicked(s, e); }}");
+                                               settings.Enabled = false;
+                                           }).GetHtml()
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        @*<p><strong>Khoán Cá nhân: <i><span class="text-danger" id="cKhoanCaNhan"></span></i></strong><img id="imgPaymentIPoIStatus" title="" src="" style="vertical-align: text-top; padding-left: 5px;" /></p>*@
+                                        <p class="hidden"><strong>Công nợ: <i><span class="text-danger" id="cCongNo"></span></i></strong></p>
+                                        @*<p><strong>Giá trị hợp đồng: <i><span class="text-danger" id="cValue"></span></i></strong></p>*@
+                                        @*  <p><strong>Bằng chữ: <i><span class="text-danger" id="cValuetoWord"></span></i></strong></p>*@
+                                    </div>
+                                </div>
+                                <div class="bg-success b-r-xs" style="padding:4px 8px; line-height:22px; font-size:14px;">Nội dung hợp đồng/GĐN</div>
+                                @Html.Action("TasksOfContractPartial", "Contracts")
+                                <div class="modal inmodal" id="addnewEquipmentModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Tạo mới thiết bị</h4>
+                                            </div>
+                                            <div class="modal-body" id="modalAddNewEquipmentWrapper" style="padding: 10px">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal inmodal" id="selectEquipmentModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Chọn thiết bị sửa biên bản</h4>
+                                            </div>
+                                            <div class="modal-body" id="modalSelectEquipmentWrapper" style="padding: 10px">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal inmodal" id="editAccreditationModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Biên bản chi tiết</h4>
+                                            </div>
+                                            <div class="modal-body scroll_content" id="modalEditAccreditationWrapper" style="padding: 10px">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal inmodal" id="selectEquipmentForPrintModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content animated bounceInRight">
+                                            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                                <h4>Chọn thiết bị in biên bản</h4>
+                                            </div>
+                                            <div class="modal-body" id="modalSelectEquipmentForPrintWrapper" style="padding: 10px">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <br />
+                                <div class="bg-success b-r-xs" style="padding: 4px 8px; line-height: 22px; font-size: 14px; margin-bottom: -2px; margin-top: -2px">Danh sách thiết bị</div>
+                                @Html.Action("AccreditationOfTaskContractPartial", "Contracts")
+                                <br />
+                                <div class="bg-success b-r-xs" style="padding: 4px 8px; line-height: 22px; font-size: 14px; margin-bottom: -2px; margin-top: -2px; background-color: #ed9961; color: white ">Hóa đơn đã xuất</div>
+                                @*@Html.Action("TurnOversOfDetailContractPartial", "Contracts")*@
+                                @Html.Action("DoanhThuOfContractPartial", "Contracts")
+                                <br />
+                                <div class="bg-success b-r-xs" style="padding:4px 8px; line-height:22px; font-size:14px; background-color: #26b2bf; color: white ">Khách hàng thanh toán</div>
+                                @*@Html.Action("PaymentsOfDetailContractPartial", "Contracts")*@
+                                @Html.Action("ThuNoOfContractPartial", "Contracts")
+                                <br />
+
+                                <div hidden>
+                                    <div class="bg-success p-xs b-r-xs">Thanh toán nội bộ</div>
+                                    @*@Html.Action("InternalPaymentsOfDetailContractPartial", "Contracts")*@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+    @Styles.Render("~/plugins/toastrStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+    @Scripts.Render("~/plugins/idletimer")
+    @Scripts.Render("~/plugins/toastr")
+    @*@Scripts.Render("~/Scripts/app/index.js")*@
+
+    <!-- Header Filter Modal -->
+    <div id="headerFilterModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="headerFilterModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="headerFilterModalLabel" class="modal-title">Lọc</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input id="hfSearch" class="form-control mb-2" placeholder="Tìm..." />
+                    <div id="hfItems" style="max-height:300px; overflow:auto;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="hfClear" type="button" class="btn btn-secondary">Bỏ chọn</button>
+                    <button id="hfApply" type="button" class="btn btn-primary">Áp dụng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+
+    var copiedTSKT = {
+        Code: null,
+        Specs: []
+    };
+
+        $(function () {
+            // Set idle time
+            $(document).idleTimer(50000);
+        });
+
+        $(function () {
+            $(document).on("idle.idleTimer", function (event, elem, obj) {
+            });
+
+            $(document).on("active.idleTimer", function (event, elem, obj, triggerevent) {
+            });
+
+        });
+        $(document).ready(function () {
+            // Add slimscroll to element
+            // Tắt slimscroll riêng vùng danh sách hợp đồng
+            $('#list-panel .scroll_content').slimScroll({ destroy: true })
+                .css({ overflow: 'visible', height: 'calc(100vh - 80px)' });
+                //ý nghĩa: 100% chiều cao màn hình trừ đi 80px chứa header/footer ....
+
+            // Bật lại slimscroll cho vùng chi tiết
+            $('#detail-panel .scroll_content').slimscroll({
+                height: 'calc(100vh - 80px)'
+            });
+
+        });
+
+        $('.deleteContract').click(function () {
+            if (selectedcontract && typeof selectedcontract === "number") {
+                swal({
+                    title: "Bạn có muốn xóa?",
+                    text: "Thao tác này sẽ không thể khôi phục lại",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Đồng ý",
+                    cancelButtonColor: "#23C6C8",
+                    cancelButtonText: "Hủy bỏ",
+                    closeOnConfirm: false,
+                    closeOnCancel: false
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            url: '/Contracts/Delete/' + selectedcontract, // The method name + paramater
+                            type: "POST",
+                            success: function (data) {
+                                if (data) {
+                                    if (data[0] == "false")
+                                        swal({ title: data[1], text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                                    else {
+                                        swal({ title: data[1], text: "Đã xóa thành công.", type: "success", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                                        var index = rdbGridContractFilter.GetSelectedIndex();
+                                        grvContracts.PerformCallback({ filtermode: parseInt(index) });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        swal({ title: "Đã hủy bỏ", text: "Đã hủy bỏ thao tác.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                });
+            }
+        });
+
+        $('.denyCreate').click(function () {
+            swal({ title: "Bạn không có quyền tạo mới", text: "Bạn bị giới hạn quyền cho tác vụ này", type: "warning", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" })
+        });
+
+         // Khai báo bên ngoài bất kỳ function nào để nó có thể được gọi từ HTML onclick
+        /*
+        function showEquipmentsOfContract() {
+            if (typeof selectedcontract !== "number" || selectedcontract <= 0) {
+                toastr.warning("Bạn cần chọn hợp đồng trước!");
+                return;
+            }
+
+            $.ajax({
+                url: '/Equipments/EquipmentOfContractPartial',
+                data: { contractId: selectedcontract },
+                type: 'GET',
+                success: function (data) {
+                    $("#equipmentGridWrapper").html(data);
+                    $("#equipmentModal").modal("show");
+
+                    setTimeout(function () {
+                        var grid = ASPxClientGridView.Cast('grvEquipmentsOfContract');
+                        if (grid) grid.AdjustControl();
+                    }, 300);
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Không tải được danh sách thiết bị. " + error);
+                }
+            });
+        }
+        */
+        function showEquipmentsOfContract() {
+            if (typeof selectedcontract !== "number" || selectedcontract <= 0) {
+                toastr.warning("Bạn cần chọn hợp đồng trước!");
+                return;
+            }
+
+            $("#equipmentModal").modal("show");
+            $("#equipmentGridWrapper").html("<div style='padding:10px;color:gray'>Đang tải dữ liệu...</div>");
+
+            $.ajax({
+                url: '/Equipments/EquipmentOfContractPartial',
+                data: { contractId: selectedcontract },
+                type: 'GET',
+                cache: false,
+                success: function (data) {
+                    $("#equipmentGridWrapper").html(data);
+
+                    setTimeout(function () {
+                        var grid = ASPxClientGridView.Cast('grvEquipmentsOfContract');
+                        if (grid) grid.AdjustControl();
+                    }, 200);
+                },
+                error: function (xhr, status, error) {
+                    $("#equipmentGridWrapper").html("<div style='color:red;padding:10px'>Không tải được danh sách thiết bị.</div>");
+                    toastr.error("Không tải được danh sách thiết bị. " + error);
+                }
+            });
+        }
+
+
+        function onEquipmentFocusedRowChanged(s, e) {
+            var rowIndex = s.GetFocusedRowIndex();
+            var key = s.GetRowKey(rowIndex);
+            console.log("Đã chọn dòng thiết bị có ID: " + key);
+        }
+
+        // Đảm bảo grid được render lại sau khi hiển thị modal
+        $('#equipmentModal').on('shown.bs.modal', function () {
+            var grid = ASPxClientGridView.Cast('grvEquipmentsOfContract');
+            if (grid) {
+                grid.AdjustControl(); // hoặc grid.Refresh();
+            }
+        });
+
+
+        function EquipmentToolBarClick(s, e) {
+            var rowIndex = s.GetFocusedRowIndex();
+            if (rowIndex < 0) {
+                toastr.warning("Vui lòng chọn một dòng thiết bị trước khi thao tác.");
+                e.processOnServer = false;
+                return;
+            }
+
+            var equipmentId = s.GetRowKey(rowIndex);
+            //const equipmentId = s.GetRowKey(rowIndex);
+            const code = s.batchEditApi.GetCellValue(rowIndex, "Code");
+
+            switch (e.item.name) {
+                case "RefreshEquipmentData":
+                    if (typeof selectedcontract === "undefined" || selectedcontract <= 0) {
+                        toastr.warning("Không xác định được hợp đồng.");
+                        break;
+                    }
+
+                    var grid = ASPxClientGridView.Cast("grvEquipmentsOfContract");
+                    if (grid) {
+                        grid.PerformCallback({ contractId: selectedcontract }); // Truyền contractId
+                        toastr.info("Đang làm mới dữ liệu...");
+                    }
+                    break;
+
+
+                case "EditAccreditation":
+                    showEditAccreditationModal(equipmentId);
+                    break;
+
+                case "EditSpecifications":
+                    showEditSpecificationsModal(equipmentId);
+                    break;
+
+                case "PrintAccreditation":
+                    // Gọi in ấn GCN
+                    var rowIndex = s.GetFocusedRowIndex();
+                    if (rowIndex >= 0) {
+                        var equipmentId = s.GetRowKey(rowIndex);
+                        var url = '/Reports/AccreditationCertificateReportA5/' + equipmentId;
+                        var win = window.open(url, '_blank');
+                        win.focus();
+                    } else {
+                        DevExpress.ui.notify("Vui lòng chọn một thiết bị trước khi in.", "warning", 3000);
+                    }
+
+                    break;
+
+
+                case "PrintGCN":
+                    // Gọi in nhiều GCN cùng lúc
+                    PrintSelected();
+
+                    break;
+
+                @* Tạm đóng in có ảnh 28.8.2025
+                    case "PrintAccreditation":
+                    if (rowIndex < 0) {
+                        toastr.warning("Vui lòng chọn một thiết bị trước khi in.");
+                        break;
+                    }
+
+                    var equipmentId = s.GetRowKey(rowIndex);
+
+                    if (window.confirm("Bạn có muốn in kèm ảnh không?")) {
+                        var fileInput = document.createElement("input");
+                        fileInput.type = "file";
+                        fileInput.accept = "image/*";
+
+                        fileInput.onchange = function (event) {
+                            var file = event.target.files[0];
+                            if (!file) return;
+
+                            var formData = new FormData();
+                            formData.append("file", file);
+                            formData.append("equipmentId", equipmentId);
+                            /*
+                            // Kiểm tra xem ảnh đã tồn tại chưa
+                            fetch(`/Upload/CheckImageExists?equipmentId=${equipmentId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.exists) {
+                                        if (confirm("Ảnh đã tồn tại. Bạn có muốn ghi đè không?")) {
+                                            // Chọn ghi đè → upload và in
+                                            uploadAndPrint(formData, equipmentId);
+                                        } else {
+                                            // Không ghi đè → in luôn ảnh cũ
+                                            var imagePath = `~/UploadedImages/${equipmentId}.jpg`;
+                                            var url = `/Reports/AccreditationCertificateReportA5WithImage/${equipmentId}?imagePath=${encodeURIComponent(imagePath)}`;
+                                            window.open(url, "_blank");
+                                        }
+                                    } else {
+                                        // Chưa có ảnh → upload và in
+                                        uploadAndPrint(formData, equipmentId);
+                                    }
+
+                                    uploadAndPrint(formData, equipmentId);
+                                })
+                                .catch(() => {
+                                    toastr.error("Không kiểm tra được ảnh hiện tại.");
+                                });
+                            */
+                            uploadAndPrint(formData, equipmentId);
+
+                        };
+
+                        fileInput.click();
+                    } else {
+                        // Không chọn ảnh → in bình thường
+                        var url = '/Reports/AccreditationCertificateReportA5/' + equipmentId;
+                        window.open(url, '_blank');
+                    }
+                    break;
+
+                *@
+
+                case "CopyTSKT":
+                    $.get("/Equipments/GetSpecifications", { equipmentId }, function (data) {
+                        if (data && data.length > 0) {
+                            copiedTSKT.Code = code;
+                            copiedTSKT.Specs = data;
+                            toastr.success("Đã copy TSKT.");
+                        } else {
+                            toastr.warning("Thiết bị không có thông số kỹ thuật.");
+                        }
+                    });
+                    break;
+
+                case "PasteTSKT":
+                    if (!copiedTSKT.Specs.length) {
+                        toastr.warning("Chưa có dữ liệu để paste.");
+                        break;
+                    }
+
+                    const currentCode = s.batchEditApi.GetCellValue(rowIndex, "Code");
+                    if (copiedTSKT.Code !== currentCode) {
+                        toastr.error("Không thể dán do mã thiết bị không trùng khớp.");
+                        break;
+                    }
+
+                    $.ajax({
+                        url: "/Equipments/PasteSpecifications",
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            targetEquipmentId: equipmentId,
+                            specs: copiedTSKT.Specs
+                        }),
+                        success: function () {
+                            toastr.success("Dán TSKT thành công.");
+                        },
+                        error: function () {
+                            toastr.error("Lỗi khi dán TSKT.");
+                        }
+                    });
+                    break;
+
+                case "DeleteEquipment":
+                    swal({
+                        title: "Xác nhận xóa thiết bị",
+                        text: "Bạn có chắc chắn muốn xóa thiết bị này không?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#aaa",
+                        confirmButtonText: "Xóa",
+                        cancelButtonText: "Hủy"
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            $.ajax({
+                                url: '/Equipments/DeleteEquipmentCompletely',
+                                method: 'POST',
+                                data: { id: equipmentId },
+                                success: function (res) {
+                                    if (res === 'success') {
+                                        toastr.success("Đã xóa thiết bị.");
+
+                                        // Gọi lại hành vi của nút Làm mới
+                                        EquipmentToolBarClick(grvEquipmentsOfContract, { item: { name: "RefreshEquipmentData" }, processOnServer: false });
+                                    } else if (res === 'notDelete') {
+                                        toastr.warning("Thiết bị đã quá 5 ngày kể từ khi tạo, không thể xóa.");
+                                    }
+                                    else if (res === 'notfound') {
+                                        toastr.error("Không tìm thấy thiết bị.");
+                                    }
+                                    else {
+                                        toastr.error("Lỗi khi xóa thiết bị.");
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    break;
+
+
+
+            }
+
+            e.processOnServer = false; // Chặn callback server nếu bạn xử lý hoàn toàn client-side
+        }
+
+        //Hàm in nhiều TB cùng lúc
+        function PrintSelected() {
+            var grid = window.grvEquipmentsOfContract || ASPxClientGridView.Cast("grvEquipmentsOfContract");
+            if (!grid) return;
+
+            // ✅ Copy mảng checkbox hiện có
+            var ids = selectedEquipmentIds.slice();
+
+            // ✅ Nếu chưa chọn checkbox nào, dùng dòng hiện hành
+            if (ids.length === 0) {
+                var focusedIndex = grid.GetFocusedRowIndex();
+                if (focusedIndex >= 0) {
+                    var currentId = grid.GetRowKey(focusedIndex);
+                    if (currentId)
+                        ids.push(currentId);
+                }
+            }
+
+            // ✅ Kiểm tra tổng hợp mảng ids (sau khi đã xét cả 2 cách)
+            if (ids.length === 0) {
+                toastr.warning("Vui lòng chọn ít nhất 1 thiết bị để in.");
+                return;
+            }
+
+            // ✅ Mở tab in chung
+            var url = '/Reports/AccreditationCertificateReportA5_Multi/?ids=' + ids.join(',');
+            window.open(url, '_blank');
+
+            // ✅ Dọn danh sách checkbox sau khi in
+            selectedEquipmentIds = [];
+            $('input[type="checkbox"][data-rowindex]').prop('checked', false);
+            $('#chkSelectAllPrint').prop('checked', false); // ✅ bỏ check ô header
+
+        }
+
+        /*
+        function showEditSpecificationsModal(equipmentId) {
+            $.ajax({
+                url: '/Equipments/SpecificationsOfEquipmentEditByIdPartial',
+                data: { equipmentId: equipmentId },
+                type: 'GET',
+                success: function (data) {
+                    $("#modalSpecificationsContent").html(data);
+                    $("#modalSpecifications").modal("show");
+                },
+                error: function () {
+                    toastr.error("Không tải được thông tin thông số kỹ thuật.");
+                }
+            });
+        }
+        */
+
+    function showEditSpecificationsModal(equipmentId) {
+        console.log("Gọi nhập TSKT cho TB ID:", equipmentId); // 👈 kiểm tra
+
+        $.ajax({
+            url: '/Equipments/SpecificationsOfEquipmentEditByIdPartial',
+            data: { equipmentId: equipmentId },
+            type: 'GET',
+            success: function (data) {
+                $("#modalSpecificationsContent").html(data);
+                $("#modalSpecifications").removeAttr("aria-hidden");
+                $("#modalSpecifications").modal("show");
+            },
+            error: function () {
+                toastr.error("Không tải được thông tin thông số kỹ thuật.");
+            }
+        });
+    }
+
+        function showEditAccreditationModal(equipmentId, contractId) {
+            $('#modalEditAccreditationWrapper').html("");
+            $.ajax({
+                type: "GET",
+                url: '/Equipments/AccreditationViewViaContract/', // The method name + paramater
+                data: { id: equipmentId, contractId: selectedcontract/*, taskId: taskId*/ },
+                success: function (data) {
+                    if (data) {
+                        $('#modalEditAccreditationWrapper').html(data);
+                        $('#editAccreditationModal').modal('show');
+                    }
+                    else {
+                        swal({ title: "Lỗi rồi 2 :)", text: "Vui lòng tải lại trang để tiếp tục.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                    }
+                },
+                error: function (data) {
+                    swal({ title: "Lỗi rồi :)", text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
+                }
+            });
+        }
+
+        function onEquipmentBatchStartEdit(s, e) {
+        // lấy giá trị Ngày KĐ của dòng đang sửa
+            var accreDate = s.batchEditApi.GetCellValue(e.visibleIndex, "AccreDate");
+            var isAdmin = '@User.IsInRole("Admin")'.toLowerCase() === "true";
+
+            if (!isAdmin) {
+                if (accreDate) {
+                    var accreDateObj = new Date(accreDate);
+                    var now = new Date();
+                    var diffDays = Math.floor((now - accreDateObj) / (1000 * 60 * 60 * 24));
+                    if (diffDays > 60) {
+                        e.cancel = true; // chặn sửa
+                        toastr.warning("Không được sửa dòng này do Ngày KĐ quá 60 ngày.");
+                    }
+                }
+            }
+            var column = e.focusedColumn;
+            var fieldName = s.GetColumn(fieldIndex = column.index).fieldName;
+
+            if (fieldName === "Code") {
+                if (!isAdmin) {
+                    e.cancel = true; // chặn không cho sửa
+                    toastr.warning("Không được sửa cột này, liên hệ Admin.");
+                }
+            }
+        }
+
+    function uploadAndPrint(formData, equipmentId) {
+        fetch("/Upload/UploadImage", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Upload thất bại");
+                return response.json();
+            })
+            .then(result => {
+                if (result.success) {
+                    var url = `/Reports/AccreditationCertificateReportA5WithImage/${equipmentId}?imagePath=${encodeURIComponent(result.imagePath)}`;
+                    window.open(url, "_blank");
+                } else {
+                    toastr.error("Không thể tải ảnh lên.");
+                }
+            })
+            .catch(() => {
+                toastr.error("Không thể tải ảnh lên.");
+            });
+    }
+
+    function showStampsOfContract() {
+        $.ajax({
+            url: '/Equipments/StampViewPartial',
+            data: { },
+            type: 'GET',
+            success: function (data) {
+                $("#stampModalBody").html(data);
+                $("#stampModal").modal("show");
+
+                setTimeout(function () {
+                    var grid = ASPxClientGridView.Cast('grvStamp');
+                    if (grid) grid.AdjustControl();
+                }, 300);
+            },
+            error: function (xhr, status, error) {
+                toastr.error("Không tải được danh sách tem. " + error);
+            }
+        });
+    }
+
+    </script>
+
+    <script>
+        //Nút mũi tên mở rộng cửa sổ Danh sách hợp đồng
+        $("#btnToggleDetail").click(function () {
+            var $detailCol = $("#detail-panel");
+            var $listCol = $("#list-panel");
+            var lastFocusIndex = -1;
+            try {
+                if (typeof grvContracts !== "undefined" && grvContracts) {
+                    lastFocusIndex = grvContracts.GetFocusedRowIndex();//31.10.2025 lưu dòng ở danh sách
+                }
+            } catch (ex) { console.log("Get page/index error:", ex); }
+
+            if ($detailCol.is(":visible")) {
+                $detailCol.hide();
+                $listCol.removeClass("col-lg-8").addClass("col-lg-12");
+                $(this).html('<i class="fa fa-angle-double-left"></i>')
+                    .attr("title", "Hiện chi tiết");
+                $("#cmbPhongBanWrapper").show();    // hiện combobox Phòng ban
+                $("#cmbTaiChinhWrapper").show();   // hiện combobox Báo cáo TC
+                $("#cmbFinancialYearWrapper").show();   // hiện combobox Năm tài chính
+            } else {
+                $detailCol.show();
+                $listCol.removeClass("col-lg-12").addClass("col-lg-8");
+                $(this).html('<i class="fa fa-angle-double-right"></i>')
+                    .attr("title", "Ẩn chi tiết");
+                $("#cmbPhongBanWrapper").hide();    // ẩn combobox Phòng ban
+                $("#cmbTaiChinhWrapper").hide();   // ẩn combobox Báo cáo TC
+                $("#cmbFinancialYearWrapper").hide();   // ẩn combobox Năm tài chính
+            }
+
+            // 👉 Gọi Ajax để toggle và load lại grid
+            $.post("/Contracts/ContractToggleColumns", function (html) {
+                $("#contractGridContainer").html(html);
+
+                if (lastFocusIndex >= 0) {
+                    grvContracts.SetFocusedRowIndex(lastFocusIndex);
+                    // Gọi lại sự kiện focus change vào dòng đã lưu trước đó
+                    if (typeof OnGridFocusedRowChanged === "function") {
+                        OnGridFocusedRowChanged(grvContracts, null);
+                    }
+                }
+
+            });
+        });
+
+    </script>
+
+
+
+    <script type="text/javascript">
+    //Bấm đúp vào chữ pdf ở cột H.sơ
+        $(document).on("dblclick", ".pdf-link", function () {
+            var contractId = $(this).data("id");
+            console.log("dblclick pdf:", contractId);
+            if (contractId) {
+                openDocumentById(contractId);
+            }
+        });
+
+    function openDocumentById(contractId) {
+        // Gọi action ViewDocuments để load partial vào modal
+        $.get('@Url.Action("ViewDocuments", "Contracts")', { id: contractId }, function (data) {
+            if (data) {
+                $("#modalContractDocumentsWrapper").html(data);
+                $("#contractDocumentsModal").modal("show");
+            } else {
+                toastr.warning("Hợp đồng này chưa có hồ sơ.");
+            }
+        });
+        }
+
+    </script>
+
+
+    <script type="text/javascript">
+        //30.10.2025 thêm đoạn dưới đây để ẩn thanh tìm kiếm mặc định của grid
+        //Và tạo ô tìm kiếm mới đật trên thanh công cụ - Mục đích: mở rộng cửa sổ DS HĐong
+        var contractSearchText = "";
+
+        $(document).ready(function () {
+            InitContractSearchBox();
+        });
+
+        function InitContractSearchBox() {
+            var $txt = $("#txtContractSearch");
+            var $clear = $("#clearSearch");
+            if ($txt.data("hasEnterEvent")) return;
+
+            $txt.on("keydown", function (e) {
+                if (e.key === "Enter" || e.which === 13) {
+                    e.preventDefault();
+                    contractSearchText = $(this).val();
+                    applyContractFilter();
+                }
+            });
+
+            // Nút "x" để xóa nội dung
+            $clear.on("click", function () {
+                $txt.val("");          // clear text
+                contractSearchText = "";       // clear biến tạm
+                applyContractFilter(); // load lại grid
+                $txt.focus();          // focus lại vào ô tìm
+            });
+
+            $txt.data("hasEnterEvent", true);
+        }
+
+        function applyContractFilter() {
+            var grid = (typeof grvContracts !== 'undefined')
+                ? grvContracts
+                : ASPxClientGridView.Cast('grvContracts');
+
+            grid.PerformCallback({ search: contractSearchText });
+        }
+        //End 30.10.2025
+
+    </script>
+
+    
+    <script>
+//5.11.2025 thêm Dashboard
+// an toàn: xuất giá trị từ server bằng Json.Encode để JS nhận đúng kiểu
+    var currentUserRole = @Html.Raw(Json.Encode(
+        User.IsInRole("Admin") ? "Admin" : User.IsInRole("DeptDirector") ? "DeptDirector" : "User"
+    ));
+    var currentUserDeptId = @Html.Raw(Json.Encode(ViewBag.DirectorDeptId ?? null));
+    var currentUserDeptName = @Html.Raw(Json.Encode(ViewBag.DirectorDeptName ?? null));
+    var currentUserDeptMaDV = @Html.Raw(Json.Encode(ViewBag.DirectorDeptMaDV ?? null));
+
+    let dashboardInitialized = false; // Đánh dấu đã tạo tab đầu tiên
+    let dashboardCache = {}; // Lưu nội dung từng tab để không load lại server
+    // Biến global để lưu loại báo cáo hiện tại
+    let currentTabType = 'company'; // default
+    //let currentTabYear = new Date().getFullYear(); // năm hiện tại
+        let currentTabYear = null; // sẽ gán khi mở dashboard
+
+
+ // loadDepartments trả về jqXHR để caller có thể .done/.then()
+    function loadDepartments() {
+        return $.get('/Contracts/GetDepartments', function (data) {
+            const ddl = $('#departmentSelector');
+            ddl.empty().append('<option value="">-- Chọn đơn vị --</option>');
+
+            // Nạp danh sách đơn vị
+            $.each(data.departments, function (i, item) {
+                ddl.append('<option value="' + item.Value + '" data-madv="' + item.MaDV + '">' + item.Text + '</option>');
+            });
+
+            // Nếu là DeptDirector: gán biến global (và chọn dropdown)
+            if (data.directorDept) {
+                currentUserDeptId = data.directorDept.Id;
+                currentUserDeptName = data.directorDept.Name;
+                currentUserDeptMaDV = data.directorDept.MaDV;
+                ddl.val(currentUserDeptId); // nếu muốn hiển thị chọn sẵn
+            }
+        });
+    }
+
+// Mở modal Dashboard
+    function openDashboard() {
+        loadDepartments().done(function () {
+            showDashboard();
+        });
+    }
+
+    function showDashboard(type, year, departmentId, departmentName) {
+        $('#dashboardModal').modal('show');        
+       
+        year = year || $('#year').val();
+        currentTabYear = parseInt(year);
+
+        // 🔹 Chọn tab mặc định theo Role + DepartmentID (chỉ khi lần đầu)
+        if (!dashboardInitialized) {
+            if (currentUserRole === "Admin" && currentUserDeptId != 8 && currentUserDeptId != 10) {
+                type = "company"; // Admin và Dept khác 8 → công ty
+            } else if ((currentUserRole === "Admin" && (currentUserDeptId == 8 || currentUserDeptId == 10)) || currentUserRole === "DeptDirector") {
+                type = "department"; // Admin Dept 8 hoặc DeptDirector → đơn vị
+            } else {
+                type = "company"; // fallback
+            }
+        }
+        // 🔹 Lưu giá trị global để nút export Excel dùng
+        currentTabType = type;
+        currentTabYear = year;
+
+        const mainTabId = 'tab_main';
+        const isMain = !dashboardInitialized;
+
+        if (isMain) {
+            dashboardInitialized = true;
+
+            let mainTitle = currentUserRole === "DeptDirector"
+                ? `ĐV: ${currentUserDeptMaDV} (${year})` : `BC Công ty (${year})`;
+
+            if (type == "department") {
+                mainTitle = `ĐV: ${currentUserDeptMaDV} (${year})`;
+            }
+
+            $('#dashboardTabs').append(`
+                <li class="nav-item" data-default="true">
+                    <a class="nav-link active" id="${mainTabId}-tab" data-toggle="tab" href="#${mainTabId}" role="tab">
+                        ${mainTitle}
+                    </a>
+                </li>
+            `);
+
+            $('#dashboardTabContent').append(`
+                <div class="tab-pane fade show active" id="${mainTabId}" role="tabpanel">
+                    <div id="${mainTabId}_content" class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải...</div>
+                </div>
+            `);
+
+            // 🔹 Load tab đầu theo role — xử lý trường hợp DeptDirector mà chưa có deptId
+            if ((currentUserRole === "Admin" && (currentUserDeptId == 8 || currentUserDeptId == 10)) || currentUserRole === "DeptDirector") {
+                // Nếu đã có deptId từ server (ViewBag) hoặc đã nạp trước đó
+                if (currentUserDeptId) {
+                    loadDashboardView('department', year, currentUserDeptId, 'tab_main_content', function () {
+                        loadProductionChart(type, currentUserDeptId, 'tab_main');
+                        loadLoaiHinhPieChart(type, currentUserDeptId, $('#year').val(), 'tab_main');
+                        loadProductionChartLH(type, currentUserDeptId, 'tab_main');
+                        showTab(mainTabId);
+                    },
+                        'tab_main'
+                    );
+                } else {
+                    // Nếu chưa có, gọi loadDepartments() và chờ (async), sau đó load dashboard
+                    loadDepartments().done(function () {
+                        if (currentUserDeptId) {
+                            loadDashboardView('department', year, currentUserDeptId, 'tab_main_content', function () {
+                                loadProductionChart(type, currentUserDeptId, 'tab_main');
+                                loadLoaiHinhPieChart(type, currentUserDeptId, $('#year').val(), 'tab_main');
+                                loadProductionChartLH(type, currentUserDeptId, 'tab_main');
+                                showTab(mainTabId);
+                            },
+                                'tab_main'
+                            );
+                        } else {
+                            loadDashboardView('company', year, null, 'tab_main_content', function () {
+                                loadProductionChart(type, departmentId, 'tab_main');
+                                loadLoaiHinhPieChart(type, departmentId, $('#year').val(), 'tab_main');
+                                loadProductionChartLH(type, departmentId, 'tab_main');
+                                showTab(mainTabId);
+                            },
+                                'tab_main'
+                            );
+                        }
+                    }).fail(function(){
+                        loadDashboardView('company', year, null, 'tab_main_content', function () {
+                            loadProductionChart(type, departmentId, 'tab_main');
+                            loadLoaiHinhPieChart(type, departmentId, $('#year').val(), 'tab_main');
+                            loadProductionChartLH(type, departmentId, 'tab_main');
+                            showTab(mainTabId);
+                        },
+                            'tab_main'
+                        );
+                    });
+                }
+            } else {
+                loadDashboardView('company', year, null, 'tab_main_content', function () {
+                    loadProductionChart(type, departmentId, 'tab_main');
+                    loadLoaiHinhPieChart(type, departmentId, $('#year').val(), 'tab_main');
+                    loadProductionChartLH(type, departmentId, 'tab_main');
+                    showTab(mainTabId);
+                },
+                    'tab_main'
+                );
+            }
+
+        } else {
+            // (phần còn lại của openDashboard không thay đổi)
+            if (!departmentId && type === 'department') {
+                toastr.warning('Vui lòng chọn đơn vị trước khi tạo báo cáo.');
+                return;
+            }
+
+            currentUserDeptId = departmentId;
+
+            const maDV = currentUserDeptMaDV ||
+                $("#departmentSelector option:selected").data("madv") || departmentName;
+            const tabId = 'tab_' + type + '_' + (departmentId || 'company') + '_' + year;
+
+            if ($('#' + tabId).length > 0) {
+                showTab(tabId);
+                return;
+            }
+
+            const tabTitle = type === 'company' ? `BC Công ty (${year})` : `ĐV: ${maDV} (${year})`;
+            const tabText = type === 'company' ? `BÁO CÁO TỔNG HỢP CÔNG TY ${year}` : `BÁO CÁO TỔNG HỢP ĐV - ${departmentName} ${year}`;
+
+            $('#dashboardTabs').append(`
+                <li class="nav-item">
+                    <a class="nav-link" id="${tabId}-tab" data-toggle="tab" href="#${tabId}" role="tab">
+                        ${tabTitle}
+                        <button type="button" class="close ml-1" onclick="closeDashboardTab('${tabId}')">&times;</button>
+                    </a>
+                </li>
+            `);
+
+            $('#dashboardTabContent').append(`
+                <div class="tab-pane fade" id="${tabId}" role="tabpanel">
+                    <div style="position: relative; border-bottom:1px solid #ddd; padding:5px 40px;">
+                        <div style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:12px; color:#555;">
+                            (đvt: 1000đ)
+                        </div>
+                        <div class="dashboard-title-text"
+                             style="text-align:center; font-weight:bold; font-size:14px; color:#007bff; text-transform:uppercase;">
+                            ${tabText}
+                        </div>
+                        <button class="btn btn-outline-success btn-sm"
+                                style="position: absolute; right: 120px; top: 50%; transform: translateY(-50%);"
+                                onclick="exportDashboardExcel()">
+                            <i class="fa fa-file-excel-o"></i> Xuất Excel
+                        </button>*
+                        <button class="btn btn-outline-primary btn-sm"
+                            style="position:absolute; right:10px; top:50%; transform:translateY(-50%);"
+                            onclick="printDashboardTab('${tabId}')">
+                            <i class="fa fa-print"></i> In báo cáo
+                        </button>
+                    </div>
+
+                    <div id="${tabId}_content" class="text-center">
+                        <i class="fa fa-spinner fa-spin"></i> Đang tải...
+                    </div>
+                </div>
+            `);
+
+            loadDashboardView(type, year, departmentId, tabId + '_content', function () {
+                loadProductionChart(type, departmentId, tabId);
+                loadLoaiHinhPieChart(type, departmentId, $('#year').val(), tabId);
+                loadProductionChartLH(type, departmentId, tabId);
+                },
+                tabId
+            );
+
+            showTab(tabId);
+        }
+
+    }
+
+// Hiển thị tab
+function showTab(tabId){
+    $('.tab-pane').removeClass('show active');
+    $('#dashboardTabs .nav-link').removeClass('active');
+    $('#dashboardTabs a[href="#' + tabId + '"]').addClass('active');
+    $('#' + tabId).addClass('show active');
+    $('#dashboardTabs a[href="#' + tabId + '"]').tab('show');
+}
+
+// Load grid từ server
+function loadDashboardView(type, year, departmentId, containerId, callback, tabId){
+    const url = '@Url.Action("DashboardCompanyPartial", "Contracts")';
+    const data = { reportType: type, year: year, tabId: tabId };
+    if (departmentId) data.departmentId = departmentId;
+
+    const container = $('#' + containerId);
+    container.html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> Đang tải...</div>');
+
+    $.get(url, data)
+        .done(function(html){
+            container.html(html);
+            if(callback) callback(html);
+        })
+        .fail(function(){
+            container.html('<div class="text-danger">Không tải được Dashboard</div>');
+        });
+}
+
+// Sự kiện dropdown tab đầu tiên, ô chọn loại BC
+$(document).on('change', '#reportType', function(){
+    const type = $(this).val();
+    const deptSelector = $('#departmentSelector');
+    // 👉 Khi chuyển sang BC Công ty:
+    if (type === 'company') {
+        // 1. Reset giá trị
+        deptSelector.val('');
+        // 2. Xóa toàn bộ danh sách đơn vị cũ
+        deptSelector.empty().append('<option value="">-- Chọn đơn vị --</option>');
+        // 3. Ẩn dropdown đơn vị
+        //deptWrapper.hide();
+        return;
+    }
+    // 👉 Khi chọn BC Đơn vị:
+    if (type === 'department') {
+        //deptWrapper.show(); // Hiện dropdown
+        loadDepartments(); // nạp danh sách nếu chưa có
+    }
+});
+
+$(document).on('change', '#year, #departmentSelector', function(){
+    const type = $('#reportType').val();
+    const year = $('#year').val();
+    const deptId = $('#departmentSelector').val();
+    const deptName = $("#departmentSelector option:selected").text();
+
+    if(type==='department' && !deptId) return; // chưa chọn ĐV thì không tạo tab
+    showDashboard(type, year, deptId, deptName);
+});
+
+// Đóng tab con
+function closeDashboardTab(tabId){
+    const tabLink = $('#' + tabId + '-tab');
+    tabLink.parent().remove();
+    $('#' + tabId).remove();
+    if(!$('#dashboardTabs .nav-link.active').length){
+        $('#dashboardTabs a:first').tab('show');
+    }
+}
+
+//in Báo cáo
+function printDashboardTab(tabId) {
+    const activeTab = $('#' + tabId);
+
+    if (!activeTab.length) {
+        toastr.warning('Không tìm thấy tab để in.');
+        return;
+    }
+
+    const $wrapper = activeTab.find('#dashboardGridWrapper').first();
+    if (!$wrapper.length) {
+        toastr.warning('Không tìm thấy dashboardGridWrapper.');
+        return;
+    }
+
+    // === LẤY HEADER ===
+    const $headerCells = $wrapper.find('.dxgvHeader_Material, .dxgvHFC, [class*="dxgvHeader"] > div');
+    const headers = [];
+    $headerCells.each(function () {
+        const text = $(this).text().trim().replace(/\s+/g, ' ').trim();
+        if (text) headers.push(text);
+    });
+
+    if (headers.length === 0) {
+        toastr.warning('Không lấy được tiêu đề cột.');
+        return;
+    }
+
+    // === LẤY DỮ LIỆU ===
+    const $dataRows = $wrapper.find('tr.dxgvDataRow_Material, tr.dxgvDataRow');
+    const rowsData = [];
+
+    $dataRows.each(function () {
+        const $cells = $(this).find('td > div, td');
+        const row = [];
+        $cells.each(function () {
+            row.push($(this).text().trim().replace(/\s+/g, ' '));
+        });
+        if (row.length === headers.length) {
+            rowsData.push(row);
+        }
+    });
+
+    // === LẤY DÒNG FOOTER (TỔNG CỘNG) ===
+    const $footerRow = $wrapper.find('tr.dxgvFooter_Material, tr.dxgvFooter, tr.dxgvTotalSummaryRow_Material, tr.dxgvTotalSummaryRow').first();
+    let totalRow = null;
+
+    if ($footerRow.length) {
+        const $cells = $footerRow.find('td > div, td');
+        totalRow = [];
+        $cells.each(function (i) {
+            const text = $(this).text().trim().replace(/\s+/g, ' ');
+            if (i === 1) {
+                totalRow.push('<strong>Tổng cộng</strong>');
+            } else if (i === 0) {
+                totalRow.push('');
+            } else {
+                totalRow.push(text || '');
+            }
+        });
+        // Đảm bảo đủ cột
+        while (totalRow.length < headers.length) {
+            totalRow.push('');
+        }
+    }
+
+    if (rowsData.length === 0) {
+        toastr.warning('Không có dữ liệu để in.');
+        return;
+    }
+
+    // === TẠO BẢNG MỚI ===
+    let tableHTML = '<table style="width:100%; border-collapse:collapse; border:1px solid #ccc; font-size:10px;">';
+
+    // === LẤY WIDTH CỘT TỪ GRID GỐC ===
+    const realWidths = [];
+    $wrapper.find('table').first().find('colgroup col').each(function () {
+        let w = $(this).attr('width') || $(this).css('width') || "";
+        realWidths.push(w);
+    });
+
+    // === HEADER ===
+    tableHTML += '<tr>';
+    headers.forEach((h, i) => {
+        const colW = realWidths[i] ? `width:${realWidths[i]};` : "";
+        tableHTML += `
+        <th style="
+            background:#f2f2f2;
+            font-weight:bold;
+            text-align:center;
+            border:1px solid #ccc;
+            padding:6px 4px;
+            white-space:normal;
+            word-break:break-word;
+            ${colW}
+        ">
+            ${h}
+        </th>`;
+    });
+    tableHTML += '</tr>';
+
+
+    // Dữ liệu
+    rowsData.forEach(row => {
+        tableHTML += '<tr>';
+        row.forEach((cell, i) => {
+            const isPercent = cell.includes('%');
+            const isNumber = !isNaN(cell.replace(/[%.,\s]/g, '')) && cell.replace(/[%.,\s]/g, '') !== '';
+            const align = (i === 0) ? 'center' : (isPercent || isNumber) ? 'right' : 'left';
+            const cls = isPercent ? 'percent' : isNumber ? 'numeric' : '';
+            tableHTML += `<td style="border:1px solid #ccc; padding:6px 4px; text-align:${align};" class="${cls}">${cell}</td>`;
+        });
+        tableHTML += '</tr>';
+    });
+
+    // Dòng tổng cộng
+    if (totalRow) {
+        tableHTML += '<tr style="font-weight:bold; background:#f0f0f0;">';
+        totalRow.forEach((cell, i) => {
+            const align = (i === 0) ? 'center' : (i === 1) ? 'left' : 'right';
+            tableHTML += `<td style="border:1px solid #ccc; padding:6px 4px; text-align:${align}; color:#000;">${cell}</td>`;
+        });
+        tableHTML += '</tr>';
+    }
+
+    tableHTML += '</table>';
+
+    // === TIÊU ĐỀ & NGÀY ===
+    let titleText = activeTab.find('.dashboard-title-text').first().text().trim();
+    titleText = titleText.toUpperCase(); // in hoa
+    const today = new Date();
+    // Lấy năm từ title
+    let last4 = titleText.slice(-4);
+    let reportYear = !isNaN(parseInt(last4)) ? parseInt(last4) : new Date().getFullYear();
+
+    // Xử lý từ ngày – đến ngày
+    let fromDate = `01/01/${reportYear}`;
+    let toDate =
+        reportYear === new Date().getFullYear()
+            ? `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
+            : `31/12/${reportYear}`;
+
+    // ---- BỐ CỤC TIÊU ĐỀ MỚI ----
+    const companyName = "CÔNG TY CP INCOSAF";   // <-- thay bằng biến nếu cần
+    // ---- BỐ CỤC 3 DÒNG TIÊU ĐỀ ----
+    let titleInPrint = `
+    <div style="margin-bottom:8px;">
+        <div style="text-align:left; font-weight:bold; font-size:14px; text-transform:uppercase;">
+            ${companyName}
+        </div>
+
+        <div style="text-align:center; font-weight:bold; font-size:16px; text-transform:uppercase; margin-top:2px;">
+            ${titleText}
+        </div>
+
+        <div style="text-align:center; font-size:13px; margin-top:3px; margin-bottom:0px;">
+            Từ ngày ${fromDate} đến ngày ${toDate}
+        </div>
+
+        <div style="text-align:right; font-size:12px; font-style:italic; margin-top:0px; margin-bottom:0px;">
+            (đơn vị tính: 1.000đ)
+        </div>
+
+    </div>
+
+`;
+
+    const gridHTML = `<div style="overflow-x:auto; margin-bottom:20px;">${tableHTML}</div>`;
+
+    const footerDate = (reportYear === today.getFullYear())
+        ? `Ngày ${today.getDate().toString().padStart(2, '0')} tháng ${(today.getMonth() + 1)} năm ${today.getFullYear()}`
+        : `Ngày 31 tháng 12 năm ${reportYear}`;
+    // === IN ===
+    const printWindow = window.open('', '_blank', 'width=1200,height=900');
+    printWindow.document.write(`
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>${titleText} (ĐVT: 1.000Đ)</title>
+<style>
+    body { margin:0; padding:20px; font-family:Arial,sans-serif; color:#000; }
+    h3 { text-align:center; margin:0 0 15px; font-weight:bold; color:#007bff; text-transform:uppercase; font-size:15px; }
+    table { width:100%; border-collapse:collapse; border:1px solid #ccc; }
+    table th:nth-child(15),
+    table td:nth-child(15) {
+        width: 80px !important;
+        max-width: 80px !important;
+        min-width: 80px !important;
+        white-space: normal !important;
+    }
+    th, td { border:1px solid #ccc; padding:7px 5px; vertical-align:middle; font-size:12px; }
+    th { background:#f2f2f2; font-weight:bold; text-align:center; white-space:nowrap; }
+    td { text-align:left; }
+    td:first-child { text-align:center; width:35px; }
+    td.numeric { text-align:right; font-size:13px; padding-right:8px; }
+    td.percent { text-align:right; font-size:11px; padding-right:8px; color:blue; font-weight:bold; }
+    .report-footer { margin-top:1px; text-align:right; padding-right:70px; font-size:12px; font-style:italic; line-height:1.4; }
+    .report-footer .signature { font-weight:bold; font-size:13px; font-style:normal; margin-top:1px; padding-right:50px; }
+    @@page { margin:1cm; size: A4 landscape; }
+</style>
+</head>
+<body>
+    <div style="text-align:center; margin-bottom:5px;">
+        ${titleInPrint}
+    </div>
+    ${gridHTML}
+
+    <div class="report-footer">
+        <div>${footerDate}</div>
+        <div class="signature">Người lập bảng</div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(() => window.print(), 1000);
+        };
+    <\/script>
+</body></html>
+`);
+    printWindow.document.close();
+    printWindow.focus();
+}
+
+//Xuất tab ra excel
+function exportDashboardExcel() {
+    let type = currentTabType;   // "company" hoặc "department"
+
+    if (type == null) {
+       type = 'company';
+    }
+    let year = $('#year').val();
+    let deptId = currentUserDeptId || '';
+
+        console.log(type, year, deptId);
+
+    const url = `/Contracts/ExportDashboardToExcel?type=${type}&year=${year}&departmentId=${deptId}`;
+    window.open(url, '_blank'); // mở tab mới -> browser tự download
+}
+
+function exportDashboardExcelLH() {
+    let type = currentTabType;   // "company" hoặc "department"
+
+    if (type == null) {
+       type = 'company';
+    }
+    let year = $('#year').val();
+    let deptId = currentUserDeptId || '';
+
+        console.log(type, year, deptId);
+
+    const url = `/Contracts/ExportDashboardToExcelLH?type=${type}&year=${year}&departmentId=${deptId}`;
+    window.open(url, '_blank'); // mở tab mới -> browser tự download
+}
+
+
+//Vẽ biểu đồ đứng SL-DT-TN
+        function loadProductionChart(type, departmentId, tabId) {
+            $.ajax({
+                url: '/Contracts/GetProduction5Years',
+                type: 'GET',
+                data: {type: type, departmentId: departmentId },
+                success: function (res) {
+                    const labels = res.map(x => x.Year.toString());
+                    const sanLuong = res.map(x => x.SanLuong);
+                    const doanhThu = res.map(x => x.DoanhThu);
+                    const thuNo = res.map(x => x.ThuNo);
+                    drawProductionChart(labels, sanLuong, doanhThu, thuNo, tabId);
+                },
+                error: function () {
+                    toastr.error('Không tải được dữ liệu biểu đồ');
+                }
+            });
+        }
+
+        function loadProductionChartLH(type, departmentId, tabId) {
+            $.ajax({
+                url: '/Contracts/GetProduction5Years',
+                type: 'GET',
+                data: { type: type, departmentId: departmentId },
+                success: function (res) {
+                    const labels = res.map(x => x.Year.toString());
+                    const sLTBN = res.map(x => x.SL_TBN);
+                    const sLTBAL = res.map(x => x.SL_TBAL);
+                    const sLTNHT = res.map(x => x.SL_TNHT);
+                    const sLTNPTN = res.map(x => x.SL_TNPTN);
+                    const sLTBTC = res.map(x => x.SL_TBTC);
+                    const sLHL = res.map(x => x.SL_HL);
+                    drawProductionChartLH(labels, sLTBN, sLTBAL, sLTNHT, sLTNPTN, sLTBTC, sLHL, tabId);
+                },
+                error: function () {
+                    toastr.error('Không tải được dữ liệu biểu đồ');
+                }
+            });
+        }
+
+        // 🔹 Plugin hiển thị giá trị trên đầu cột
+        const valueLabelPlugin = {
+            id: 'valueLabel',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!meta.visible) return;
+
+                    meta.data.forEach((bar, index) => {
+                        const value = dataset.data[index];
+                        if (!value) return;
+
+                        ctx.save();
+                        ctx.fillStyle = '#333';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.textAlign = 'center';
+
+                        const displayValue = (value / 1_000_000).toFixed(1);
+                        ctx.fillText(displayValue, bar.x, bar.y - 6);
+
+                        ctx.restore();
+                    });
+                });
+            }
+        };
+
+        window.productionCharts = window.productionCharts || {};
+        function drawProductionChart(labels, sanLuong, doanhThu, thuNo, tabId) {
+
+            const canvasId = 'productionChart_' + tabId;
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+
+            if (window.productionCharts[tabId] instanceof Chart) {
+                window.productionCharts[tabId].destroy();
+            }
+
+            window.productionCharts[tabId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Sản lượng',
+                            data: sanLuong,
+                            backgroundColor: '#4e73df',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                            //categoryPercentage: 0.95
+                        },
+                        {
+                            label: 'Doanh thu',
+                            data: doanhThu,
+                            backgroundColor: '#1cc88a',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                            //categoryPercentage: 0.95
+                        },
+                        {
+                            label: 'Thu nợ',
+                            data: thuNo,
+                            backgroundColor: '#f6c23e',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                            //categoryPercentage: 0.95
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'BIỂU ĐỒ SẢN LƯỢNG – DOANH THU – THU NỢ (5 NĂM)',
+                            font: { size: 15, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ctx.dataset.label + ': ' +
+                                        (ctx.raw / 1_000_000).toFixed(1) + ' tỷ';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            categoryPercentage: 0.2, // 🔥 nhóm năm hẹp → các năm cách nhau rõ
+                            ticks: {
+                                font: { size: 14 }
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return (value / 1_000_000) + ' tỷ';
+                                },
+                                font: { size: 14 }
+                            }
+                        }
+                    }
+                },
+                plugins: [valueLabelPlugin]   // ⭐ HIỂN THỊ GIÁ TRỊ TRÊN CỘT
+            });
+        }
+
+        window.productionChartsLH = window.productionChartsLH || {};
+        function drawProductionChartLH(labels, sLTBN, sLTBAL, sLTNHT, sLTNPTN, sLTBTC, sLHL, tabId) {
+
+            const canvasId = 'productionChartLH_' + tabId;
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+
+            if (window.productionChartsLH[tabId] instanceof Chart) {
+                window.productionChartsLH[tabId].destroy();
+            }
+
+            window.productionChartsLH[tabId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'KĐAT TBN', //sanLuong.Name,
+                            data: sLTBN,
+                            backgroundColor: '#4e73df',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                        },
+                        {
+                            label: 'KĐAT TBAL',
+                            data: sLTBAL,
+                            backgroundColor: '#1cc88a',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                        },
+                        {
+                            label: 'Thí nghiệm HT',
+                            data: sLTNHT,
+                            backgroundColor: '#f6c23e',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                        },
+                        {
+                            label: 'Thí nghiệm PTN',
+                            data: sLTNPTN,
+                            backgroundColor: '#f28e2b',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                        },
+                        {
+                            label: 'TB Công nghệ',
+                            data: sLTBTC,
+                            backgroundColor: '#76b7b2',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                        },
+                        {
+                            label: 'HLAT',
+                            data: sLHL,
+                            backgroundColor: '#ff9da7',
+                            borderRadius: 5,
+                            barPercentage: 0.7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'BIỂU ĐỒ SẢN LƯỢNG CÁC LOẠI HÌNH: TBN - TBAL - THÍ NGHIỆM - TBCN - HLAT (5 NĂM)',
+                            font: { size: 15, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    return ctx.dataset.label + ': ' +
+                                        (ctx.raw / 1_000_000).toFixed(1) + ' tỷ';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            categoryPercentage: 0.2, // 🔥 nhóm năm hẹp → các năm cách nhau rõ
+                            ticks: {
+                                font: { size: 14 }
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return (value / 1_000_000) + ' tỷ';
+                                },
+                                font: { size: 14 }
+                            }
+                        }
+                    }
+                },
+                plugins: [valueLabelPlugin]   // ⭐ HIỂN THỊ GIÁ TRỊ TRÊN CỘT
+            });
+        }
+    //Vẽ biểu đồ tròn (Pie) - SL theo loại hình công việc
+        function loadLoaiHinhPieChart(type, departmentId, year, tabId) {
+            year = year || $('#year').val();
+            year = parseInt(year);
+            $.ajax({
+                url: '/Contracts/GetProductionByLoaiHinh',
+                type: 'GET',
+                data: {
+                    type: type,
+                    departmentId: departmentId,
+                    year: year
+                },
+                success: function (res) {
+                    drawLoaiHinhPieChart(res, year, tabId);
+                }
+            });
+        }
+
+        window.loaiHinhPieCharts = window.loaiHinhPieCharts || {};
+        function drawLoaiHinhPieChart(data, year, tabId) {
+            const canvasId = 'pieLoaiHinhChart_' + tabId;
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+
+            if (window.loaiHinhPieCharts[tabId] instanceof Chart) {
+                window.loaiHinhPieCharts[tabId].destroy();
+            }
+
+            const labels = [
+                'Thiết bị nâng', 'TB Áp lực', 'Hợp quy - Giám định', 'Huấn luyện',
+                'Áp kế', 'TN hiện trường', 'TN Phòng TN',
+                'TB Công nghệ', 'Tư vấn XD', 'Khác'
+            ];
+
+            const values = [
+                data.SL_TBN, data.SL_TBAL, data.SL_HQ, data.SL_HL,
+                data.SL_AK, data.SL_TNHT, data.SL_TNPTN,
+                data.SL_TBTC, data.SL_TVXD, data.SL_KHAC
+            ];
+
+            const total = values.reduce((a, b) => a + b, 0);
+
+            window.loaiHinhPieCharts[tabId] = new Chart(ctx, {
+                type: 'doughnut',//'pie'
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: [
+                            '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+                            '#59a14f', '#edc949', '#af7aa1',
+                            '#ff9da7', '#9c755f', '#bab0ab'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '15%',//lỗ tâm hình tròn
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'CƠ CẤU SẢN LƯỢNG THEO LOẠI HÌNH – ' + year,
+                            font: { size: 15, weight: 'bold' }
+                        },
+                        legend: { position: 'right' },
+
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    const v = ctx.raw || 0;
+                                    const p = total > 0 ? (v / total * 100).toFixed(1) : 0;
+                                    return ctx.label + ': ' +
+                                        v.toLocaleString() + ' (' + p + '%)';
+                                }
+                            }
+                        },
+
+                        // 🔥🔥🔥 CHỖ QUAN TRỌNG NHẤT 🔥🔥🔥
+                        datalabels: {
+                            color: '#ffffff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            align: 'center',
+                            anchor: 'center',
+
+                            formatter: function (value, ctx) {
+                                const dataArr = ctx.chart.data.datasets[0].data;
+                                const labels = ctx.chart.data.labels;
+                                const total = dataArr.reduce((a, b) => a + b, 0);
+                                if (!value || total === 0) return '';
+                                const percent = value / total * 100;
+                                if (percent < 5) return '';// ❌ Ẩn nếu < 5%
+
+                                return labels[ctx.dataIndex] + '\n' + percent.toFixed(1) + '%';// ✅ Label + %
+                            }
+                        }
+
+                    }
+                },
+                plugins: [ChartDataLabels]   // 👈 phần % trên lát
+            });
+        }
+
+
+
+        /*
+        function loadLoaiHinhPieChart(type, departmentId, year) {
+
+            $.ajax({
+                url: '/Contracts/GetProductionByLoaiHinh',
+                type: 'GET',
+                data: {
+                    type: type,
+                    departmentId: departmentId,
+                    year: year
+                },
+                success: function (res) {
+                    drawLoaiHinhPieChart(res);
+                },
+                error: function () {
+                    toastr.error('Không tải được dữ liệu biểu đồ loại hình');
+                }
+            });
+        }
+        window.loaiHinhPieChart = null;
+        function drawLoaiHinhPieChart(data) {
+            const labels = [
+                'Thiết bị nâng',
+                'TB Áp lực',
+                'Hợp quy - Giám định',
+                'Huấn luyện',
+                'Áp kế',
+                'TN hiện trường',
+                'TN Phòng TN',
+                'TB Công nghệ',
+                'Tư vấn XD',
+                'Khác'
+            ];
+
+            const values = [
+                data.SL_TBN,
+                data.SL_TBAL,
+                data.SL_HQ,
+                data.SL_HL,
+                data.SL_AK,
+                data.SL_TNHT,
+                data.SL_TNPTN,
+                data.SL_TBTC,
+                data.SL_TVXD,
+                data.SL_KHAC
+            ];
+
+            const total = values.reduce((a, b) => a + b, 0);
+            const ctx = document.getElementById('pieLoaiHinhChart').getContext('2d');
+            if (window.loaiHinhPieChart instanceof Chart) {
+                window.loaiHinhPieChart.destroy();
+            }
+
+            window.loaiHinhPieChart = new Chart(ctx, {
+                type: 'doughnut', // hoặc 'pie'
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: [
+                            '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+                            '#59a14f', '#edc949', '#af7aa1', '#ff9da7',
+                            '#9c755f', '#bab0ab'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '55%',
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'TỶ TRỌNG SẢN LƯỢNG THEO LOẠI HÌNH',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    const value = ctx.raw || 0;
+                                    const percent = total > 0 ? (value / total * 100).toFixed(1) : 0;
+                                    return ctx.label + ': ' +
+                                        value.toLocaleString() + ' (' + percent + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        */
+
+
+
+    </script>
+
+    
+
+}

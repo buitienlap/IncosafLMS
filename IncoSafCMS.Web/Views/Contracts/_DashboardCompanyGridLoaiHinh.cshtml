@@ -1,0 +1,389 @@
+﻿@model List<IncosafCMS.Web.Providers.LargeDatabaseDataProvider.FinanceSummary>
+
+@using DevExpress.Web.Mvc.UI
+@using DevExpress.Web
+@{
+    var reportType = ViewBag.ReportType ?? "company";
+    var year = ViewBag.CurrentYear ?? DateTime.Now.Year;
+    // --- TÍNH TỔNG TỪ MODEL (server-side) - tương thích C#5 (không dùng ?. operator) ---
+    double totalSLAK = (Model != null) ? Model.Sum(x => x.SL_AK) : 0.0;
+    double totalSLHL = (Model != null) ? Model.Sum(x => x.SL_HL) : 0.0;
+    double totalSLHQ = (Model != null) ? Model.Sum(x => x.SL_HQ) : 0.0;
+    double totalSLKHAC = (Model != null) ? Model.Sum(x => x.SL_KHAC) : 0.0;
+    double totalSLTBAL = (Model != null) ? Model.Sum(x => x.SL_TBAL) : 0.0;
+    double totalSLTBN = (Model != null) ? Model.Sum(x => x.SL_TBN) : 0.0;
+    double totalSLTBTC = (Model != null) ? Model.Sum(x => x.SL_TBTC) : 0.0;
+    double totalSLTNHT = (Model != null) ? Model.Sum(x => x.SL_TNHT) : 0.0;
+    double totalSLTNPTN = (Model != null) ? Model.Sum(x => x.SL_TNPTN) : 0.0;
+    double totalSLTVXD = (Model != null) ? Model.Sum(x => x.SL_TVXD) : 0.0;
+    double totalAll =
+    totalSLTBN + totalSLTBAL + totalSLHQ + totalSLHL + totalSLAK +
+    totalSLTNHT + totalSLTNPTN + totalSLTVXD + totalSLTBTC + totalSLKHAC;
+}
+@{
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "gvDashboardCompanyLH";
+        settings.CallbackRouteValues = new
+        {
+            Controller = "Contracts",
+            Action = "DashboardCompanyGridLH"
+        };
+
+        settings.Settings.UseFixedTableLayout = true;
+        settings.Styles.Header.Wrap = DefaultBoolean.True;
+        settings.SettingsPager.Visible = false;
+        settings.Settings.ShowFooter = true;
+        settings.SettingsBehavior.AllowSort = false;
+        settings.SettingsPager.PageSize = 120;
+
+        settings.Styles.Header.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        settings.Styles.Header.VerticalAlign = System.Web.UI.WebControls.VerticalAlign.Middle;
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(2);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(2);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(2);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(2);
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "TT";
+            column.FieldName = "STT";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(30);
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.EditFormSettings.Visible = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+
+        });
+        if (reportType == "company")
+        {
+            settings.KeyFieldName = "DepartmentName";
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "DepartmentName";
+                c.Caption = "Tên đơn vị";
+                c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+                c.Width = 160;
+                c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            });
+        }
+        else
+        {
+            settings.KeyFieldName = "EmployeeName";
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "EmployeeName";
+                c.Caption = "Tên nhân viên";
+                c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+                c.Width = 140;
+                c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            });
+        }
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_TBN";
+            c.Caption = "Thiết bị nâng";
+            c.Width = 70;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeTBN";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_TBAL";
+            c.Caption = "TB Áp lực";
+            c.Width = 70;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeTBAL";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_HQ";
+            c.Caption = "HQ - Giám định";
+            c.Width = 70;
+            c.HeaderStyle.Font.Size = 9;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeHQ";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_HL";
+            c.Caption = "Huấn luyện";
+            c.Width = 70;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            //c.CellStyle.ForeColor = System.Drawing.Color.DarkBlue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeHL";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_AK";
+            c.Caption = "Áp kế";
+            c.Width = 70;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeAK";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_TNHT";
+            c.Caption = "TN hiện trường";
+            c.Width = 70;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            //c.CellStyle.ForeColor = System.Drawing.Color.DarkBlue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeTNHT";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_TNPTN";
+            c.Caption = "TN Phòng TN ";
+            c.Width = 70;
+            c.HeaderStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeTNPTN";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_TBTC";
+            c.Caption = "TB Công nghệ";
+            c.Width = 70;
+            //c.HeaderStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeTBTC";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_TVXD";
+            c.Caption = "Tư vấn XD";
+            c.Width = 70;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Right;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TyLeTVXD";
+            c.Caption = "%";
+            c.Width = 35;
+            c.CellStyle.Font.Size = 9;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.PropertiesEdit.DisplayFormatString = "P0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.UnboundType = DevExpress.Data.UnboundColumnType.Decimal;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "SL_KHAC";
+            c.Caption = "SL Khác";
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.Width = 70;
+            c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "TongDonVi";
+            if (reportType == "company")
+            {
+                c.Caption = "Tổng đơn vị";
+            }
+            else
+            {
+                c.Caption = "Tổng nhân viên";
+            }   
+            c.PropertiesEdit.DisplayFormatString = "N0";
+            c.CellStyle.ForeColor = System.Drawing.Color.Blue;
+            c.CellStyle.Font.Bold = true;
+            c.CellStyle.Font.Size = 10;
+            c.HeaderStyle.Wrap = DefaultBoolean.True;
+            c.Width = 80;
+            c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+        });
+        // Tổng cộng cuối bảng
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_TBN").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_TBAL").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_HQ").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_HL").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_AK").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_TNHT").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_TNPTN").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_TBTC").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_TVXD").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "SL_KHAC").DisplayFormat = "{0:N0}";
+        settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, "TongDonVi").DisplayFormat = "{0:N0}";
+
+        settings.Styles.Footer.ForeColor = System.Drawing.Color.Black;
+        settings.Styles.Footer.Font.Bold = true;
+        settings.Styles.Header.Font.Bold = true;
+
+        settings.CustomColumnDisplayText = (sender, e) =>
+        {
+            if (e.Column.FieldName == "STT")
+            {
+                var i = e.VisibleIndex + 1;
+                e.DisplayText = (i).ToString();
+            }
+
+        };
+
+        settings.CustomSummaryCalculate = (sender, e) =>
+        {
+            if (!e.IsTotalSummary) return;
+
+            if (e.SummaryProcess == DevExpress.Data.CustomSummaryProcess.Start)
+                e.TotalValue = 0;
+
+            if (e.SummaryProcess == DevExpress.Data.CustomSummaryProcess.Calculate)
+                e.TotalValue = Convert.ToDecimal(e.TotalValue) + Convert.ToDecimal(e.FieldValue ?? 0);
+
+        };
+
+        settings.HtmlFooterCellPrepared = (s, e) =>
+        {
+            var col = e.Column as DevExpress.Web.GridViewDataColumn;
+            if (col == null)
+                return;
+
+            string field = col.FieldName;
+            if (string.IsNullOrEmpty(field))
+                return;
+
+            double totalValue = 0;
+
+            if (field == "SL_TBN") totalValue = totalSLTBN;
+            else if (field == "SL_TBAL") totalValue = totalSLTBAL;
+            else if (field == "SL_HQ") totalValue = totalSLHQ;
+            else if (field == "SL_HL") totalValue = totalSLHL;
+            else if (field == "SL_AK") totalValue = totalSLAK;
+            else if (field == "SL_TNHT") totalValue = totalSLTNHT;
+            else if (field == "SL_TNPTN") totalValue = totalSLTNPTN;
+            else if (field == "SL_TBTC") totalValue = totalSLTBTC;
+            else if (field == "SL_TVXD") totalValue = totalSLTVXD;
+            else if (field == "SL_KHAC") totalValue = totalSLKHAC;
+            else if (field == "TongDonVi") totalValue = totalAll;
+            else
+                return;
+
+            double percent = totalAll > 0 ? totalValue / totalAll * 100 : 0;
+
+            e.Cell.Text =
+                "<div style='text-align:right;font-weight:bold'>" +
+                    totalValue.ToString("N0") +
+                "</div>" +
+                "<div style='text-align:right;font-size:14px;font-weight:bold;color:blue'>" +
+                    percent.ToString("0.0") + "%" +
+                "</div>";
+        };
+
+    });
+
+}
+
+@grid.Bind(Model).GetHtml()

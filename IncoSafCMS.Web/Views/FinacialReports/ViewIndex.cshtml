@@ -1,0 +1,158 @@
+﻿
+@{
+    ViewBag.Title = "Doanh thu - Tiền về";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">    
+    function addnewReport() {
+        $('#modalAddNewReportWrapper').html("");
+        $.ajax({
+            url: '/FinacialReports/ApplyReportSpreadsheetFilterModePartial/', // The method name + paramater
+            success: function (data) {
+                $('#modalAddNewReportWrapper').html(data); // This should be an empty div where you can inject your new html (the partial view)
+
+            }
+        });
+    }
+</script>
+
+<style>
+    .list-group-item {
+        height: 30px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .dxtc-leftIndent {
+        display: none !important;
+    }
+
+    .dxtc-rightIndent {
+        display: none !important;
+    }
+    .dxtcSys.dxtc-flex > .dxtc-stripContainer.dxtc-wrapper .dxtc-strip {
+        display: none !important;
+    }
+    .dxrSys.dxr-hasContextTabs .dxtc-top > .dxtc-stripContainer {
+        display: none !important;
+    }
+    .dxrControl_Material .dxr-groupList .dxr-group {
+        margin: 2px 16px 0 16px;
+    }
+    .dxrControl_Material.dxr-oneLineMode .dxr-tabContent, .dxrControl_Material.dxr-grLabelsHidden.dxr-oneLineMode .dxr-tabContent{
+        height: 35px;
+    }
+    /*.dxgvGroupRow_Material td.dxgv, .dxgvFocusedGroupRow_Material td.dxgv, .dxgvDataRow_Material td.dxgv {
+        padding: 5px !important;
+    }*/
+</style>
+
+<div class="wrapper animated fadeInRight">
+    <div class="row">
+        <div class="full-height">
+            <div class="col-lg-12" style="padding-left: 0px; padding-right: 0px;">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>@GridViewHelper.FinacialReportFilterName: Từ ngày @GridViewHelper.FinacialReportFilterFromDate.ToString("dd/MM/yyyy") đến ngày @GridViewHelper.FinacialReportFilterToDate.ToString("dd/MM/yyyy") - Phòng ban: @GridViewHelper.FinacialReportFilterDepartmentName - Nhân viên: @GridViewHelper.FinacialReportFilterEmployeeName</h5>
+                        <div class="text-right">
+                            <button class="btn btn-primary btn-rounded btn-xs" data-toggle="modal" data-target="#addnewreportModal" onclick="addnewReport()">Tạo mới báo cáo</button>
+                            <div class="modal inmodal" id="addnewreportModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content animated bounceInRight">
+                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                                            <h4>Tạo mới báo cáo</h4>
+                                        </div>
+                                        <div class="modal-body" id="modalAddNewReportWrapper" style="padding: 10px">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="padding: 5px">
+                        <div class="scroll_content">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    @Html.DevExpress().PageControl(
+                                settings =>
+                                {
+                                    settings.Name = "pcFinacialReports";
+                                    settings.ActivateTabPageAction = ActivateTabPageAction.Click;
+                                    settings.EnableHotTrack = true;
+                                    settings.SaveStateToCookies = true;
+                                    settings.TabAlign = TabAlign.Left;
+                                    settings.TabPosition = TabPosition.Top;
+                                    settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+                                    settings.TabAlign = TabAlign.Justify;
+                                    settings.TabPosition = TabPosition.Bottom;
+                                    settings.ShowTabs = false;
+                                    settings.Styles.Content.Paddings.Padding = System.Web.UI.WebControls.Unit.Pixel(0);
+
+                                    settings.TabPages.Add("BÁO CÁO").SetContent(() =>
+                                    {
+                                        switch (GridViewHelper.FinacialReportFilterType)
+                                        {
+                                            case 0:
+                                                Html.RenderAction("THReportSpreadsheetPartial", "FinacialReports");
+                                                break;
+                                            case 1:
+                                                Html.RenderAction("HDDTHReportSpreadsheetPartial", "FinacialReports");
+                                                break;
+                                            case 2:
+                                                Html.RenderAction("CNReportSpreadsheetPartial", "FinacialReports");
+                                                break;
+                                            case 3:
+                                                Html.RenderAction("TVReportSpreadsheetPartial", "FinacialReports");
+                                                break;
+                                            case 4:
+                                                Html.RenderAction("DTReportSpreadsheetPartial", "FinacialReports");
+                                                break;
+                                            case 5:
+                                                Html.RenderAction("SLReportSpreadsheetPartial", "FinacialReports");
+                                                break;
+                                            case 6:
+                                                Html.RenderAction("HKDReportSpreadsheetPartial", "FinacialReports");
+                                                break;
+                                        }
+
+                                    });
+                                }).GetHtml()
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Styles {
+    @Styles.Render("~/plugins/sweetAlertStyles")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("/signalr/hubs")
+    @Scripts.Render("~/plugins/sweetAlert")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Add slimscroll to element
+            $('.scroll_content').slimscroll({
+                height: 'calc(100vh - 170px)'
+            });
+
+            $('.dxssControlSys').height('calc(100vh - 170px)');
+
+        });
+
+
+    </script>
+
+}
