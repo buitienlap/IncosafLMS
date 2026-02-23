@@ -1,0 +1,6 @@
+/.vs
+bin
+obj
+/packages
+Logs
+IncoSafCMS.Web/App_Data/PreviewCache/
