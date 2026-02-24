@@ -66,6 +66,7 @@
     <Compile Include="DomainModels\ActivityLog.cs" />
     <Compile Include="DomainModels\BaseEntity.cs" />
     <Compile Include="DomainModels\Contract.cs" />
+    <Compile Include="DomainModels\Course.cs" />
     <Compile Include="DomainModels\CourseCategory.cs" />
     <Compile Include="DomainModels\Customer.cs" />
     <Compile Include="DomainModels\Department.cs" />

@@ -1,0 +1,22 @@
+@model IncosafCMS.Core.DomainModels.Course
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Course Details</h2>
+
+<div>
+    <h4>@Model.Title</h4>
+    <dl class="row">
+        <dt class="col-sm-2">Code</dt><dd class="col-sm-10">@Model.Code</dd>
+        <dt class="col-sm-2">Category</dt><dd class="col-sm-10">@Model.CourseCategory?.Name</dd>
+        <dt class="col-sm-2">Active</dt><dd class="col-sm-10">@Model.IsActive</dd>
+        <dt class="col-sm-2">Created</dt><dd class="col-sm-10">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+        <dt class="col-sm-2">Updated</dt><dd class="col-sm-10">@(Model.UpdatedAt != null ? Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "")</dd>
+        <dt class="col-sm-2">Description</dt><dd class="col-sm-10">@Html.Raw(Model.Description != null ? Model.Description.Replace("\n","<br/>") : "")</dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }, new { @class = "btn btn-warning" })
+    @Html.ActionLink("Back to list", "Index", null, new { @class = "btn btn-secondary ml-1" })
+</p>

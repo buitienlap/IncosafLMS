@@ -258,6 +258,7 @@
     <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\CourseCategoryController.cs" />
+    <Compile Include="Controllers\CoursesController.cs" />
     <Compile Include="Controllers\CustomerAdminController.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
     <Compile Include="Controllers\DepartmentsController.cs" />
@@ -794,6 +795,14 @@
     <Content Include="Views\Activity\Index.cshtml" />
     <Content Include="Views\CourseCategory\_CreateEdit.cshtml" />
     <Content Include="Views\CourseCategory\Index.cshtml" />
+    <Content Include="Views\Courses\Create.cshtml" />
+    <Content Include="Views\Courses\Delete.cshtml" />
+    <Content Include="Views\Courses\Details.cshtml" />
+    <Content Include="Views\Courses\Edit.cshtml" />
+    <Content Include="Views\Courses\Index.cshtml" />
+    <Content Include="Views\Admin\CourseManage.cshtml" />
+    <Content Include="Views\Courses\_CreateEdit.cshtml" />
+    <Content Include="Views\Courses\_Details.cshtml" />
     <None Include="Web.Incosaf.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

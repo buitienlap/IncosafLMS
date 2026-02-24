@@ -40,11 +40,19 @@ namespace IncosafCMS.Web.Controllers
             return View();
         }
 
-        //public ActionResult EquipLibrary()
+        public ActionResult CourseCategory()
+        {
+            return View(uow.Repository<CourseCategory>().GetAll());
+        }
+        
+        public ActionResult CourseManage()
+        {
+            return View(uow.Repository<Course>().GetAll());
+        }
+        //public ActionResult QuestionManage()
         //{
-        //    return View(uow.Repository<OriginalEquipment>().GetAll());
+        //    return View(uow.Repository<Question>().GetAll());
         //}
-
         public ActionResult Customer()
         {
             return View(uow.Repository<Customer>().GetAll());

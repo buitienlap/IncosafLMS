@@ -1,0 +1,23 @@
+@model IncosafCMS.Core.DomainModels.Course
+<div class="course-details-modal">
+    <h4>@Model.Title</h4>
+    <dl class="row">
+        <dt class="col-sm-3">Code</dt>
+        <dd class="col-sm-9">@Model.Code</dd>
+
+        <dt class="col-sm-3">Category</dt>
+        <dd class="col-sm-9">@(Model.CourseCategory != null ? Model.CourseCategory.Name : "")</dd>
+
+        <dt class="col-sm-3">Active</dt>
+        <dd class="col-sm-9">@(Model.IsActive ? "Yes" : "No")</dd>
+
+        <dt class="col-sm-3">Created</dt>
+        <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+
+        <dt class="col-sm-3">Updated</dt>
+        <dd class="col-sm-9">@(Model.UpdatedAt != null ? Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "")</dd>
+
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@Html.Raw(Model.Description != null ? Model.Description.Replace("\n","<br/>") : "")</dd>
+    </dl>
+</div>
