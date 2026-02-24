@@ -1,0 +1,31 @@
+@model IEnumerable<IncosafCMS.Core.DomainModels.Question>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th style="width:50px">#</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Difficulty</th>
+            <th style="width:150px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any()) {
+            foreach (var q in Model) {
+                <tr>
+                    <td>@q.Id</td>
+                    <td>@q.Title</td>
+                    <td>@q.CourseCategory?.Name</td>
+                    <td>@q.Difficulty</td>
+                    <td>
+                        <button class="btn btn-xs btn-info" onclick="openEditQuestion(@q.Id); $('#addQuestionModal').modal('show');">S?a</button>
+                        <button class="btn btn-xs btn-danger" onclick="deleteQuestion(@q.Id)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        } else {
+            <tr><td colspan="5">Không có câu h?i nào</td></tr>
+        }
+    </tbody>
+</table>

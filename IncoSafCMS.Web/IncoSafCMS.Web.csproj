@@ -269,6 +269,7 @@
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\NotificationsController.cs" />
     <Compile Include="Controllers\PermissionsController.cs" />
+    <Compile Include="Controllers\QuestionController.cs" />
     <Compile Include="Controllers\RolesAdminController.cs" />
     <Compile Include="Controllers\UploadController.cs" />
     <Compile Include="Controllers\UserAdminController.cs" />
@@ -803,6 +804,9 @@
     <Content Include="Views\Admin\CourseManage.cshtml" />
     <Content Include="Views\Courses\_CreateEdit.cshtml" />
     <Content Include="Views\Courses\_Details.cshtml" />
+    <Content Include="Views\Question\Index.cshtml" />
+    <Content Include="Views\Question\_QuestionListPartial.cshtml" />
+    <Content Include="Views\Question\_QuestionEdit.cshtml" />
     <None Include="Web.Incosaf.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

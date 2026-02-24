@@ -85,6 +85,14 @@ namespace IncosafCMS.Data
                 .ToTable("CourseCategory")
                 .Property(e => e.Id)
                 .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            modelBuilder.Entity<Question>()
+                .ToTable("Question")
+                .Property(e => e.Id)
+                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            modelBuilder.Entity<Answer>()
+                .ToTable("Answer")
+                .Property(e => e.Id)
+                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
         }
     }
 }

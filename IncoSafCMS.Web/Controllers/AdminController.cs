@@ -49,10 +49,6 @@ namespace IncosafCMS.Web.Controllers
         {
             return View(uow.Repository<Course>().GetAll());
         }
-        //public ActionResult QuestionManage()
-        //{
-        //    return View(uow.Repository<Question>().GetAll());
-        //}
         public ActionResult Customer()
         {
             return View(uow.Repository<Customer>().GetAll());

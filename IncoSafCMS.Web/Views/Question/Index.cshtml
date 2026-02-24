@@ -1,0 +1,97 @@
+@model IEnumerable<IncosafCMS.Core.DomainModels.Question>
+
+@{
+    ViewBag.Title = "Qu?n lý ngân hàng câu h?i";
+}
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Ngân hàng câu h?i</h5>
+                    <div class="text-right">
+                        <button class="btn btn-primary btn-rounded btn-xs" data-toggle="modal" data-target="#addQuestionModal" onclick="openAddQuestion()">Thêm m?i</button>
+                    </div>
+                </div>
+                <div class="ibox-content" style="padding: 5px">
+                    <div id="questionListWrapper">
+                        @Html.Partial("~/Views/Question/_QuestionListPartial.cshtml", Model)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="addQuestionModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="questionModalTitle">Thêm câu h?i</h4>
+            </div>
+            <div class="modal-body" id="questionModalBody">
+                <!-- form injected by AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function refreshQuestionList() {
+            $.get('@Url.Action("ListPartial", "Question")', function (html) {
+                $('#questionListWrapper').html(html);
+            });
+        }
+
+        function openAddQuestion() {
+            $('#questionModalTitle').text('Thêm câu h?i');
+            $('#questionModalBody').html('');
+            $.get('@Url.Action("Create", "Question")', function (html) {
+                $('#questionModalBody').html(html);
+                $('#addQuestionModal').modal('show');
+            });
+        }
+
+        function openEditQuestion(id) {
+            $('#questionModalTitle').text('Ch?nh s?a câu h?i');
+            $('#questionModalBody').html('');
+            $.get('@Url.Action("Edit", "Question")', { id: id }, function (html) {
+                $('#questionModalBody').html(html);
+                $('#addQuestionModal').modal('show');
+            });
+        }
+
+        function submitQuestionForm(form) {
+            var $form = $(form);
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                data: $form.serialize(),
+                success: function (res) {
+                    if (res && res.success) {
+                        $('#addQuestionModal').modal('hide');
+                        refreshQuestionList();
+                    } else {
+                        $('#questionModalBody').html(res);
+                    }
+                }
+            });
+            return false;
+        }
+
+        function deleteQuestion(id) {
+            if (!confirm('B?n có ch?c mu?n xóa câu h?i này?')) return;
+            $.post('@Url.Action("Delete", "Question")', { id: id }, function (res) {
+                if (res && res.success) {
+                    refreshQuestionList();
+                } else {
+                    alert(res && res.message ? res.message : 'L?i khi xóa');
+                }
+            });
+        }
+    </script>
+}
