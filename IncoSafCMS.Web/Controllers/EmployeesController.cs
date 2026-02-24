@@ -380,26 +380,26 @@ namespace IncosafCMS.Web.Controllers
         }
 
         [ValidateInput(false)]
-        public ActionResult ContractsOfEmployeePartial()
+        public ActionResult ActivityOfEmployeePartial()
         {
             if (GridViewHelper.SelectedEmployeeID < 0)
             {
-                var model = new List<Contract>();
-                return PartialView("_ContractsOfEmployeePartial", model);
+                var model = new List<ActivityLog>();
+                return PartialView("_ActivityOfEmployeePartial", model);
             }
             else
             {
-                //var contracts = IncosafCMS.Web.Providers.ContractDataProvider.Contracts1.ToList();
+                //var contracts = IncosafCMS.Web.Providers.ActivityDataProvider.Contracts1.ToList();
                 //var model = contracts.Where(x => x.own?.Id == GridViewHelper.SelectedEmployeeID);
-                var model = ContractDataProvider.GetContractsByOwnerID(GridViewHelper.SelectedEmployeeID);
-                return PartialView("_ContractsOfEmployeePartial", model);
+                var model = ActivityDataProvider.GetActivityByOwnerID(GridViewHelper.SelectedEmployeeID);
+                return PartialView("_ActivityOfEmployeePartial", model);
             }
         }
-        public ActionResult CustomCallBackContractOfEmployeeAction(int selectedemployee)
+        public ActionResult CustomCallBackActivityOfEmployeeAction(int selectedemployee)
         {
             if (string.IsNullOrEmpty(selectedemployee.ToString()) || selectedemployee < 0) GridViewHelper.SelectedEmployeeID = -1;
             else GridViewHelper.SelectedEmployeeID = selectedemployee;
-            return ContractsOfEmployeePartial();
+            return ActivityOfEmployeePartial();
         }
         //public ActionResult SanLuongDKOfEmployeeEditPartial()
         //{

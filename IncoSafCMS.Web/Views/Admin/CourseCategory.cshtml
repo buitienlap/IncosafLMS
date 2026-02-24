@@ -1,0 +1,137 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.CourseCategory>
+
+@{
+    ViewBag.Title = "Phân nhóm bài học";
+}
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Phân nhóm bài học (Cây phân cấp)</h5>
+                    <div class="ibox-tools">
+                        <button class="btn btn-primary btn-sm" id="btnAddRoot">Tạo nhóm gốc</button>
+                    </div>
+                </div>
+                <div class="ibox-content" style="padding: 15px;">
+                    <div id="courseCategoryTree" class="course-tree">
+                        @{
+                            var items = Model != null ? Model.ToList() : new List<IncosafCMS.Core.DomainModels.CourseCategory>();
+
+                            @helper RenderTree(IEnumerable<IncosafCMS.Core.DomainModels.CourseCategory> all, int? parentId)
+                            {
+                                var children = all.Where(c => c.ParentId == parentId).OrderBy(c => c.SortOrder).ToList();
+                                if (children.Any())
+                                {
+                                    <ul class="list-unstyled">
+                                        @foreach (var ch in children)
+                                        {
+                                            <li>
+                                                <div class="node-item" data-id="@ch.Id" data-parent="@ch.ParentId">
+                                                    <span class="node-title">@ch.Name</span>
+                                                    <span class="node-actions">
+                                                        <button class="btn btn-xs btn-success btn-add-child" data-parent="@ch.Id">Thêm</button>
+                                                        <button class="btn btn-xs btn-info btn-edit" data-id="@ch.Id">Sửa</button>
+                                                        <button class="btn btn-xs btn-danger btn-delete" data-id="@ch.Id">Xóa</button>
+                                                    </span>
+                                                </div>
+                                                @RenderTree(all, ch.Id)
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            }
+
+                            @RenderTree(items, null)
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal wrapper for create/edit forms loaded via AJAX -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="categoryModalTitle"></h4>
+                </div>
+                <div class="modal-body" id="categoryModalBody">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .course-tree ul { margin-left: 20px; }
+    .node-item { display:flex; justify-content:space-between; align-items:center; padding:4px 8px; border-radius:3px; }
+    .node-item:hover { background:#f7f7f7; }
+    .node-actions button { margin-left:6px; }
+</style>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(function () {
+            function loadModal(url, title) {
+                $('#categoryModalTitle').text(title);
+                $('#categoryModalBody').html('Đang tải...');
+                $('#categoryModal').modal('show');
+                $.get(url).done(function (html) {
+                    $('#categoryModalBody').html(html);
+                }).fail(function () {
+                    $('#categoryModalBody').html('<div class="text-danger">Không thể tải biểu mẫu.</div>');
+                });
+            }
+
+            // Add root
+            $('#btnAddRoot').click(function () {
+                loadModal('@Url.Action("Create", "CourseCategory")?parentId=', 'Tạo nhóm gốc');
+            });
+
+            // Add child
+            $('#courseCategoryTree').on('click', '.btn-add-child', function (e) {
+                var parentId = $(this).data('parent');
+                loadModal('@Url.Action("Create", "CourseCategory")?parentId=' + parentId, 'Tạo nhóm con');
+            });
+
+            // Edit
+            $('#courseCategoryTree').on('click', '.btn-edit', function (e) {
+                var id = $(this).data('id');
+                loadModal('@Url.Action("Edit", "CourseCategory")/' + id, 'Chỉnh sửa nhóm');
+            });
+
+            // Delete
+            $('#courseCategoryTree').on('click', '.btn-delete', function (e) {
+                var id = $(this).data('id');
+                if (!id) return;
+                if (!confirm('Bạn có chắc muốn xóa nhóm này? Các nhóm con sẽ bị tác động tùy theo logic server.')) return;
+                $.ajax({
+                    url: '@Url.Action("Delete", "CourseCategory")/' + id,
+                    type: 'POST'
+                }).done(function () {
+                    location.reload();
+                }).fail(function () {
+                    alert('Xóa thất bại');
+                });
+            });
+
+            // After form submission (create/edit) the partial should return success; here we handle form submission via AJAX
+            $('#categoryModal').on('submit', 'form', function (e) {
+                e.preventDefault();
+                var $form = $(this);
+                var url = $form.attr('action');
+                var data = $form.serialize();
+                $.post(url, data).done(function (resp) {
+                    // On success, reload page to refresh tree. Server partials can return JSON to indicate success.
+                    location.reload();
+                }).fail(function () {
+                    alert('Lưu thất bại');
+                });
+            });
+        });
+    </script>
+}

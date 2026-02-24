@@ -80,6 +80,11 @@ namespace IncosafCMS.Data
                .WithOptional()
                .WillCascadeOnDelete(true);
             //modelBuilder.Entity<ApplicationPermissionRole>().HasKey(r => new { r.RoleId, r.PermissionId });
+            
+            modelBuilder.Entity<CourseCategory>()
+                .ToTable("CourseCategory")
+                .Property(e => e.Id)
+                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
         }
     }
 }

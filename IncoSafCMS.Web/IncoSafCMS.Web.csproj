@@ -257,6 +257,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\CourseCategoryController.cs" />
     <Compile Include="Controllers\CustomerAdminController.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
     <Compile Include="Controllers\DepartmentsController.cs" />
@@ -302,7 +303,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
     <Compile Include="Providers\AppUserDataProvider.cs" />
-    <Compile Include="Providers\ContractDataProvider.cs" />
+    <Compile Include="Providers\ActivityDataProvider.cs" />
     <Compile Include="Providers\CustomerDataProvider.cs" />
     <Compile Include="Providers\DataProvider.cs" />
     <Compile Include="Providers\FinacialReportDataProvider.cs" />
@@ -672,7 +673,7 @@
     <Content Include="Views\Employees\_EmployeeViewPartial.cshtml" />
     <Content Include="Views\Contracts\_TasksOfContractPartial.cshtml" />
     <Content Include="Views\Customers\_ContractOfCustomerPartial.cshtml" />
-    <Content Include="Views\Employees\_ContractsOfEmployeePartial.cshtml" />
+    <Content Include="Views\Employees\_ActivityOfEmployeePartial.cshtml" />
     <Content Include="Views\Departments\_EmployeesOfDepartmentPartial.cshtml" />
     <Content Include="Views\Contracts\Details.cshtml" />
     <Content Include="Views\Customers\Details.cshtml" />
@@ -698,7 +699,7 @@
     <Content Include="Views\Admin\UserApprove.cshtml" />
     <Content Include="Views\Admin\UserGroups.cshtml" />
     <Content Include="Views\Admin\Permission.cshtml" />
-    <Content Include="Views\Admin\EquipLibrary.cshtml" />
+    <Content Include="Views\Admin\CourseCategory.cshtml" />
     <Content Include="Views\Admin\Customer.cshtml" />
     <Content Include="Views\Admin\Backup.cshtml" />
     <Content Include="Views\RolesAdmin\Create.cshtml" />
@@ -791,6 +792,8 @@
     <Content Include="Views\Activity\_ActivityGridPartial.cshtml" />
     <Content Include="Views\Activity\_ActivityDetailsPartial.cshtml" />
     <Content Include="Views\Activity\Index.cshtml" />
+    <Content Include="Views\CourseCategory\_CreateEdit.cshtml" />
+    <Content Include="Views\CourseCategory\Index.cshtml" />
     <None Include="Web.Incosaf.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

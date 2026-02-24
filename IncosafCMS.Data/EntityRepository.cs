@@ -42,10 +42,15 @@ namespace IncosafCMS.Data
         }
         public IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, object>>[] includeProperties)
         {
+            // Apply predicate first, then include navigation properties.
             IQueryable<TEntity> entities = _dbEntitySet;
+            if (predicate != null)
+            {
+                entities = entities.Where(predicate);
+            }
             foreach (var includeProperty in includeProperties)
             {
-                entities = entities.Where(predicate).Include(includeProperty);
+                entities = entities.Include(includeProperty);
             }
             return entities;
         }
