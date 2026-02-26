@@ -99,7 +99,7 @@ namespace IncosafCMS.Data
 
         public void Insert(TEntity entity)
         {
-            _context.SetAsAdded(entity);
+            _dbEntitySet.Add(entity);
         }
 
         public void Update(TEntity entity)

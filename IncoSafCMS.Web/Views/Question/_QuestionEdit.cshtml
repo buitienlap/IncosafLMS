@@ -6,55 +6,83 @@
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.Id)
 
-    <div class="row">
-        <!-- Left column: Question info -->
-        <div class="col-md-6" style="border-right:1px solid #e0e0e0; padding-right:20px">
-            <h4 style="margin-top:0; margin-bottom:15px"><i class="fa fa-question-circle"></i> Thông tin câu hỏi</h4>
-            <div class="form-group">
-                @Html.LabelFor(m => m.Title)
-                @Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.Title)
-            </div>
-            <div class="form-group">
-                @Html.LabelFor(m => m.Text)
-                @Html.TextAreaFor(m => m.Text, 5, 80, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.Text)
-            </div>
-            <div class="form-group">
-                @Html.Label("CourseCategoryId", "Thể loại")
-                @Html.DropDownList("CourseCategoryId", (SelectList)ViewBag.CourseCategories, "-- Chọn --", new { @class = "form-control" })
-            </div>
-            <div class="form-group">
-                @Html.LabelFor(m => m.Difficulty)
-                @{
-                    var items = Enum.GetValues(typeof(IncosafCMS.Core.DomainModels.DifficultyLevel)).Cast<IncosafCMS.Core.DomainModels.DifficultyLevel>()
-                                .Select(e => new { Value = (int)e, Text = e.ToString() });
-                    var select = new SelectList(items, "Value", "Text", (int)Model.Difficulty);
-                }
-                @Html.DropDownListFor(m => m.Difficulty, select, new { @class = "form-control" })
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="questionEditTabs" style="margin-bottom:12px">
+        <li class="active"><a data-toggle="tab" href="#tabQuestionInfo"><i class="fa fa-question-circle"></i> Thông tin câu hỏi</a></li>
+        <li><a data-toggle="tab" href="#tabAnswers"><i class="fa fa-list-ol"></i> Câu trả lời <span class="badge badge-primary" id="answerCountBadge">@(Model.Answers != null ? Model.Answers.Count : 0)</span></a></li>
+    </ul>
+
+    <div class="tab-content" style="min-height:420px">
+        <!-- ==================== TAB 1: Question Info ==================== -->
+        <div id="tabQuestionInfo" class="tab-pane fade in active">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Tiêu đề <span class="text-danger">*</span></label>
+                        @Html.TextBoxFor(m => m.Title, new { @class = "form-control", spellcheck = "false" })
+                        @Html.ValidationMessageFor(m => m.Title)
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("CourseCategoryId", "Thể loại")
+                        @Html.DropDownList("CourseCategoryId", (SelectList)ViewBag.CourseCategories, "-- Chọn --", new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Difficulty, "Độ khó")
+                        @{
+                            var items = Enum.GetValues(typeof(IncosafCMS.Core.DomainModels.DifficultyLevel)).Cast<IncosafCMS.Core.DomainModels.DifficultyLevel>()
+                                        .Select(e => new { Value = (int)e, Text = e.ToString() });
+                            var select = new SelectList(items, "Value", "Text", (int)Model.Difficulty);
+                        }
+                        @Html.DropDownListFor(m => m.Difficulty, select, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Tags, "Tags")
+                        @Html.TextBoxFor(m => m.Tags, new { @class = "form-control", placeholder = "VD: toán, lý, hóa (phân cách bằng dấu phẩy)", spellcheck = "false" })
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Nội dung câu hỏi <span class="text-danger">*</span></label>
+                        <div class="expandable-field">
+                            <textarea id="questionText" name="Text" class="form-control" rows="5" required spellcheck="false">@Model.Text</textarea>
+                            <button type="button" class="btn btn-xs btn-default btn-expand" title="Mở rộng editor" onclick="openExpandEditor('questionText', 'Nội dung câu hỏi')">
+                                <i class="fa fa-expand"></i>
+                            </button>
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Text)
+                    </div>
+                    <div class="form-group">
+                        <label>Giải thích đáp án</label>
+                        <div class="expandable-field">
+                            <textarea id="questionExplanation" name="Explanation" class="form-control" rows="5" placeholder="Giải thích đáp án đúng (tùy chọn, hỗ trợ HTML)" spellcheck="false">@Model.Explanation</textarea>
+                            <button type="button" class="btn btn-xs btn-default btn-expand" title="Mở rộng editor" onclick="openExpandEditor('questionExplanation', 'Giải thích đáp án')">
+                                <i class="fa fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Right column: Answers -->
-        <div class="col-md-6" style="padding-left:20px">
-            <h4 style="margin-top:0; margin-bottom:10px">
-                <i class="fa fa-list-ol"></i> Danh sách câu trả lời
-                <button type="button" class="btn btn-success btn-xs pull-right" onclick="addAnswerRow()">
+        <!-- ==================== TAB 2: Answers ==================== -->
+        <div id="tabAnswers" class="tab-pane fade">
+            <div style="margin-bottom:10px">
+                <button type="button" class="btn btn-success btn-sm" onclick="addAnswerRow()">
                     <i class="fa fa-plus"></i> Thêm câu trả lời
                 </button>
-            </h4>
-            <div class="alert alert-info" style="padding:6px; margin-bottom:8px; font-size:12px">
-                <i class="fa fa-info-circle"></i> Chọn radio ở cột <b>"Đúng"</b> để đánh dấu đáp án đúng. Chỉ được chọn 1 đáp án đúng.
+                <span class="text-muted" style="margin-left:10px; font-size:12px">
+                    <i class="fa fa-info-circle"></i> Chọn radio ở cột <b>"Đúng"</b> để đánh dấu đáp án đúng.
+                </span>
             </div>
-
-            <div id="answersContainer" style="max-height:400px; overflow-y:auto">
+            <div id="answersContainer" style="max-height:380px; overflow-y:auto">
                 <table class="table table-bordered table-condensed" id="answersTable">
                     <thead>
-                        <tr>
+                        <tr style="background:#f5f5f5">
                             <th style="width:35px; text-align:center">#</th>
-                            <th>Nội dung câu trả lời</th>
-                            <th style="width:50px; text-align:center">Đúng</th>
-                            <th style="width:40px; text-align:center">Xóa</th>
+                            <th style="width:42%">Nội dung câu trả lời</th>
+                            <th>Giải thích</th>
+                            <th style="width:45px; text-align:center">Đúng</th>
+                            <th style="width:35px; text-align:center">Xóa</th>
                         </tr>
                     </thead>
                     <tbody id="answersBody">
@@ -64,14 +92,27 @@
                             for (int i = 0; i < orderedAnswers.Count; i++)
                             {
                                 <tr>
-                                    <td style="text-align:center; vertical-align:top; padding-top:10px" class="answer-index">@(i + 1)</td>
+                                    <td style="text-align:center; vertical-align:top; padding-top:8px" class="answer-index">@(i + 1)</td>
                                     <td>
-                                        <textarea name="Answers[@(i)].Text" class="form-control input-sm" rows="3" required>@orderedAnswers[i].Text</textarea>
+                                        <div class="expandable-field">
+                                            <textarea name="Answers[@(i)].Text" class="form-control input-sm answer-text" rows="2" required spellcheck="false">@orderedAnswers[i].Text</textarea>
+                                            <button type="button" class="btn btn-xs btn-default btn-expand" title="Mở rộng" onclick="openExpandEditor(this.previousElementSibling, 'Câu trả lời #@(i+1)')">
+                                                <i class="fa fa-expand"></i>
+                                            </button>
+                                        </div>
                                     </td>
-                                    <td style="text-align:center; vertical-align:top; padding-top:10px">
+                                    <td>
+                                        <div class="expandable-field">
+                                            <textarea name="Answers[@(i)].Explanation" class="form-control input-sm answer-explanation" rows="2" placeholder="Giải thích (tùy chọn)" spellcheck="false">@orderedAnswers[i].Explanation</textarea>
+                                            <button type="button" class="btn btn-xs btn-default btn-expand" title="Mở rộng" onclick="openExpandEditor(this.previousElementSibling, 'Giải thích câu trả lời #@(i+1)')">
+                                                <i class="fa fa-expand"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td style="text-align:center; vertical-align:top; padding-top:8px">
                                         <input type="radio" name="CorrectAnswerIndex" value="@i" @(orderedAnswers[i].IsCorrect ? "checked" : "") />
                                     </td>
-                                    <td style="text-align:center; vertical-align:top; padding-top:10px">
+                                    <td style="text-align:center; vertical-align:top; padding-top:8px">
                                         <button type="button" class="btn btn-danger btn-xs" onclick="removeAnswerRow(this)">
                                             <i class="fa fa-trash"></i>
                                         </button>
@@ -85,30 +126,133 @@
         </div>
     </div>
 
-    <hr style="margin-top:15px; margin-bottom:10px" />
+    <hr style="margin-top:10px; margin-bottom:10px" />
     <div class="text-right">
-        <button type="submit" class="btn btn-primary">Lưu</button>
+        <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Lưu</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
     </div>
 }
 
+<!-- ==================== Expand Editor Modal ==================== -->
+<div class="modal" id="expandEditorModal" tabindex="-1" role="dialog" data-backdrop="static" style="z-index:1060">
+    <div class="modal-dialog" style="width:90%; max-width:900px">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:8px 15px; background:#f5f5f5">
+                <button type="button" class="close" onclick="closeExpandEditor()"><span>&times;</span></button>
+                <h5 class="modal-title" id="expandEditorTitle">Editor</h5>
+            </div>
+            <div class="modal-body" style="padding:10px">
+                <div id="expandSummernote"></div>
+            </div>
+            <div class="modal-footer" style="padding:8px 15px">
+                <button type="button" class="btn btn-primary btn-sm" onclick="applyExpandEditor()"><i class="fa fa-check"></i> Áp dụng</button>
+                <button type="button" class="btn btn-default btn-sm" onclick="closeExpandEditor()">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .expandable-field { position: relative; }
+    .expandable-field .btn-expand {
+        position: absolute; top: 2px; right: 2px;
+        opacity: 0.5; padding: 1px 5px; font-size: 11px; z-index: 2;
+    }
+    .expandable-field:hover .btn-expand { opacity: 1; }
+    #questionEditTabs > li > a { padding: 8px 18px; font-size: 13px; }
+    #questionEditTabs > li.active > a { font-weight: 600; }
+    #answersTable td { vertical-align: top; }
+</style>
+
 <script type="text/javascript">
+    var _expandTarget = null; // the textarea element being expanded
+
+    // ---- Expand Editor ----
+    function openExpandEditor(targetOrId, title) {
+        if (typeof $.fn.summernote === 'undefined') {
+            alert('Rich-text editor đang tải, vui lòng thử lại sau giây lát.');
+            return;
+        }
+        var target;
+        if (typeof targetOrId === 'string') {
+            target = document.getElementById(targetOrId);
+        } else {
+            target = targetOrId;
+        }
+        _expandTarget = target;
+        $('#expandEditorTitle').text(title || 'Editor');
+        $('#expandSummernote').summernote('destroy');
+        $('#expandSummernote').summernote({
+            height: 320,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['fontname', ['fontname']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'hr']],
+                ['view', ['fullscreen', 'codeview']]
+            ],
+            callbacks: {
+                onInit: function () {
+                    $('#expandSummernote').summernote('code', $(_expandTarget).val() || '');
+                    $('#expandSummernote').next('.note-editor').find('.note-editable').attr('spellcheck', 'false');
+                }
+            }
+        });
+        $('#expandEditorModal').modal('show');
+    }
+
+    function applyExpandEditor() {
+        if (_expandTarget) {
+            var html = $('#expandSummernote').summernote('code');
+            $(_expandTarget).val(html);
+        }
+        closeExpandEditor();
+    }
+
+    function closeExpandEditor() {
+        $('#expandSummernote').summernote('destroy');
+        $('#expandEditorModal').modal('hide');
+        _expandTarget = null;
+    }
+
+    // Prevent expand editor modal events from bubbling to parent modal
+    $(document).off('hidden.bs.modal', '#expandEditorModal').on('hidden.bs.modal', '#expandEditorModal', function (e) {
+        e.stopPropagation();
+    });
+    $(document).off('shown.bs.modal', '#expandEditorModal').on('shown.bs.modal', '#expandEditorModal', function (e) {
+        e.stopPropagation();
+    });
+
+    // ---- Answer rows ----
     function addAnswerRow() {
         var tbody = document.getElementById('answersBody');
-        var rowCount = tbody.rows.length;
+        var idx = tbody.rows.length;
         var tr = document.createElement('tr');
         tr.innerHTML =
-            '<td style="text-align:center; vertical-align:top; padding-top:10px" class="answer-index">' + (rowCount + 1) + '</td>' +
-            '<td><textarea name="Answers[' + rowCount + '].Text" class="form-control input-sm" rows="3" required></textarea></td>' +
-            '<td style="text-align:center; vertical-align:top; padding-top:10px"><input type="radio" name="CorrectAnswerIndex" value="' + rowCount + '" /></td>' +
-            '<td style="text-align:center; vertical-align:top; padding-top:10px"><button type="button" class="btn btn-danger btn-xs" onclick="removeAnswerRow(this)"><i class="fa fa-trash"></i></button></td>';
+            '<td style="text-align:center; vertical-align:top; padding-top:8px" class="answer-index">' + (idx + 1) + '</td>' +
+            '<td><div class="expandable-field">' +
+                '<textarea name="Answers[' + idx + '].Text" class="form-control input-sm answer-text" rows="2" required spellcheck="false"></textarea>' +
+                '<button type="button" class="btn btn-xs btn-default btn-expand" title="Mở rộng" onclick="openExpandEditor(this.previousElementSibling, \'Câu trả lời #' + (idx+1) + '\')"><i class="fa fa-expand"></i></button>' +
+            '</div></td>' +
+            '<td><div class="expandable-field">' +
+                '<textarea name="Answers[' + idx + '].Explanation" class="form-control input-sm answer-explanation" rows="2" placeholder="Giải thích (tùy chọn)" spellcheck="false"></textarea>' +
+                '<button type="button" class="btn btn-xs btn-default btn-expand" title="Mở rộng" onclick="openExpandEditor(this.previousElementSibling, \'Giải thích câu trả lời #' + (idx+1) + '\')"><i class="fa fa-expand"></i></button>' +
+            '</div></td>' +
+            '<td style="text-align:center; vertical-align:top; padding-top:8px"><input type="radio" name="CorrectAnswerIndex" value="' + idx + '" /></td>' +
+            '<td style="text-align:center; vertical-align:top; padding-top:8px"><button type="button" class="btn btn-danger btn-xs" onclick="removeAnswerRow(this)"><i class="fa fa-trash"></i></button></td>';
         tbody.appendChild(tr);
+        updateAnswerBadge();
     }
 
     function removeAnswerRow(btn) {
         var row = btn.closest('tr');
         row.parentNode.removeChild(row);
         reindexAnswerRows();
+        updateAnswerBadge();
     }
 
     function reindexAnswerRows() {
@@ -121,13 +265,20 @@
         }
         for (var i = 0; i < rows.length; i++) {
             rows[i].querySelector('.answer-index').textContent = (i + 1);
-            var textArea = rows[i].querySelector('textarea');
-            if (textArea) { textArea.name = 'Answers[' + i + '].Text'; }
+            var texts = rows[i].querySelectorAll('.answer-text');
+            if (texts.length > 0) texts[0].name = 'Answers[' + i + '].Text';
+            var expls = rows[i].querySelectorAll('.answer-explanation');
+            if (expls.length > 0) expls[0].name = 'Answers[' + i + '].Explanation';
             var radio = rows[i].querySelector('input[type="radio"]');
             if (radio) {
                 radio.value = i;
                 radio.checked = (i === checkedIdx);
             }
         }
+    }
+
+    function updateAnswerBadge() {
+        var count = document.getElementById('answersBody').rows.length;
+        $('#answerCountBadge').text(count);
     }
 </script>

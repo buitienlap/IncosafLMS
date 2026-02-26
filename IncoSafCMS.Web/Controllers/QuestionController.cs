@@ -46,6 +46,7 @@ namespace IncosafCMS.Web.Controllers
         // POST: create question + answers via AJAX
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ValidateInput(false)]
         public ActionResult Create(Question model, List<Answer> Answers, int? CorrectAnswerIndex)
         {
             ModelState.Remove("Answers");
@@ -81,6 +82,7 @@ namespace IncosafCMS.Web.Controllers
         // POST: edit question + answers via AJAX
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ValidateInput(false)]
         public ActionResult Edit(Question model, List<Answer> Answers, int? CorrectAnswerIndex)
         {
             ModelState.Remove("Answers");

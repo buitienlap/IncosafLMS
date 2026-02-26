@@ -11,6 +11,7 @@
         settings.CallbackRouteValues = new { Controller = "Question", Action = "QuestionGridViewPartial" };
 
         settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+        settings.Settings.VerticalScrollBarMode = ScrollBarMode.Visible;
 
         settings.SettingsText.EmptyDataRow = "Không có câu hỏi nào";
         settings.SettingsText.SearchPanelEditorNullText = "Nhập từ khóa tìm kiếm...";
@@ -26,14 +27,15 @@
         settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
         settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
 
+        settings.SettingsPager.Mode = GridViewPagerMode.ShowPager;
         settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
         settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
         settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
         settings.SettingsPager.PageSize = 20;
         settings.SettingsPager.AllButton.Visible = false;
-        settings.SettingsPager.LastPageButton.Visible = false;
-        settings.SettingsPager.FirstPageButton.Visible = false;
-        settings.SettingsPager.NumericButtonCount = 4;
+        settings.SettingsPager.LastPageButton.Visible = true;
+        settings.SettingsPager.FirstPageButton.Visible = true;
+        settings.SettingsPager.NumericButtonCount = 5;
 
         settings.SettingsSearchPanel.Visible = true;
 
@@ -53,6 +55,14 @@
         {
             column.Caption = "Tiêu đề";
             column.FieldName = "Title";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(200);
+            column.CellStyle.Wrap = DefaultBoolean.True;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Nội dung";
+            column.FieldName = "Text";
             column.CellStyle.Wrap = DefaultBoolean.True;
         });
 
@@ -70,6 +80,14 @@
             column.FieldName = "Difficulty";
             column.Width = System.Web.UI.WebControls.Unit.Pixel(90);
             column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tags";
+            column.FieldName = "Tags";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(150);
+            column.CellStyle.Wrap = DefaultBoolean.True;
         });
 
         settings.Columns.Add(column =>
@@ -93,6 +111,7 @@
         };
 
         settings.ClientSideEvents.FocusedRowChanged = "OnQuestionFocusedRowChanged";
+        settings.ClientSideEvents.EndCallback = "OnQuestionGridEndCallback";
     });
 
     if (ViewData["EditError"] != null)
@@ -101,3 +120,4 @@
     }
 }
 @grid.Bind(Model).GetHtml()
+
