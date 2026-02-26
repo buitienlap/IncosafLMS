@@ -1,0 +1,352 @@
+﻿@model IncosafCMS.Web.Models.PracticeExamReviewViewModel
+@{
+    ViewBag.Title = "Xem lại bài thi thử";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<style>
+    .review-page {
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px 24px;
+        background: #f4f6f9;
+    }
+
+    /* Result Banner */
+    .result-banner {
+        border-radius: 16px;
+        padding: 28px 32px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .result-banner.pass { background: linear-gradient(135deg, #28c76f 0%, #48dbad 100%); }
+    .result-banner.fail { background: linear-gradient(135deg, #ea5455 0%, #f09819 100%); }
+
+    .result-left h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+    }
+
+    .result-left p { opacity: 0.9; font-size: 14px; margin: 0; }
+
+    .result-stats {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .result-score {
+        text-align: center;
+    }
+
+    .result-score .score-value {
+        font-size: 48px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .result-score .score-label {
+        font-size: 13px;
+        opacity: 0.85;
+        margin-top: 4px;
+    }
+
+    .result-detail-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 14px;
+    }
+
+    .result-detail-stats span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 0.9;
+    }
+
+    .result-detail-stats i { width: 18px; text-align: center; }
+
+    .result-actions {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .result-actions a, .result-actions button {
+        padding: 10px 22px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        border: 2px solid rgba(255,255,255,0.4);
+        background: rgba(255,255,255,0.15);
+        color: white;
+    }
+
+    .result-actions a:hover, .result-actions button:hover {
+        background: white;
+        border-color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .result-banner.pass .result-actions a:hover,
+    .result-banner.pass .result-actions button:hover { color: #28c76f; }
+    .result-banner.fail .result-actions a:hover,
+    .result-banner.fail .result-actions button:hover { color: #ea5455; }
+
+    /* Questions List */
+    .review-questions {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .review-question {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        overflow: hidden;
+        border-left: 4px solid #e0e6ed;
+    }
+
+    .review-question.correct { border-left-color: #28c76f; }
+    .review-question.incorrect { border-left-color: #ea5455; }
+    .review-question.unanswered { border-left-color: #ff9f43; }
+
+    .rq-header {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .rq-header:hover { background: #fafbff; }
+
+    .rq-number {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .rq-number.correct { background: rgba(40,199,111,0.12); color: #28c76f; }
+    .rq-number.incorrect { background: rgba(234,84,85,0.12); color: #ea5455; }
+    .rq-number.unanswered { background: rgba(255,159,67,0.12); color: #ff9f43; }
+
+    .rq-text {
+        flex: 1;
+        font-size: 14px;
+        color: #2c3e50;
+        font-weight: 600;
+        line-height: 1.5;
+        min-width: 0;
+    }
+
+    .rq-result-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .rq-result-icon.correct { color: #28c76f; }
+    .rq-result-icon.incorrect { color: #ea5455; }
+    .rq-result-icon.unanswered { color: #ff9f43; }
+
+    .rq-toggle {
+        color: #bdc3c7;
+        font-size: 14px;
+        transition: transform 0.3s;
+    }
+
+    .rq-header.expanded .rq-toggle { transform: rotate(180deg); }
+
+    .rq-body {
+        display: none;
+        padding: 0 20px 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .rq-body.show { display: block; }
+
+    .rq-question-text {
+        padding: 14px 18px;
+        background: #fafbff;
+        border-radius: 10px;
+        border-left: 3px solid #667eea;
+        margin: 16px 0;
+        font-size: 14px;
+        line-height: 1.7;
+        color: #2c3e50;
+    }
+
+    .rq-answers { display: flex; flex-direction: column; gap: 8px; }
+
+    .rq-answer {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .rq-answer.is-correct { background: rgba(40,199,111,0.06); border-color: rgba(40,199,111,0.3); }
+    .rq-answer.is-selected-wrong { background: rgba(234,84,85,0.06); border-color: rgba(234,84,85,0.3); }
+
+    .rq-answer-label {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: #f4f6f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 13px;
+        color: #7f8c8d;
+        flex-shrink: 0;
+    }
+
+    .rq-answer.is-correct .rq-answer-label { background: #28c76f; color: white; }
+    .rq-answer.is-selected-wrong .rq-answer-label { background: #ea5455; color: white; }
+
+    .rq-answer-text { flex: 1; color: #2c3e50; }
+
+    .rq-answer-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+
+    .rq-answer-badge.correct { background: rgba(40,199,111,0.12); color: #28c76f; }
+    .rq-answer-badge.selected { background: rgba(234,84,85,0.12); color: #ea5455; }
+
+    .rq-explanation {
+        margin-top: 12px;
+        padding: 12px 16px;
+        background: #fff8e1;
+        border-radius: 10px;
+        border-left: 3px solid #ff9f43;
+        font-size: 13px;
+        color: #5a4e00;
+        line-height: 1.6;
+    }
+
+    .rq-explanation strong { color: #ff9f43; }
+
+    @@media (max-width: 768px) {
+        .result-banner { flex-direction: column; text-align: center; gap: 20px; }
+        .result-stats { flex-direction: column; }
+    }
+</style>
+
+<div class="review-page">
+    @{
+        var passed = Model.Score.HasValue && Model.Score >= 50;
+    }
+
+    <!-- Result Banner -->
+    <div class="result-banner @(passed ? "pass" : "fail") animated fadeIn">
+        <div class="result-left">
+            <h2><i class="fa @(passed ? "fa-trophy" : "fa-times-circle")"></i> @(passed ? "Chúc mừng!" : "Cần cố gắng thêm!")</h2>
+            <p>@Model.Title</p>
+        </div>
+        <div class="result-stats">
+            <div class="result-score">
+                <div class="score-value">@(Model.Score.HasValue ? Model.Score.Value.ToString("0.#") : "0")%</div>
+                <div class="score-label">Điểm số</div>
+            </div>
+            <div class="result-detail-stats">
+                <span><i class="fa fa-check"></i> Đúng: @Model.CorrectCount / @Model.QuestionCount</span>
+                <span><i class="fa fa-clock-o"></i> Thời gian: @Model.DurationDisplay</span>
+                <span><i class="fa fa-calendar"></i> @Model.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+        </div>
+        <div class="result-actions">
+            <a href="@Url.Action("PracticeExam", "Exam")">
+                <i class="fa fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    <!-- Question Review -->
+    <div class="review-questions">
+        @foreach (var q in Model.Questions)
+        {
+            var status = q.SelectedAnswerId == null ? "unanswered" : q.IsCorrect ? "correct" : "incorrect";
+            var resultIcon = status == "correct" ? "fa-check-circle" : status == "incorrect" ? "fa-times-circle" : "fa-minus-circle";
+            <div class="review-question @status">
+                <div class="rq-header" onclick="toggleQuestion(this)">
+                    <div class="rq-number @status">@q.Index</div>
+                    <div class="rq-text">@Html.Raw(System.Text.RegularExpressions.Regex.Replace(q.QuestionText ?? "", "<[^>]+>", " ").Trim())</div>
+                    <div class="rq-result-icon @status"><i class="fa @resultIcon"></i></div>
+                    <div class="rq-toggle"><i class="fa fa-chevron-down"></i></div>
+                </div>
+                <div class="rq-body">
+                    <div class="rq-question-text">@Html.Raw(q.QuestionText)</div>
+                    <div class="rq-answers">
+                        @foreach (var a in q.Answers)
+                        {
+                            var ansClass = "";
+                            if (a.IsCorrect) ansClass = "is-correct";
+                            else if (a.IsSelected && !a.IsCorrect) ansClass = "is-selected-wrong";
+                            <div class="rq-answer @ansClass">
+                                <div class="rq-answer-label">@a.Label</div>
+                                <div class="rq-answer-text">@Html.Raw(a.Text)</div>
+                                @if (a.IsCorrect)
+                                {
+                                    <span class="rq-answer-badge correct"><i class="fa fa-check"></i> Đúng</span>
+                                }
+                                @if (a.IsSelected && !a.IsCorrect)
+                                {
+                                    <span class="rq-answer-badge selected"><i class="fa fa-times"></i> Đã chọn</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(q.Explanation))
+                    {
+                        <div class="rq-explanation">
+                            <strong><i class="fa fa-lightbulb-o"></i> Giải thích:</strong><br />
+                            @Html.Raw(q.Explanation)
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        function toggleQuestion(header) {
+            var body = $(header).next('.rq-body');
+            body.toggleClass('show');
+            $(header).toggleClass('expanded');
+        }
+    </script>
+}

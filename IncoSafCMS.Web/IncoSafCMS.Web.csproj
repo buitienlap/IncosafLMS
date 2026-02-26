@@ -264,6 +264,7 @@
     <Compile Include="Controllers\CustomersController.cs" />
     <Compile Include="Controllers\DepartmentsController.cs" />
     <Compile Include="Controllers\EmployeesController.cs" />
+    <Compile Include="Controllers\ExamController.cs" />
     <Compile Include="Controllers\FinacialReportsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
@@ -302,6 +303,7 @@
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\Logger.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\PracticeExamViewModels.cs" />
     <Compile Include="Models\QuestionImportModels.cs" />
     <Compile Include="NotificationHub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -317,6 +319,7 @@
   <ItemGroup>
     <Content Include="App_Data\Scripts\Alter_Course_AddContent.sql" />
     <Content Include="App_Data\Scripts\Create_ExamAssignment.sql" />
+    <Content Include="App_Data\Scripts\Create_PracticeExam.sql" />
     <Content Include="Content\animate.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -809,6 +812,10 @@
     <Content Include="Views\Course\Learn.cshtml" />
     <Content Include="Views\Course\_DetailPopup.cshtml" />
     <Content Include="Views\Courses\_CreateEdit.cshtml" />
+    <Content Include="Views\Exam\PracticeExam.cshtml" />
+    <Content Include="Views\Exam\Take.cshtml" />
+    <Content Include="Views\Exam\Review.cshtml" />
+    <Content Include="Views\Exam\_PracticeSetup.cshtml" />
     <None Include="Web.Incosaf.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

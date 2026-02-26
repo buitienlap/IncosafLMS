@@ -1,0 +1,620 @@
+﻿@model IncosafCMS.Web.Models.PracticeExamListViewModel
+@{
+    ViewBag.Title = "Thi thử";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<style>
+    .practice-page {
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px 24px;
+        background: #f4f6f9;
+    }
+
+    /* Page Header */
+    .page-header-banner {
+        background: linear-gradient(135deg, #28c76f 0%, #48dbad 100%);
+        border-radius: 16px;
+        padding: 24px 32px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(40, 199, 111, 0.3);
+    }
+
+    .page-header-banner h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+    }
+
+    .page-header-banner p {
+        opacity: 0.9;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .btn-new-exam {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.4);
+        padding: 10px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-new-exam:hover {
+        background: white;
+        color: #28c76f;
+        border-color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        text-decoration: none;
+    }
+
+    /* Stats Row */
+    .practice-stats {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .pstat-card {
+        flex: 1;
+        background: white;
+        border-radius: 14px;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        transition: transform 0.2s;
+    }
+
+    .pstat-card:hover { transform: translateY(-2px); }
+
+    .pstat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .pstat-icon.total { background: rgba(102,126,234,0.12); color: #667eea; }
+    .pstat-icon.done { background: rgba(40,199,111,0.12); color: #28c76f; }
+    .pstat-icon.doing { background: rgba(255,159,67,0.12); color: #ff9f43; }
+    .pstat-icon.avg { background: rgba(234,84,85,0.12); color: #ea5455; }
+    .pstat-icon.best { background: rgba(115,103,240,0.12); color: #7367f0; }
+
+    .pstat-info h3 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .pstat-info p {
+        font-size: 12px;
+        color: #95a5a6;
+        margin: 2px 0 0 0;
+    }
+
+    /* Exam List */
+    .exam-list-panel {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+
+    .exam-list-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .exam-list-header h4 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .exam-list-header h4 i { color: #28c76f; }
+
+    .filter-tabs {
+        display: flex;
+        gap: 4px;
+    }
+
+    .filter-tabs .ftab {
+        background: #f4f6f9;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #7f8c8d;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-tabs .ftab.active, .filter-tabs .ftab:hover {
+        background: #28c76f;
+        color: white;
+    }
+
+    .exam-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .exam-table thead th {
+        padding: 12px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #95a5a6;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafbfc;
+    }
+
+    .exam-table tbody tr {
+        transition: background 0.15s;
+        cursor: pointer;
+    }
+
+    .exam-table tbody tr:hover {
+        background: #f8f9ff;
+    }
+
+    .exam-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 14px;
+        color: #2c3e50;
+        vertical-align: middle;
+    }
+
+    .exam-title-cell {
+        font-weight: 600;
+        max-width: 280px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-status.warning { background: rgba(255,159,67,0.12); color: #ff9f43; }
+    .badge-status.success { background: rgba(40,199,111,0.12); color: #28c76f; }
+
+    .score-cell {
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    .score-cell.high { color: #28c76f; }
+    .score-cell.medium { color: #ff9f43; }
+    .score-cell.low { color: #ea5455; }
+
+    .exam-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .exam-actions .btn-act {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+    }
+
+    .btn-act.btn-continue { background: rgba(255,159,67,0.12); color: #ff9f43; }
+    .btn-act.btn-continue:hover { background: #ff9f43; color: white; }
+    .btn-act.btn-review { background: rgba(102,126,234,0.12); color: #667eea; }
+    .btn-act.btn-review:hover { background: #667eea; color: white; text-decoration: none; }
+    .btn-act.btn-retake { background: rgba(40,199,111,0.12); color: #28c76f; }
+    .btn-act.btn-retake:hover { background: #28c76f; color: white; }
+    .btn-act.btn-delete { background: rgba(234,84,85,0.08); color: #ea5455; }
+    .btn-act.btn-delete:hover { background: #ea5455; color: white; }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #95a5a6;
+    }
+
+    .empty-state i {
+        font-size: 56px;
+        margin-bottom: 16px;
+        opacity: 0.3;
+        display: block;
+    }
+
+    .empty-state p { margin: 0 0 16px 0; font-size: 15px; }
+
+    /* Setup Modal */
+    .setup-modal .modal-dialog { max-width: 520px; margin: 80px auto; }
+    .setup-modal .modal-content {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        overflow: hidden;
+    }
+
+    .setup-header {
+        background: linear-gradient(135deg, #28c76f 0%, #48dbad 100%);
+        color: white;
+        padding: 20px 24px;
+    }
+
+    .setup-header h4 { margin: 0; font-size: 18px; font-weight: 700; }
+    .setup-header p { margin: 4px 0 0; opacity: 0.9; font-size: 13px; }
+
+    .setup-body { padding: 24px; }
+
+    .setup-body .form-group { margin-bottom: 18px; }
+    .setup-body label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .setup-body .form-control {
+        border-radius: 10px;
+        border: 1px solid #e0e6ed;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .setup-body .form-control:focus {
+        border-color: #28c76f;
+        box-shadow: 0 0 0 3px rgba(40,199,111,0.15);
+    }
+
+    .setup-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn-start-exam {
+        background: linear-gradient(135deg, #28c76f 0%, #48dbad 100%);
+        color: white;
+        border: none;
+        padding: 10px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-start-exam:hover {
+        box-shadow: 0 4px 15px rgba(40,199,111,0.4);
+        transform: translateY(-1px);
+    }
+
+    @@media (max-width: 992px) {
+        .practice-stats { flex-wrap: wrap; }
+        .pstat-card { flex: 1 1 calc(50% - 8px); }
+    }
+
+    @@media (max-width: 768px) {
+        .page-header-banner { flex-direction: column; text-align: center; gap: 16px; }
+        .pstat-card { flex: 1 1 100%; }
+        .exam-actions { flex-wrap: wrap; }
+    }
+</style>
+
+<div class="practice-page">
+    <!-- Header -->
+    <div class="page-header-banner animated fadeIn">
+        <div>
+            <h2><i class="fa fa-pencil-square-o"></i> Thi thử trực tuyến</h2>
+            <p>Quản lý các lần thi thử cá nhân — luyện tập, xem lại kết quả và cải thiện kiến thức</p>
+        </div>
+        <button class="btn-new-exam" onclick="openSetupModal()">
+            <i class="fa fa-plus-circle"></i> Thi mới
+        </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="practice-stats animated fadeInUp">
+        <div class="pstat-card">
+            <div class="pstat-icon total"><i class="fa fa-list-alt"></i></div>
+            <div class="pstat-info">
+                <h3>@Model.Stats.TotalAttempts</h3>
+                <p>Tổng lần thi</p>
+            </div>
+        </div>
+        <div class="pstat-card">
+            <div class="pstat-icon done"><i class="fa fa-check-circle"></i></div>
+            <div class="pstat-info">
+                <h3>@Model.Stats.CompletedCount</h3>
+                <p>Đã hoàn thành</p>
+            </div>
+        </div>
+        <div class="pstat-card">
+            <div class="pstat-icon doing"><i class="fa fa-clock-o"></i></div>
+            <div class="pstat-info">
+                <h3>@Model.Stats.InProgressCount</h3>
+                <p>Đang làm</p>
+            </div>
+        </div>
+        <div class="pstat-card">
+            <div class="pstat-icon avg"><i class="fa fa-bar-chart"></i></div>
+            <div class="pstat-info">
+                <h3>@Model.Stats.AverageScore.ToString("0.#")%</h3>
+                <p>Điểm trung bình</p>
+            </div>
+        </div>
+        <div class="pstat-card">
+            <div class="pstat-icon best"><i class="fa fa-trophy"></i></div>
+            <div class="pstat-info">
+                <h3>@Model.Stats.BestScore.ToString("0.#")%</h3>
+                <p>Điểm cao nhất</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam List -->
+    <div class="exam-list-panel animated fadeInUp">
+        <div class="exam-list-header">
+            <h4><i class="fa fa-history"></i> Lịch sử thi thử</h4>
+            <div class="filter-tabs">
+                <button class="ftab active" data-filter="all">Tất cả</button>
+                <button class="ftab" data-filter="inprogress">Đang làm</button>
+                <button class="ftab" data-filter="completed">Hoàn thành</button>
+            </div>
+        </div>
+
+        @if (Model.Exams.Any())
+        {
+            <table class="exam-table">
+                <thead>
+                    <tr>
+                        <th style="width:40px">#</th>
+                        <th>Tên bài thi</th>
+                        <th style="width:90px">Số câu</th>
+                        <th style="width:100px">Trạng thái</th>
+                        <th style="width:90px">Điểm</th>
+                        <th style="width:100px">Đúng</th>
+                        <th style="width:100px">Thời gian</th>
+                        <th style="width:140px">Ngày thi</th>
+                        <th style="width:240px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="examListBody">
+                    @for (int i = 0; i < Model.Exams.Count; i++)
+                    {
+                        var exam = Model.Exams[i];
+                        var scoreClass = exam.Score.HasValue ? (exam.Score >= 80 ? "high" : exam.Score >= 50 ? "medium" : "low") : "";
+                        <tr data-status="@(exam.Status == IncosafCMS.Core.DomainModels.PracticeExamStatus.InProgress ? "inprogress" : "completed")">
+                            <td style="color:#95a5a6; font-weight:600">@(i + 1)</td>
+                            <td class="exam-title-cell" title="@exam.Title">@exam.Title</td>
+                            <td style="text-align:center">@exam.QuestionCount</td>
+                            <td>
+                                <span class="badge-status @exam.StatusCssClass">
+                                    <i class="fa @(exam.Status == IncosafCMS.Core.DomainModels.PracticeExamStatus.InProgress ? "fa-spinner" : "fa-check")"></i>
+                                    @exam.StatusDisplay
+                                </span>
+                            </td>
+                            <td class="score-cell @scoreClass" style="text-align:center">@exam.ScoreDisplay</td>
+                            <td style="text-align:center">
+                                @if (exam.Status == IncosafCMS.Core.DomainModels.PracticeExamStatus.Completed)
+                                {
+                                    <span>@exam.CorrectCount / @exam.QuestionCount</span>
+                                }
+                                else
+                                {
+                                    <span style="color:#95a5a6">@exam.CurrentQuestionIndex / @exam.QuestionCount</span>
+                                }
+                            </td>
+                            <td style="text-align:center; color:#7f8c8d">@exam.DurationDisplay</td>
+                            <td style="color:#95a5a6; font-size:13px">
+                                <i class="fa fa-calendar"></i> @exam.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <div class="exam-actions">
+                                    @if (exam.Status == IncosafCMS.Core.DomainModels.PracticeExamStatus.InProgress)
+                                    {
+                                        <a href="@Url.Action("Take", "Exam", new { id = exam.Id })" class="btn-act btn-continue">
+                                            <i class="fa fa-play"></i> Tiếp tục
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("Review", "Exam", new { id = exam.Id })" class="btn-act btn-review">
+                                            <i class="fa fa-eye"></i> Xem lại
+                                        </a>
+                                        <button class="btn-act btn-retake" onclick="retakeExam(@exam.Id)">
+                                            <i class="fa fa-refresh"></i> Thi lại
+                                        </button>
+                                    }
+                                    <button class="btn-act btn-delete" onclick="deleteExam(@exam.Id)" title="Xóa">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fa fa-pencil-square-o"></i>
+                <p>Bạn chưa có lần thi thử nào.<br />Hãy bắt đầu ngay để kiểm tra kiến thức!</p>
+                <button class="btn-new-exam" style="border-color:#28c76f; color:#28c76f; background:rgba(40,199,111,0.08)" onclick="openSetupModal()">
+                    <i class="fa fa-plus-circle"></i> Bắt đầu thi thử
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Hidden AntiForgeryToken for AJAX calls -->
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "afTokenForm", style = "display:none" }))
+{
+    @Html.AntiForgeryToken()
+}
+
+<!-- Setup Modal -->
+<div class="modal fade setup-modal" id="setupModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div id="setupContent">
+                <div style="padding:60px; text-align:center; color:#95a5a6">
+                    <i class="fa fa-spinner fa-spin" style="font-size:24px"></i>
+                    <p style="margin-top:10px">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        // Filter tabs
+        $(document).on('click', '.ftab', function () {
+            $('.ftab').removeClass('active');
+            $(this).addClass('active');
+            var filter = $(this).data('filter');
+            var rows = $('#examListBody tr');
+            if (filter === 'all') {
+                rows.show();
+            } else {
+                rows.each(function () {
+                    $(this).toggle($(this).data('status') === filter);
+                });
+            }
+        });
+
+        // Open setup modal
+        function openSetupModal() {
+            var loading = '<div style="padding:60px; text-align:center; color:#95a5a6"><i class="fa fa-spinner fa-spin" style="font-size:24px"></i><p style="margin-top:10px">Đang tải...</p></div>';
+            $('#setupContent').html(loading);
+            $('#setupModal').modal('show');
+            $.get('@Url.Action("Setup", "Exam")')
+                .done(function (html) {
+                    $('#setupContent').html(html);
+                })
+                .fail(function () {
+                    $('#setupContent').html('<div style="padding:40px; text-align:center; color:#ea5455"><i class="fa fa-exclamation-triangle"></i> Lỗi tải cấu hình.</div>');
+                });
+        }
+
+        // Start exam from setup form
+        function startNewExam() {
+            var token = $('#setupForm input[name="__RequestVerificationToken"]').val();
+            var catConfig = getCategoryConfig();
+            var totalPct = 0;
+            if (catConfig) {
+                for (var i = 0; i < catConfig.length; i++) totalPct += catConfig[i].percent;
+                if (totalPct > 100) {
+                    alert('Tổng tỷ lệ thể loại vượt quá 100%. Vui lòng điều chỉnh.');
+                    return;
+                }
+                if (catConfig.length === 0) {
+                    alert('Vui lòng chọn ít nhất một thể loại và nhập tỷ lệ %.');
+                    return;
+                }
+            }
+
+            var data = {
+                __RequestVerificationToken: token,
+                questionCount: parseInt($('#setupQuestionCount').val()) || 20,
+                difficulty: $('#setupDifficulty').val() || null,
+                categoryConfigJson: catConfig ? JSON.stringify(catConfig) : null
+            };
+
+            $('#btnStartExam').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang tạo đề...');
+
+            $.post('@Url.Action("StartPractice", "Exam")', data)
+                .done(function (res) {
+                    if (res.success) {
+                        window.location.href = '@Url.Action("Take", "Exam")' + '/' + res.examId;
+                    } else {
+                        alert(res.message || 'Không thể tạo đề thi.');
+                        $('#btnStartExam').prop('disabled', false).html('<i class="fa fa-play-circle"></i> Bắt đầu thi');
+                    }
+                })
+                .fail(function () {
+                    alert('Lỗi kết nối. Vui lòng thử lại.');
+                    $('#btnStartExam').prop('disabled', false).html('<i class="fa fa-play-circle"></i> Bắt đầu thi');
+                });
+        }
+
+        function getToken() {
+            return $('#afTokenForm input[name="__RequestVerificationToken"]').val();
+        }
+
+        // Retake exam
+        function retakeExam(id) {
+            if (!confirm('Bạn muốn thi lại với cùng cấu hình?')) return;
+            $.post('@Url.Action("RetakePractice", "Exam")', { id: id, __RequestVerificationToken: getToken() })
+                .done(function (res) {
+                    if (res.success) {
+                        window.location.href = '@Url.Action("Take", "Exam")' + '/' + res.examId;
+                    } else {
+                        alert(res.message || 'Không thể thi lại.');
+                    }
+                });
+        }
+
+        // Delete exam
+        function deleteExam(id) {
+            if (!confirm('Bạn có chắc muốn xóa bài thi thử này?')) return;
+            $.post('@Url.Action("DeletePractice", "Exam")', { id: id, __RequestVerificationToken: getToken() })
+                .done(function (res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        alert(res.message || 'Lỗi khi xóa.');
+                    }
+                });
+        }
+    </script>
+}

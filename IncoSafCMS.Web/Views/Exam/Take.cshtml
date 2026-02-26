@@ -1,0 +1,514 @@
+﻿@model IncosafCMS.Web.Models.PracticeExamTakeViewModel
+@{
+    ViewBag.Title = "Làm bài thi thử";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<style>
+    .take-page {
+        height: 100%;
+        display: flex;
+        overflow: hidden;
+        background: #f4f6f9;
+    }
+
+    /* Sidebar - Question Navigator */
+    .take-sidebar {
+        width: 280px;
+        min-width: 280px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #e8ecf1;
+        overflow: hidden;
+    }
+
+    .sidebar-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .sidebar-header h5 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 4px 0;
+    }
+
+    .sidebar-header .exam-title-text {
+        font-size: 12px;
+        color: #95a5a6;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .sidebar-timer {
+        padding: 12px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: #7f8c8d;
+    }
+
+    .sidebar-timer i { color: #ff9f43; }
+    .sidebar-timer #elapsed { font-weight: 700; color: #2c3e50; font-size: 16px; }
+
+    .question-nav {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+    }
+
+    .question-nav-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+    }
+
+    .qnav-btn {
+        width: 100%;
+        aspect-ratio: 1;
+        border: 2px solid #e0e6ed;
+        border-radius: 10px;
+        background: white;
+        font-size: 13px;
+        font-weight: 600;
+        color: #7f8c8d;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .qnav-btn:hover { border-color: #667eea; color: #667eea; }
+    .qnav-btn.answered { background: #28c76f; border-color: #28c76f; color: white; }
+    .qnav-btn.current { border-color: #667eea; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102,126,234,0.4); }
+
+    .sidebar-footer {
+        padding: 16px 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .sidebar-progress {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .progress-bar-track {
+        width: 100%;
+        height: 6px;
+        background: #e8ecf1;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 14px;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #28c76f 0%, #48dbad 100%);
+        border-radius: 3px;
+        transition: width 0.3s;
+    }
+
+    .btn-finish-exam {
+        width: 100%;
+        background: linear-gradient(135deg, #ea5455 0%, #f09819 100%);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-finish-exam:hover {
+        box-shadow: 0 4px 15px rgba(234,84,85,0.4);
+        transform: translateY(-1px);
+    }
+
+    /* Main Question Area */
+    .take-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .question-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 32px 40px;
+    }
+
+    .question-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .question-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .question-meta h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 2px 0;
+    }
+
+    .question-meta p {
+        font-size: 13px;
+        color: #95a5a6;
+        margin: 0;
+    }
+
+    .question-text {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #2c3e50;
+        margin-bottom: 28px;
+        padding: 20px 24px;
+        background: #fafbff;
+        border-radius: 12px;
+        border-left: 4px solid #667eea;
+    }
+
+    /* Answer Options */
+    .answer-options { display: flex; flex-direction: column; gap: 12px; }
+
+    .answer-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 20px;
+        border: 2px solid #e8ecf1;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+    }
+
+    .answer-option:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .answer-option.selected {
+        border-color: #667eea;
+        background: rgba(102,126,234,0.06);
+        box-shadow: 0 2px 10px rgba(102,126,234,0.15);
+    }
+
+    .answer-option input[type="radio"] { display: none; }
+
+    .answer-label {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #f4f6f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 15px;
+        color: #7f8c8d;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+
+    .answer-option.selected .answer-label {
+        background: #667eea;
+        color: white;
+    }
+
+    .answer-text {
+        flex: 1;
+        font-size: 15px;
+        color: #2c3e50;
+        line-height: 1.6;
+        padding-top: 6px;
+    }
+
+    /* Navigation Buttons */
+    .question-nav-buttons {
+        padding: 16px 40px;
+        border-top: 1px solid #f0f0f0;
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-nav {
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        border: 2px solid #e0e6ed;
+        background: white;
+        color: #5a6c7d;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-nav:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .btn-nav.primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: transparent;
+    }
+
+    .btn-nav.primary:hover {
+        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+    }
+
+    .btn-nav:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .nav-counter {
+        font-size: 14px;
+        color: #95a5a6;
+        font-weight: 600;
+    }
+</style>
+
+<div class="take-page">
+    <!-- Sidebar -->
+    <div class="take-sidebar">
+        <div class="sidebar-header">
+            <h5><i class="fa fa-pencil-square-o"></i> Bài thi thử</h5>
+            <p class="exam-title-text">@Model.Title</p>
+        </div>
+
+        <div class="sidebar-timer">
+            <i class="fa fa-clock-o"></i>
+            <span>Thời gian: </span>
+            <span id="elapsed">00:00</span>
+        </div>
+
+        <div class="question-nav">
+            <div class="question-nav-grid">
+                @for (int i = 0; i < Model.Progress.Count; i++)
+                {
+                    var p = Model.Progress[i];
+                    var cls = p.IsCurrent ? "current" : p.IsAnswered ? "answered" : "";
+                    <button class="qnav-btn @cls"
+                            onclick="goToQuestion(@Model.ExamId, @i)"
+                            title="Câu @(i + 1)@(p.IsAnswered ? " (đã trả lời)" : "")">
+                        @(i + 1)
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            @{
+                var answered = Model.Progress.Count(p => p.IsAnswered);
+                var pct = Model.TotalQuestions > 0 ? (int)((double)answered / Model.TotalQuestions * 100) : 0;
+            }
+            <div class="sidebar-progress">
+                <span>Tiến độ</span>
+                <span>@answered / @Model.TotalQuestions</span>
+            </div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" style="width:@(pct)%"></div>
+            </div>
+            <button class="btn-finish-exam" onclick="finishExam()">
+                <i class="fa fa-flag-checkered"></i> Nộp bài
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="take-main">
+        <div class="question-area">
+            <div class="question-header">
+                <div class="question-number">@(Model.CurrentIndex + 1)</div>
+                <div class="question-meta">
+                    <h3>Câu hỏi @(Model.CurrentIndex + 1)</h3>
+                    <p>@(Model.CurrentQuestion.Title ?? "")</p>
+                </div>
+            </div>
+
+            <div class="question-text">
+                @Html.Raw(Model.CurrentQuestion.Text)
+            </div>
+
+            <div class="answer-options" id="answerOptions">
+                @foreach (var opt in Model.CurrentQuestion.Options)
+                {
+                    var sel = Model.CurrentQuestion.SelectedAnswerId.HasValue && Model.CurrentQuestion.SelectedAnswerId.Value == opt.AnswerId;
+                    <label class="answer-option @(sel ? "selected" : "")" data-aid="@opt.AnswerId">
+                        <input type="radio" name="selectedAnswer" value="@opt.AnswerId" @(sel ? "checked" : "") />
+                        <div class="answer-label">@opt.Label</div>
+                        <div class="answer-text">@Html.Raw(opt.Text)</div>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <div class="question-nav-buttons">
+            <button class="btn-nav" onclick="navigate('prev')" @(Model.CurrentIndex <= 0 ? "disabled" : "")>
+                <i class="fa fa-chevron-left"></i> Câu trước
+            </button>
+            <span class="nav-counter">@(Model.CurrentIndex + 1) / @Model.TotalQuestions</span>
+            @if (Model.CurrentIndex < Model.TotalQuestions - 1)
+            {
+                <button class="btn-nav primary" onclick="navigate('next')">
+                    Câu tiếp <i class="fa fa-chevron-right"></i>
+                </button>
+            }
+            else
+            {
+                <button class="btn-nav primary" onclick="finishExam()">
+                    <i class="fa fa-flag-checkered"></i> Nộp bài
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("SubmitAnswer", "Exam", FormMethod.Post, new { id = "hiddenForm", style = "display:none" }))
+{
+    @Html.AntiForgeryToken()
+}
+
+@section Scripts {
+    <script type="text/javascript">
+        var examId = @Model.ExamId;
+        var questionId = @Model.CurrentQuestion.QuestionId;
+        var startTime = new Date('@Model.StartedAt.ToString("o")');
+
+        // Timer
+        function updateTimer() {
+            var now = new Date();
+            var diff = Math.floor((now - startTime) / 1000);
+            var h = Math.floor(diff / 3600);
+            var m = Math.floor((diff % 3600) / 60);
+            var s = diff % 60;
+            var str = (h > 0 ? h + ':' : '') + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            $('#elapsed').text(str);
+        }
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        // Select answer
+        $(document).on('click', '.answer-option', function () {
+            $('.answer-option').removeClass('selected');
+            $(this).addClass('selected');
+            $(this).find('input[type="radio"]').prop('checked', true);
+        });
+
+        function getToken() {
+            return $('#hiddenForm input[name="__RequestVerificationToken"]').val();
+        }
+
+        function getSelectedAnswer() {
+            var checked = $('input[name="selectedAnswer"]:checked');
+            return checked.length ? parseInt(checked.val()) : null;
+        }
+
+        // Navigate prev/next
+        function navigate(action) {
+            var data = {
+                __RequestVerificationToken: getToken(),
+                examId: examId,
+                questionId: questionId,
+                selectedAnswerId: getSelectedAnswer(),
+                action: action
+            };
+            $.post('@Url.Action("SubmitAnswer", "Exam")', data, function (res) {
+                if (res.success) {
+                    window.location.href = res.redirectUrl;
+                }
+            });
+        }
+
+        // Go to specific question
+        function goToQuestion(eid, idx) {
+            var data = {
+                __RequestVerificationToken: getToken(),
+                examId: examId,
+                questionId: questionId,
+                selectedAnswerId: getSelectedAnswer(),
+                action: 'save'
+            };
+            // Save current answer first, then navigate
+            $.post('@Url.Action("SubmitAnswer", "Exam")', data, function () {
+                $.post('@Url.Action("GoToQuestion", "Exam")', {
+                    __RequestVerificationToken: getToken(),
+                    examId: eid,
+                    index: idx
+                }, function (res) {
+                    if (res.success) {
+                        window.location.href = res.redirectUrl;
+                    }
+                });
+            });
+        }
+
+        // Finish exam
+        function finishExam() {
+            var unanswered = $('.qnav-btn').not('.answered').not('.current').length;
+            var currentAnswered = getSelectedAnswer() !== null;
+            if (!currentAnswered) unanswered++;
+
+            var msg = 'Bạn có chắc muốn nộp bài?';
+            if (unanswered > 0) {
+                msg = 'Còn ' + unanswered + ' câu chưa trả lời. Bạn có chắc muốn nộp bài?';
+            }
+            if (!confirm(msg)) return;
+
+            // Save current answer first
+            var saveData = {
+                __RequestVerificationToken: getToken(),
+                examId: examId,
+                questionId: questionId,
+                selectedAnswerId: getSelectedAnswer(),
+                action: 'save'
+            };
+            $.post('@Url.Action("SubmitAnswer", "Exam")', saveData, function () {
+                $.post('@Url.Action("FinishPractice", "Exam")', {
+                    __RequestVerificationToken: getToken(),
+                    examId: examId
+                }, function (res) {
+                    if (res.success) {
+                        window.location.href = res.redirectUrl;
+                    }
+                });
+            });
+        }
+    </script>
+}

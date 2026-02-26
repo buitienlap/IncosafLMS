@@ -85,6 +85,7 @@
     <Compile Include="DomainModels\Image.cs" />
     <Compile Include="DomainModels\Notification.cs" />
     <Compile Include="DomainModels\PaginatedList.cs" />
+    <Compile Include="DomainModels\PracticeExam.cs" />
     <Compile Include="DomainModels\Question.cs" />
     <Compile Include="DomainModels\v_ProvinceDistrict.cs" />
     <Compile Include="DomainModels\ProvinceFull.cs" />

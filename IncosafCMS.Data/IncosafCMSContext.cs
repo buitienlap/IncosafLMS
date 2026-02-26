@@ -37,6 +37,8 @@ namespace IncosafCMS.Data
         // Course entity
         public DbSet<Course> Courses { get; set; }
         public DbSet<ExamAssignment> ExamAssignments { get; set; }
+        public DbSet<PracticeExam> PracticeExams { get; set; }
+        public DbSet<PracticeExamAnswer> PracticeExamAnswers { get; set; }
         public IncosafCMSContext()
             : base("AppContext")
         {

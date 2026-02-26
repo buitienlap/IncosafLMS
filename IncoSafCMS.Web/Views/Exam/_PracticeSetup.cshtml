@@ -1,0 +1,371 @@
+﻿@model IncosafCMS.Web.Models.PracticeExamSetupViewModel
+
+@using (Html.BeginForm("StartPractice", "Exam", FormMethod.Post, new { id = "setupForm" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="setup-header">
+        <h4><i class="fa fa-plus-circle"></i> Tạo đề thi thử</h4>
+        <p>Chọn số câu, thể loại và tỷ lệ phân bổ câu hỏi theo ý muốn</p>
+    </div>
+
+    <div class="setup-body">
+        <div class="form-group">
+            <label><i class="fa fa-list-ol"></i> Số lượng câu hỏi</label>
+            <select id="setupQuestionCount" name="questionCount" class="form-control setup-select">
+                <option value="10">10 câu</option>
+                <option value="20" selected>20 câu</option>
+                <option value="30">30 câu</option>
+                <option value="50">50 câu</option>
+                <option value="100">100 câu</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label><i class="fa fa-signal"></i> Độ khó</label>
+            <select id="setupDifficulty" name="difficulty" class="form-control setup-select">
+                <option value="">-- Tất cả độ khó --</option>
+                <option value="VeryEasy">Rất dễ</option>
+                <option value="Easy">Dễ</option>
+                <option value="Medium">Trung bình</option>
+                <option value="Hard">Khó</option>
+                <option value="VeryHard">Rất khó</option>
+            </select>
+        </div>
+
+        <!-- Multi-category with percentage -->
+        <div class="form-group">
+            <label><i class="fa fa-folder-open"></i> Phân bổ thể loại câu hỏi</label>
+            <div class="category-mode-switch">
+                <label class="radio-inline cat-mode-label">
+                    <input type="radio" name="catMode" value="all" checked onchange="toggleCategoryMode()"> Tất cả thể loại (ngẫu nhiên)
+                </label>
+                <label class="radio-inline cat-mode-label">
+                    <input type="radio" name="catMode" value="custom" onchange="toggleCategoryMode()"> Tùy chỉnh tỷ lệ
+                </label>
+            </div>
+
+            <div id="catAllPanel" class="cat-panel">
+                <div class="cat-all-info">
+                    <i class="fa fa-info-circle"></i>
+                    Câu hỏi được chọn ngẫu nhiên từ tất cả thể loại có sẵn.
+                </div>
+            </div>
+
+            <div id="catCustomPanel" class="cat-panel" style="display:none">
+                <div class="cat-picker-toolbar">
+                    <button type="button" class="btn btn-sm btn-success" onclick="addCategoryRow()">
+                        <i class="fa fa-plus"></i> Thêm thể loại
+                    </button>
+                    <span class="pct-total-label">
+                        Tổng: <span id="pctTotal" class="pct-total-value">0</span>%
+                    </span>
+                </div>
+                <div id="categoryRows"></div>
+                <div id="pctWarning" class="pct-warning" style="display:none">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <span id="pctWarningText"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="setup-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" style="border-radius:10px; padding:10px 20px">Hủy</button>
+        <button type="button" id="btnStartExam" class="btn-start-exam" onclick="startNewExam()">
+            <i class="fa fa-play-circle"></i> Bắt đầu thi
+        </button>
+    </div>
+}
+
+<style>
+    .setup-select {
+        height: 40px !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        padding: 8px 12px !important;
+    }
+
+    .category-mode-switch {
+        margin-bottom: 12px;
+        display: flex;
+        gap: 16px;
+    }
+
+    .cat-mode-label {
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: #5a6c7d !important;
+        cursor: pointer;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .cat-mode-label input[type="radio"] { margin-right: 5px; }
+
+    .cat-panel { margin-top: 4px; }
+
+    .cat-all-info {
+        background: #f0faf4;
+        border: 1px solid #d4edda;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 13px;
+        color: #28734a;
+    }
+
+    .cat-all-info i { margin-right: 6px; color: #28c76f; }
+
+    .cat-picker-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .pct-total-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #5a6c7d;
+    }
+
+    .pct-total-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #28c76f;
+    }
+
+    .pct-total-value.over { color: #ea5455; }
+    .pct-total-value.under { color: #ff9f43; }
+
+    .cat-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        padding: 10px 12px;
+        background: #f8f9fb;
+        border: 1px solid #e8ecf1;
+        border-radius: 10px;
+        transition: border-color 0.2s;
+    }
+
+    .cat-row:hover { border-color: #28c76f; }
+
+    .cat-row select {
+        flex: 1;
+        height: 36px !important;
+        font-size: 13px !important;
+        border-radius: 8px !important;
+        border: 1px solid #dce1e8 !important;
+        padding: 4px 10px !important;
+    }
+
+    .cat-row select:focus {
+        border-color: #28c76f !important;
+        box-shadow: 0 0 0 2px rgba(40,199,111,0.15) !important;
+    }
+
+    .cat-pct-wrap {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .cat-pct-input {
+        width: 60px;
+        height: 36px !important;
+        text-align: center;
+        font-size: 14px !important;
+        font-weight: 600;
+        border-radius: 8px !important;
+        border: 1px solid #dce1e8 !important;
+        padding: 4px !important;
+    }
+
+    .cat-pct-input:focus {
+        border-color: #28c76f !important;
+        box-shadow: 0 0 0 2px rgba(40,199,111,0.15) !important;
+    }
+
+    .cat-pct-symbol {
+        font-weight: 600;
+        color: #7f8c8d;
+        font-size: 14px;
+    }
+
+    .cat-available {
+        font-size: 11px;
+        color: #95a5a6;
+        white-space: nowrap;
+        min-width: 50px;
+        text-align: right;
+    }
+
+    .cat-row .btn-remove-cat {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(234,84,85,0.1);
+        color: #ea5455;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .cat-row .btn-remove-cat:hover { background: #ea5455; color: white; }
+
+    .pct-warning {
+        margin-top: 8px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .pct-warning.error {
+        background: rgba(234,84,85,0.08);
+        color: #ea5455;
+        border: 1px solid rgba(234,84,85,0.2);
+    }
+
+    .pct-warning.warn {
+        background: rgba(255,159,67,0.08);
+        color: #e67e22;
+        border: 1px solid rgba(255,159,67,0.2);
+    }
+
+    .pct-warning i { margin-right: 5px; }
+</style>
+
+<script type="text/javascript">
+    var _categories = [
+        @foreach (var cat in Model.Categories.Where(c => c.QuestionCount > 0))
+        {
+            @:{ id: @cat.Id, name: '@Html.Raw(cat.Name.Replace("'", "\\'"))', count: @cat.QuestionCount },
+        }
+    ];
+
+    function toggleCategoryMode() {
+        var mode = $('input[name="catMode"]:checked').val();
+        if (mode === 'all') {
+            $('#catAllPanel').show();
+            $('#catCustomPanel').hide();
+        } else {
+            $('#catAllPanel').hide();
+            $('#catCustomPanel').show();
+            if ($('#categoryRows .cat-row').length === 0) {
+                addCategoryRow();
+            }
+        }
+    }
+
+    function addCategoryRow() {
+        var usedIds = getUsedCategoryIds();
+        var available = _categories.filter(function (c) { return usedIds.indexOf(c.id) === -1; });
+        if (available.length === 0) {
+            alert('Đã thêm hết thể loại có câu hỏi.');
+            return;
+        }
+
+        var options = '<option value="">-- Chọn thể loại --</option>';
+        for (var i = 0; i < available.length; i++) {
+            options += '<option value="' + available[i].id + '" data-count="' + available[i].count + '">'
+                + available[i].name + ' (' + available[i].count + ' câu)</option>';
+        }
+
+        var html = '<div class="cat-row">'
+            + '<select class="form-control cat-select" onchange="onCategorySelectChange(this)">' + options + '</select>'
+            + '<div class="cat-pct-wrap">'
+            + '<input type="number" class="form-control cat-pct-input" min="1" max="100" value="" placeholder="%" oninput="recalcTotal()">'
+            + '<span class="cat-pct-symbol">%</span>'
+            + '</div>'
+            + '<span class="cat-available"></span>'
+            + '<button type="button" class="btn-remove-cat" onclick="removeCategoryRow(this)" title="Xóa">'
+            + '<i class="fa fa-times"></i></button>'
+            + '</div>';
+
+        $('#categoryRows').append(html);
+    }
+
+    function removeCategoryRow(btn) {
+        $(btn).closest('.cat-row').remove();
+        recalcTotal();
+        refreshAvailableOptions();
+    }
+
+    function getUsedCategoryIds() {
+        var ids = [];
+        $('#categoryRows .cat-select').each(function () {
+            var v = parseInt($(this).val());
+            if (v) ids.push(v);
+        });
+        return ids;
+    }
+
+    function onCategorySelectChange(sel) {
+        var $sel = $(sel);
+        var opt = $sel.find('option:selected');
+        var row = $sel.closest('.cat-row');
+        var count = opt.data('count') || 0;
+        row.find('.cat-available').text(count > 0 ? count + ' câu' : '');
+        refreshAvailableOptions();
+    }
+
+    function refreshAvailableOptions() {
+        var usedIds = getUsedCategoryIds();
+        $('#categoryRows .cat-select').each(function () {
+            var currentVal = parseInt($(this).val()) || 0;
+            $(this).find('option').each(function () {
+                var optVal = parseInt($(this).val()) || 0;
+                if (optVal === 0) return;
+                $(this).prop('disabled', usedIds.indexOf(optVal) !== -1 && optVal !== currentVal);
+            });
+        });
+    }
+
+    function recalcTotal() {
+        var total = 0;
+        $('#categoryRows .cat-pct-input').each(function () {
+            total += parseInt($(this).val()) || 0;
+        });
+
+        var $pct = $('#pctTotal');
+        $pct.text(total);
+        $pct.removeClass('over under');
+
+        var $warn = $('#pctWarning');
+        if (total > 100) {
+            $pct.addClass('over');
+            $warn.show().removeClass('warn').addClass('error');
+            $('#pctWarningText').text('Tổng vượt quá 100%. Vui lòng điều chỉnh lại.');
+        } else if (total > 0 && total < 100) {
+            $pct.addClass('under');
+            $warn.show().removeClass('error').addClass('warn');
+            $('#pctWarningText').text('Tổng chưa đủ 100%. Phần còn lại (' + (100 - total) + '%) sẽ được lấy ngẫu nhiên từ các thể loại khác.');
+        } else {
+            $warn.hide();
+        }
+    }
+
+    function getCategoryConfig() {
+        var mode = $('input[name="catMode"]:checked').val();
+        if (mode === 'all') return null;
+
+        var items = [];
+        $('#categoryRows .cat-row').each(function () {
+            var catId = parseInt($(this).find('.cat-select').val()) || 0;
+            var pct = parseInt($(this).find('.cat-pct-input').val()) || 0;
+            if (catId > 0 && pct > 0) {
+                items.push({ categoryId: catId, percent: pct });
+            }
+        });
+        return items.length > 0 ? items : null;
+    }
+</script>
