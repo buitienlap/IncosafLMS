@@ -11,6 +11,13 @@
                 <span class="m-r-sm" data-i18n="topnav.welcometext"><i class="fa fa-book">@Html.ActionLink("Tài liệu", "Docman", "Account", routeValues: null, htmlAttributes: new { title = "Tài liệu", target = "_blank" })</i></span>
             </li>
 
+            @if (User.IsInRole("Admin"))
+            {
+                <li>
+                    <span class="m-r-sm"><i class="fa fa-cogs"></i> @Html.ActionLink("Quản trị", "Index", "Admin", routeValues: null, htmlAttributes: new { title = "Trang quản trị" })</span>
+                </li>
+            }
+
             <li>
                 <span class="m-r-sm text-muted welcome-message" data-i18n="topnav.welcometext">@Html.ActionLink("Xin chào " + User.Identity.GetUserName() + "!", "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })</span>
             </li>

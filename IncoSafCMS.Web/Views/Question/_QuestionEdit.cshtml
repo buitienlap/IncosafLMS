@@ -1,4 +1,4 @@
-@model IncosafCMS.Core.DomainModels.Question
+﻿@model IncosafCMS.Core.DomainModels.Question
 @using System.Linq
 
 @using (Html.BeginForm(Model.Id == 0 ? "Create" : "Edit", "Question", FormMethod.Post, new { onsubmit = "return submitQuestionForm(this);" }))
@@ -6,32 +6,128 @@
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.Id)
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.Title)
-        @Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.Title)
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.Text)
-        @Html.TextAreaFor(m => m.Text, 5, 80, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.Text)
-    </div>
-    <div class="form-group">
-        @Html.Label("CourseCategoryId", "Th? lo?i")
-        @Html.DropDownList("CourseCategoryId", (SelectList)ViewBag.CourseCategories, "-- Ch?n --", new { @class = "form-control" })
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.Difficulty)
-        @{ 
-            var items = Enum.GetValues(typeof(IncosafCMS.Core.DomainModels.DifficultyLevel)).Cast<IncosafCMS.Core.DomainModels.DifficultyLevel>()
-                        .Select(e => new { Value = (int)e, Text = e.ToString() });
-            var select = new SelectList(items, "Value", "Text", (int)Model.Difficulty);
-        }
-        @Html.DropDownListFor(m => m.Difficulty, select, new { @class = "form-control" })
+    <div class="row">
+        <!-- Left column: Question info -->
+        <div class="col-md-6" style="border-right:1px solid #e0e0e0; padding-right:20px">
+            <h4 style="margin-top:0; margin-bottom:15px"><i class="fa fa-question-circle"></i> Thông tin câu hỏi</h4>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Title)
+                @Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Title)
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Text)
+                @Html.TextAreaFor(m => m.Text, 5, 80, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Text)
+            </div>
+            <div class="form-group">
+                @Html.Label("CourseCategoryId", "Thể loại")
+                @Html.DropDownList("CourseCategoryId", (SelectList)ViewBag.CourseCategories, "-- Chọn --", new { @class = "form-control" })
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Difficulty)
+                @{
+                    var items = Enum.GetValues(typeof(IncosafCMS.Core.DomainModels.DifficultyLevel)).Cast<IncosafCMS.Core.DomainModels.DifficultyLevel>()
+                                .Select(e => new { Value = (int)e, Text = e.ToString() });
+                    var select = new SelectList(items, "Value", "Text", (int)Model.Difficulty);
+                }
+                @Html.DropDownListFor(m => m.Difficulty, select, new { @class = "form-control" })
+            </div>
+        </div>
+
+        <!-- Right column: Answers -->
+        <div class="col-md-6" style="padding-left:20px">
+            <h4 style="margin-top:0; margin-bottom:10px">
+                <i class="fa fa-list-ol"></i> Danh sách câu trả lời
+                <button type="button" class="btn btn-success btn-xs pull-right" onclick="addAnswerRow()">
+                    <i class="fa fa-plus"></i> Thêm câu trả lời
+                </button>
+            </h4>
+            <div class="alert alert-info" style="padding:6px; margin-bottom:8px; font-size:12px">
+                <i class="fa fa-info-circle"></i> Chọn radio ở cột <b>"Đúng"</b> để đánh dấu đáp án đúng. Chỉ được chọn 1 đáp án đúng.
+            </div>
+
+            <div id="answersContainer" style="max-height:400px; overflow-y:auto">
+                <table class="table table-bordered table-condensed" id="answersTable">
+                    <thead>
+                        <tr>
+                            <th style="width:35px; text-align:center">#</th>
+                            <th>Nội dung câu trả lời</th>
+                            <th style="width:50px; text-align:center">Đúng</th>
+                            <th style="width:40px; text-align:center">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="answersBody">
+                        @if (Model.Answers != null && Model.Answers.Any())
+                        {
+                            var orderedAnswers = Model.Answers.OrderBy(a => a.Order).ToList();
+                            for (int i = 0; i < orderedAnswers.Count; i++)
+                            {
+                                <tr>
+                                    <td style="text-align:center; vertical-align:top; padding-top:10px" class="answer-index">@(i + 1)</td>
+                                    <td>
+                                        <textarea name="Answers[@(i)].Text" class="form-control input-sm" rows="3" required>@orderedAnswers[i].Text</textarea>
+                                    </td>
+                                    <td style="text-align:center; vertical-align:top; padding-top:10px">
+                                        <input type="radio" name="CorrectAnswerIndex" value="@i" @(orderedAnswers[i].IsCorrect ? "checked" : "") />
+                                    </td>
+                                    <td style="text-align:center; vertical-align:top; padding-top:10px">
+                                        <button type="button" class="btn btn-danger btn-xs" onclick="removeAnswerRow(this)">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
+    <hr style="margin-top:15px; margin-bottom:10px" />
     <div class="text-right">
-        <button type="submit" class="btn btn-primary">L?u</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">H?y</button>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
     </div>
 }
+
+<script type="text/javascript">
+    function addAnswerRow() {
+        var tbody = document.getElementById('answersBody');
+        var rowCount = tbody.rows.length;
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td style="text-align:center; vertical-align:top; padding-top:10px" class="answer-index">' + (rowCount + 1) + '</td>' +
+            '<td><textarea name="Answers[' + rowCount + '].Text" class="form-control input-sm" rows="3" required></textarea></td>' +
+            '<td style="text-align:center; vertical-align:top; padding-top:10px"><input type="radio" name="CorrectAnswerIndex" value="' + rowCount + '" /></td>' +
+            '<td style="text-align:center; vertical-align:top; padding-top:10px"><button type="button" class="btn btn-danger btn-xs" onclick="removeAnswerRow(this)"><i class="fa fa-trash"></i></button></td>';
+        tbody.appendChild(tr);
+    }
+
+    function removeAnswerRow(btn) {
+        var row = btn.closest('tr');
+        row.parentNode.removeChild(row);
+        reindexAnswerRows();
+    }
+
+    function reindexAnswerRows() {
+        var tbody = document.getElementById('answersBody');
+        var rows = tbody.getElementsByTagName('tr');
+        var checkedIdx = -1;
+        for (var i = 0; i < rows.length; i++) {
+            var radio = rows[i].querySelector('input[type="radio"]');
+            if (radio && radio.checked) { checkedIdx = i; }
+        }
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].querySelector('.answer-index').textContent = (i + 1);
+            var textArea = rows[i].querySelector('textarea');
+            if (textArea) { textArea.name = 'Answers[' + i + '].Text'; }
+            var radio = rows[i].querySelector('input[type="radio"]');
+            if (radio) {
+                radio.value = i;
+                radio.checked = (i === checkedIdx);
+            }
+        }
+    }
+</script>

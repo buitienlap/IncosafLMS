@@ -1,0 +1,32 @@
+﻿[
+  {
+    "Title": "Câu hỏi mẫu 1",
+    "Text": "Thủ đô của Việt Nam là gì?",
+    "CourseCategoryCode": "CAT01",
+    "Difficulty": "Easy",
+    "Points": 1,
+    "Explanation": "Hà Nội là thủ đô của Việt Nam từ năm 1010.",
+    "Tags": "địa lý, việt nam",
+    "Answers": [
+      { "Text": "Hà Nội", "IsCorrect": true, "Explanation": "Đây là đáp án đúng" },
+      { "Text": "Hồ Chí Minh", "IsCorrect": false, "Explanation": "" },
+      { "Text": "Đà Nẵng", "IsCorrect": false, "Explanation": "" },
+      { "Text": "Huế", "IsCorrect": false, "Explanation": "" }
+    ]
+  },
+  {
+    "Title": "Câu hỏi mẫu 2",
+    "Text": "Ngôn ngữ lập trình nào được sử dụng phổ biến nhất cho phát triển web phía server với .NET?",
+    "CourseCategoryCode": "CAT01",
+    "Difficulty": "Medium",
+    "Points": 2,
+    "Explanation": "C# là ngôn ngữ chính của hệ sinh thái .NET.",
+    "Tags": "lập trình, .net",
+    "Answers": [
+      { "Text": "C#", "IsCorrect": true, "Explanation": "" },
+      { "Text": "Java", "IsCorrect": false, "Explanation": "" },
+      { "Text": "Python", "IsCorrect": false, "Explanation": "" },
+      { "Text": "Ruby", "IsCorrect": false, "Explanation": "" }
+    ]
+  }
+]

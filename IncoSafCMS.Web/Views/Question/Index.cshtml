@@ -1,23 +1,149 @@
-@model IEnumerable<IncosafCMS.Core.DomainModels.Question>
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Question>
 
 @{
-    ViewBag.Title = "Qu?n l� ng�n h�ng c�u h?i";
+    ViewBag.Title = "Quản lý ngân hàng câu hỏi";
 }
+
+<script type="text/javascript">
+    var selectedQuestionId;
+
+    function OnQuestionFocusedRowChanged(s, e) {
+        $("#btnEditQuestion").prop('disabled', true);
+        $("#btnDeleteQuestion").prop('disabled', true);
+        s.GetRowValues(s.GetFocusedRowIndex(), 'Id', function (value) {
+            if (value && typeof value === "number") {
+                selectedQuestionId = value;
+                $("#btnEditQuestion").prop('disabled', false);
+                $("#btnDeleteQuestion").prop('disabled', false);
+            } else {
+                selectedQuestionId = null;
+                $("#btnEditQuestion").prop('disabled', true);
+                $("#btnDeleteQuestion").prop('disabled', true);
+            }
+        });
+    }
+
+    function openAddQuestion() {
+        $('#questionModalTitle').text('Thêm câu hỏi');
+        $('#questionModalBody').html('');
+        $.get('@Url.Action("Create", "Question")', function (html) {
+            $('#questionModalBody').html(html);
+            $('#addQuestionModal').modal('show');
+        });
+    }
+
+    function openEditQuestion() {
+        if (!selectedQuestionId) return;
+        $('#questionModalTitle').text('Chỉnh sửa câu hỏi');
+        $('#questionModalBody').html('');
+        $.get('@Url.Action("Edit", "Question")', { id: selectedQuestionId }, function (html) {
+            $('#questionModalBody').html(html);
+            $('#addQuestionModal').modal('show');
+        });
+    }
+
+    function submitQuestionForm(form) {
+        var $form = $(form);
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            data: $form.serialize(),
+            success: function (res) {
+                if (res && res.success) {
+                    $('#addQuestionModal').modal('hide');
+                    grvQuestions.PerformCallback();
+                } else {
+                    $('#questionModalBody').html(res);
+                }
+            }
+        });
+        return false;
+    }
+
+    function deleteQuestion() {
+        if (!selectedQuestionId) return;
+        if (!confirm('Bạn có chắc muốn xóa câu hỏi này?')) return;
+        $.post('@Url.Action("Delete", "Question")', { id: selectedQuestionId }, function (res) {
+            if (res && res.success) {
+                grvQuestions.PerformCallback();
+                selectedQuestionId = null;
+                $("#btnEditQuestion").prop('disabled', true);
+                $("#btnDeleteQuestion").prop('disabled', true);
+            } else {
+                alert(res && res.message ? res.message : 'Lỗi khi xóa');
+            }
+        });
+    }
+
+    function openImportQuestion() {
+        $('#importModalBody').html('');
+        $.get('@Url.Action("Import", "Question")', function (html) {
+            $('#importModalBody').html(html);
+            $('#importQuestionModal').modal('show');
+        });
+    }
+
+    function doImportQuestions() {
+        var fileInput = document.getElementById('importFile');
+        if (!fileInput || !fileInput.files.length) {
+            alert('Vui lòng chọn file.');
+            return;
+        }
+        var formData = new FormData(document.getElementById('importQuestionForm'));
+        formData.append('file', fileInput.files[0]);
+
+        $('#importResultPanel').hide();
+        $.ajax({
+            url: '@Url.Action("Import", "Question")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                var html = '';
+                if (res.Imported > 0) {
+                    html += '<div class="alert alert-success"><i class="fa fa-check"></i> Đã import thành công <b>' + res.Imported + '</b> câu hỏi.</div>';
+                }
+                if (res.Skipped > 0) {
+                    html += '<div class="alert alert-warning"><i class="fa fa-exclamation-triangle"></i> Bỏ qua <b>' + res.Skipped + '</b> câu hỏi.</div>';
+                }
+                if (res.Errors && res.Errors.length > 0) {
+                    html += '<div class="alert alert-danger" style="max-height:200px; overflow-y:auto"><b>Chi tiết lỗi:</b><ul>';
+                    for (var i = 0; i < res.Errors.length; i++) {
+                        html += '<li>' + res.Errors[i] + '</li>';
+                    }
+                    html += '</ul></div>';
+                }
+                if (!html) html = '<div class="alert alert-info">Không có dữ liệu nào được xử lý.</div>';
+                $('#importResultContent').html(html);
+                $('#importResultPanel').show();
+
+                if (res.Imported > 0) {
+                    grvQuestions.PerformCallback();
+                }
+            },
+            error: function () {
+                alert('Lỗi khi import. Vui lòng thử lại.');
+            }
+        });
+    }
+</script>
 
 <div class="wrapper wrapper-content animated fadeInRight">
     <div class="row">
         <div class="col-lg-12">
             <div class="ibox">
                 <div class="ibox-title">
-                    <h5>Ng�n h�ng c�u h?i</h5>
+                    <h5>Ngân hàng câu hỏi</h5>
                     <div class="text-right">
-                        <button class="btn btn-primary btn-rounded btn-xs" data-toggle="modal" data-target="#addQuestionModal" onclick="openAddQuestion()">Th�m m?i</button>
+                        <button class="btn btn-primary btn-rounded btn-xs" onclick="openAddQuestion()">Thêm mới</button>
+                        <button id="btnEditQuestion" class="btn btn-info btn-rounded btn-xs" onclick="openEditQuestion()" disabled>Chỉnh sửa</button>
+                        <button id="btnDeleteQuestion" class="btn btn-danger btn-rounded btn-xs" onclick="deleteQuestion()" disabled>Xóa</button>
+                        <button class="btn btn-warning btn-rounded btn-xs" onclick="openImportQuestion()"><i class="fa fa-upload"></i> Import</button>
                     </div>
                 </div>
                 <div class="ibox-content" style="padding: 5px">
-                    <div id="questionListWrapper">
-                        @Html.Partial("~/Views/Question/_QuestionListPartial.cshtml", Model)
-                    </div>
+                    @Html.Partial("~/Views/Question/_QuestionListPartial.cshtml", Model)
                 </div>
             </div>
         </div>
@@ -25,73 +151,31 @@
 </div>
 
 <!-- Add/Edit Modal -->
-<div class="modal fade" id="addQuestionModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal inmodal" id="addQuestionModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title" id="questionModalTitle">Th�m c�u h?i</h4>
+        <div class="modal-content animated bounceInRight">
+            <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                <h4 class="modal-title" id="questionModalTitle">Thêm câu hỏi</h4>
             </div>
-            <div class="modal-body" id="questionModalBody">
+            <div class="modal-body" id="questionModalBody" style="padding: 10px">
                 <!-- form injected by AJAX -->
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        function refreshQuestionList() {
-            $.get('@Url.Action("ListPartial", "Question")', function (html) {
-                $('#questionListWrapper').html(html);
-            });
-        }
-
-        function openAddQuestion() {
-            $('#questionModalTitle').text('Th�m c�u h?i');
-            $('#questionModalBody').html('');
-            $.get('@Url.Action("Create", "Question")', function (html) {
-                $('#questionModalBody').html(html);
-                $('#addQuestionModal').modal('show');
-            });
-        }
-
-        function openEditQuestion(id) {
-            $('#questionModalTitle').text('Ch?nh s?a c�u h?i');
-            $('#questionModalBody').html('');
-            $.get('@Url.Action("Edit", "Question")', { id: id }, function (html) {
-                $('#questionModalBody').html(html);
-                $('#addQuestionModal').modal('show');
-            });
-        }
-
-        function submitQuestionForm(form) {
-            var $form = $(form);
-            $.ajax({
-                url: $form.attr('action'),
-                type: $form.attr('method'),
-                data: $form.serialize(),
-                success: function (res) {
-                    if (res && res.success) {
-                        $('#addQuestionModal').modal('hide');
-                        refreshQuestionList();
-                    } else {
-                        $('#questionModalBody').html(res);
-                    }
-                }
-            });
-            return false;
-        }
-
-        function deleteQuestion(id) {
-            if (!confirm('B?n c� ch?c mu?n x�a c�u h?i n�y?')) return;
-            $.post('@Url.Action("Delete", "Question")', { id: id }, function (res) {
-                if (res && res.success) {
-                    refreshQuestionList();
-                } else {
-                    alert(res && res.message ? res.message : 'L?i khi x�a');
-                }
-            });
-        }
-    </script>
-}
+<!-- Import Modal -->
+<div class="modal inmodal" id="importQuestionModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content animated bounceInRight">
+            <div class="modal-header" style="background-color:#f8ac59; color: white; padding: 10px">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
+                <h4 class="modal-title"><i class="fa fa-upload"></i> Import câu hỏi</h4>
+            </div>
+            <div class="modal-body" id="importModalBody" style="padding: 10px">
+                <!-- form injected by AJAX -->
+            </div>
+        </div>
+    </div>
+</div>

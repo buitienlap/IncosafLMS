@@ -1,31 +1,103 @@
-@model IEnumerable<IncosafCMS.Core.DomainModels.Question>
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Question>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th style="width:50px">#</th>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Difficulty</th>
-            <th style="width:150px"></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any()) {
-            foreach (var q in Model) {
-                <tr>
-                    <td>@q.Id</td>
-                    <td>@q.Title</td>
-                    <td>@q.CourseCategory?.Name</td>
-                    <td>@q.Difficulty</td>
-                    <td>
-                        <button class="btn btn-xs btn-info" onclick="openEditQuestion(@q.Id); $('#addQuestionModal').modal('show');">S?a</button>
-                        <button class="btn btn-xs btn-danger" onclick="deleteQuestion(@q.Id)">X�a</button>
-                    </td>
-                </tr>
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    var grid = Html.DevExpress().GridView(settings =>
+    {
+        settings.Name = "grvQuestions";
+        settings.KeyFieldName = "Id";
+        settings.CallbackRouteValues = new { Controller = "Question", Action = "QuestionGridViewPartial" };
+
+        settings.Width = System.Web.UI.WebControls.Unit.Percentage(100);
+
+        settings.SettingsText.EmptyDataRow = "Không có câu hỏi nào";
+        settings.SettingsText.SearchPanelEditorNullText = "Nhập từ khóa tìm kiếm...";
+
+        settings.SettingsBehavior.AllowFocusedRow = true;
+
+        settings.SettingsLoadingPanel.Text = "Đang tải...";
+        settings.SettingsLoadingPanel.Mode = GridViewLoadingPanelMode.ShowAsPopup;
+
+        settings.Styles.Header.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Header.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingTop = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.Styles.Cell.Paddings.PaddingBottom = System.Web.UI.WebControls.Unit.Pixel(5);
+        settings.ControlStyle.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+
+        settings.SettingsPager.Summary.EmptyText = "Không có dữ liệu để đánh số trang";
+        settings.SettingsPager.Summary.AllPagesText = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.Summary.Text = "Trang {0}/{1} ({2} kết quả)";
+        settings.SettingsPager.PageSize = 20;
+        settings.SettingsPager.AllButton.Visible = false;
+        settings.SettingsPager.LastPageButton.Visible = false;
+        settings.SettingsPager.FirstPageButton.Visible = false;
+        settings.SettingsPager.NumericButtonCount = 4;
+
+        settings.SettingsSearchPanel.Visible = true;
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "STT";
+            column.FieldName = "STT";
+            column.Settings.AllowSort = DefaultBoolean.False;
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(40);
+            column.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            column.EditFormSettings.Visible = DefaultBoolean.False;
+            column.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Tiêu đề";
+            column.FieldName = "Title";
+            column.CellStyle.Wrap = DefaultBoolean.True;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Thể loại";
+            column.FieldName = "CourseCategory.Name";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(160);
+            column.CellStyle.Wrap = DefaultBoolean.True;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Độ khó";
+            column.FieldName = "Difficulty";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(90);
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Trạng thái";
+            column.FieldName = "IsActive";
+            column.Width = System.Web.UI.WebControls.Unit.Pixel(80);
+            column.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+
+        settings.CustomColumnDisplayText = (sender, e) =>
+        {
+            if (e.Column.FieldName == "STT")
+            {
+                e.DisplayText = (e.VisibleIndex + 1).ToString();
             }
-        } else {
-            <tr><td colspan="5">Kh�ng c� c�u h?i n�o</td></tr>
-        }
-    </tbody>
-</table>
+            if (e.Column.FieldName == "IsActive")
+            {
+                e.DisplayText = (e.Value != null && (bool)e.Value) ? "Hoạt động" : "Ẩn";
+            }
+        };
+
+        settings.ClientSideEvents.FocusedRowChanged = "OnQuestionFocusedRowChanged";
+    });
+
+    if (ViewData["EditError"] != null)
+    {
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+    }
+}
+@grid.Bind(Model).GetHtml()

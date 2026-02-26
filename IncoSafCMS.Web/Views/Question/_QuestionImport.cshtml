@@ -1,0 +1,48 @@
+﻿<div style="padding:10px">
+<div class="alert alert-info" style="font-size:13px; margin-bottom:15px">
+    <i class="fa fa-info-circle"></i>
+    Hỗ trợ import câu hỏi từ file <b>JSON</b> hoặc <b>Excel (.xlsx)</b>.
+    Tải file mẫu bên dưới để xem định dạng yêu cầu.
+</div>
+
+<div style="margin-bottom:10px">
+    <b>Tải file mẫu:</b>&nbsp;
+    <a href="@Url.Action("DownloadJsonTemplate", "Question")" class="btn btn-sm btn-outline btn-default">
+        <i class="fa fa-download"></i> Mẫu JSON
+    </a>
+    <a href="@Url.Action("DownloadExcelTemplate", "Question")" class="btn btn-sm btn-outline btn-default">
+        <i class="fa fa-download"></i> Mẫu Excel
+    </a>
+</div>
+
+<div style="margin-bottom:15px">
+    <b>Tra cứu mã:</b>&nbsp;
+    <a href="@Url.Action("DownloadCategoryCodes", "Question")" class="btn btn-sm btn-outline btn-info">
+        <i class="fa fa-list"></i> DS CourseCategoryCode
+    </a>
+    <a href="@Url.Action("DownloadDifficultyLevels", "Question")" class="btn btn-sm btn-outline btn-info">
+        <i class="fa fa-list"></i> DS Difficulty
+    </a>
+</div>
+
+<hr />
+
+    <form id="importQuestionForm" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label>Chọn file import (JSON hoặc XLSX):</label>
+            <input type="file" id="importFile" name="file" accept=".json,.xlsx" class="form-control" required />
+        </div>
+        <div class="text-right" style="margin-top:15px">
+            <button type="button" class="btn btn-primary" onclick="doImportQuestions()">
+                <i class="fa fa-upload"></i> Import
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+        </div>
+    </form>
+
+    <div id="importResultPanel" style="display:none; margin-top:15px">
+        <hr />
+        <div id="importResultContent"></div>
+    </div>
+</div>
