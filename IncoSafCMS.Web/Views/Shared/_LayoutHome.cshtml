@@ -1,0 +1,241 @@
+﻿@using Microsoft.AspNet.Identity
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>IncosafLMS | @ViewBag.Title</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+    @if (IsSectionDefined("Styles"))
+    {@RenderSection("Styles", required: false)}
+
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/font-awesome/css")
+
+    @Scripts.Render("~/bundles/jquery")
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Open Sans', 'Segoe UI', sans-serif;
+        }
+
+        .lms-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f4f6f9;
+        }
+
+        /* ===== Integrated Top Header ===== */
+        .lms-topbar {
+            background: white;
+            height: 52px;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+            z-index: 100;
+        }
+
+        .lms-topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #2c3e50;
+        }
+
+        .lms-topbar-brand:hover {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .lms-topbar-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .lms-topbar-brand span {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .lms-topbar-brand small {
+            font-size: 11px;
+            color: #95a5a6;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        .lms-topbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .lms-topbar-nav li a,
+        .lms-topbar-nav li button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5a6c7d;
+            text-decoration: none;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lms-topbar-nav li a:hover,
+        .lms-topbar-nav li button:hover {
+            background: #f4f6f9;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .lms-topbar-nav li a i,
+        .lms-topbar-nav li button i {
+            font-size: 14px;
+        }
+
+        .lms-topbar-nav .nav-admin a {
+            color: #667eea;
+        }
+
+        .lms-topbar-nav .nav-admin a:hover {
+            background: rgba(102,126,234,0.1);
+        }
+
+        .lms-topbar-nav .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            background: #f4f6f9;
+            color: #2c3e50;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 4px;
+        }
+
+        .lms-topbar-nav .nav-user:hover {
+            background: #e8eaf1;
+            text-decoration: none;
+            color: #2c3e50;
+        }
+
+        .nav-user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 24px;
+            background: #e0e6ed;
+            margin: 0 4px;
+        }
+
+        .lms-topbar-nav .nav-logout button {
+            color: #e74c3c;
+        }
+
+        .lms-topbar-nav .nav-logout button:hover {
+            background: rgba(231,76,60,0.08);
+            color: #c0392b;
+        }
+
+        .lms-body {
+            flex: 1;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", style = "display:none" }))
+    {
+        @Html.AntiForgeryToken()
+    }
+
+    <div class="lms-page">
+        <!-- Integrated Top Header -->
+        <div class="lms-topbar">
+            <a href="@Url.Action("Index", "Home")" class="lms-topbar-brand">
+                <div class="lms-topbar-logo"><i class="fa fa-graduation-cap"></i></div>
+                <span>Incosaf LMS</span>
+            </a>
+
+            <ul class="lms-topbar-nav">
+                <li>
+                    <a href="@Url.Action("Docman", "Account")" target="_blank" title="Tài liệu">
+                        <i class="fa fa-book"></i> Tài liệu
+                    </a>
+                </li>
+                @if (User.IsInRole("Admin"))
+                {
+                    <li class="nav-admin">
+                        <a href="@Url.Action("Index", "Admin")" title="Trang quản trị">
+                            <i class="fa fa-cogs"></i> Quản trị
+                        </a>
+                    </li>
+                }
+                <li><div class="nav-divider"></div></li>
+                <li>
+                    <a href="@Url.Action("Manage", "Account")" class="nav-user" title="Quản lý tài khoản">
+                        <div class="nav-user-avatar"><i class="fa fa-user"></i></div>
+                        @User.Identity.GetUserName()
+                    </a>
+                </li>
+                <li class="nav-logout">
+                    <button onclick="document.getElementById('logoutForm').submit()" title="Đăng xuất">
+                        <i class="fa fa-sign-out"></i> Đăng xuất
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Page Content -->
+        <div class="lms-body">
+            @RenderBody()
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+

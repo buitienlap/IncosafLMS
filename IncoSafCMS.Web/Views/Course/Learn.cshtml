@@ -1,0 +1,492 @@
+﻿@model IncosafCMS.Core.DomainModels.Course
+@using IncosafCMS.Core.DomainModels
+
+@{
+    ViewBag.Title = Model.Title;
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<style>
+    .learn-page {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #f4f6f9;
+    }
+
+    /* Top bar */
+    .learn-topbar {
+        background: white;
+        padding: 10px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e8ecf1;
+        flex-shrink: 0;
+    }
+
+    .learn-topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .learn-topbar-left a {
+        color: #667eea;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .learn-topbar-left a:hover {
+        background: #f0f2ff;
+    }
+
+    .learn-topbar-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .learn-topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .learn-timer {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(102,126,234,0.08);
+        color: #667eea;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .learn-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-html  { background: rgba(102,126,234,0.1); color: #667eea; }
+    .badge-pdf   { background: rgba(234,84,85,0.1); color: #ea5455; }
+    .badge-pptx  { background: rgba(255,159,67,0.1); color: #ff9f43; }
+    .badge-video { background: rgba(40,199,111,0.1); color: #28c76f; }
+
+    /* Content area */
+    .learn-content {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        padding: 0;
+    }
+
+    /* HTML content */
+    .learn-html-wrapper {
+        max-width: 900px;
+        width: 100%;
+        padding: 32px 40px;
+        background: white;
+        overflow-y: auto;
+        line-height: 1.8;
+        font-size: 15px;
+        color: #2c3e50;
+    }
+
+    .learn-html-wrapper img { max-width: 100%; height: auto; border-radius: 8px; }
+    .learn-html-wrapper h1, .learn-html-wrapper h2, .learn-html-wrapper h3 { color: #2c3e50; margin-top: 20px; }
+    .learn-html-wrapper pre { background: #f4f6f9; padding: 16px; border-radius: 8px; overflow-x: auto; }
+
+    /* PDF / PPTX embed */
+    .learn-embed-wrapper {
+        width: 100%;
+        height: 100%;
+    }
+
+    .learn-embed-wrapper iframe,
+    .learn-embed-wrapper embed,
+    .learn-embed-wrapper object {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Video */
+    .learn-video-wrapper {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .video-container {
+        width: 100%;
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 */
+        height: 0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        background: #000;
+    }
+
+    .video-container iframe {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        border: none;
+    }
+
+    /* Fallback / no content */
+    .learn-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #95a5a6;
+        gap: 12px;
+        padding: 60px;
+    }
+
+    .learn-empty i { font-size: 64px; opacity: 0.3; }
+
+    /* PPTX Viewer */
+    .pptx-viewer-wrap {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pptx-viewer-toolbar {
+        background: white;
+        padding: 8px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e8ecf1;
+        flex-shrink: 0;
+    }
+
+    .pptx-viewer-tabs {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pptx-viewer-tabs button {
+        background: #f4f6f9;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #7f8c8d;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .pptx-viewer-tabs button.active,
+    .pptx-viewer-tabs button:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .pptx-viewer-tabs button i { font-size: 13px; }
+
+    .pptx-viewer-actions a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #667eea;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+    .pptx-viewer-actions a:hover {
+        background: #f0f2ff;
+    }
+
+    .pptx-viewer-frame {
+        flex: 1;
+        position: relative;
+    }
+
+    .pptx-viewer-frame iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .pptx-loading-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #f4f6f9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        color: #667eea;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 2;
+        transition: opacity 0.3s;
+    }
+
+    .pptx-loading-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+</style>
+
+<div class="learn-page">
+    <!-- Top bar -->
+    <div class="learn-topbar">
+        <div class="learn-topbar-left">
+            <a href="@Url.Action("Index", "Home")">
+                <i class="fa fa-arrow-left"></i> Quay lại
+            </a>
+            <span class="learn-topbar-title" title="@Model.Title">@Model.Title</span>
+        </div>
+        <div class="learn-topbar-right">
+            @switch (Model.ContentType)
+            {
+                case CourseContentType.Html:
+                    <span class="learn-type-badge badge-html"><i class="fa fa-file-text-o"></i> HTML</span>
+                    break;
+                case CourseContentType.Pdf:
+                    <span class="learn-type-badge badge-pdf"><i class="fa fa-file-pdf-o"></i> PDF</span>
+                    break;
+                case CourseContentType.PowerPoint:
+                    <span class="learn-type-badge badge-pptx"><i class="fa fa-file-powerpoint-o"></i> PPTX</span>
+                    break;
+                case CourseContentType.Video:
+                    <span class="learn-type-badge badge-video"><i class="fa fa-play-circle"></i> Video</span>
+                    break;
+            }
+            <div class="learn-timer">
+                <i class="fa fa-clock-o"></i>
+                <span id="timerDisplay">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content area -->
+    <div class="learn-content">
+        @switch (Model.ContentType)
+        {
+            case CourseContentType.Html:
+                if (!string.IsNullOrEmpty(Model.ContentBody))
+                {
+                    <div class="learn-html-wrapper">
+                        @Html.Raw(Model.ContentBody)
+                    </div>
+                }
+                else
+                {
+                    <div class="learn-empty">
+                        <i class="fa fa-file-text-o"></i>
+                        <p>Chưa có nội dung bài giảng.</p>
+                    </div>
+                }
+                break;
+
+            case CourseContentType.Pdf:
+                if (!string.IsNullOrEmpty(Model.ContentUrl))
+                {
+                    <div class="learn-embed-wrapper">
+                        <iframe src="@Url.Action("ServeFile", "Course", new { id = Model.Id })" title="@Model.Title"></iframe>
+                    </div>
+                }
+                else
+                {
+                    <div class="learn-empty">
+                        <i class="fa fa-file-pdf-o"></i>
+                        <p>Chưa có file PDF cho khóa học này.</p>
+                    </div>
+                }
+                break;
+
+            case CourseContentType.PowerPoint:
+                if (!string.IsNullOrEmpty(Model.ContentUrl))
+                {
+                    var pptServeUrl = Url.Action("ServeFile", "Course", new { id = Model.Id }, Request.Url.Scheme);
+                    var officeViewerUrl = "https://view.officeapps.live.com/op/embed.aspx?src=" + Uri.EscapeDataString(pptServeUrl);
+                    var googleViewerUrl = "https://docs.google.com/gview?url=" + Uri.EscapeDataString(pptServeUrl) + "&embedded=true";
+
+                    <div class="pptx-viewer-wrap">
+                        <div class="pptx-viewer-toolbar">
+                            <div class="pptx-viewer-tabs">
+                                <button class="active" onclick="switchPptViewer('office', this)" title="Office Online (khuyên dùng)">
+                                    <i class="fa fa-windows"></i> Office Online
+                                </button>
+                                <button onclick="switchPptViewer('google', this)" title="Google Docs Viewer">
+                                    <i class="fa fa-google"></i> Google Docs
+                                </button>
+                            </div>
+                            <div class="pptx-viewer-actions">
+                                <a href="@Url.Action("ServeFile", "Course", new { id = Model.Id })" target="_blank">
+                                    <i class="fa fa-download"></i> Tải xuống
+                                </a>
+                            </div>
+                        </div>
+                        <div class="pptx-viewer-frame" id="pptxViewerFrame"
+                             data-office-url="@officeViewerUrl"
+                             data-google-url="@googleViewerUrl">
+                            <div class="pptx-loading-overlay" id="pptxLoading">
+                                <i class="fa fa-spinner fa-spin" style="font-size:32px;"></i>
+                                <span>Đang tải trình chiếu...</span>
+                            </div>
+                            <iframe id="pptxIframe" src="@officeViewerUrl" title="@Model.Title"
+                                    onload="onPptxFrameLoad()"></iframe>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="learn-empty">
+                        <i class="fa fa-file-powerpoint-o"></i>
+                        <p>Chưa có file PowerPoint cho khóa học này.</p>
+                    </div>
+                }
+                break;
+
+            case CourseContentType.Video:
+                if (!string.IsNullOrEmpty(Model.ContentUrl))
+                {
+                    <div class="learn-video-wrapper">
+                        <div class="video-container">
+                            <iframe src="@Model.ContentUrl" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="learn-empty">
+                        <i class="fa fa-play-circle"></i>
+                        <p>Chưa có video cho khóa học này.</p>
+                    </div>
+                }
+                break;
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            var seconds = 0;
+            var courseId = @Model.Id;
+
+            function pad(n) { return n < 10 ? '0' + n : n; }
+
+            function updateDisplay() {
+                var m = Math.floor(seconds / 60);
+                var s = seconds % 60;
+                document.getElementById('timerDisplay').textContent = pad(m) + ':' + pad(s);
+            }
+
+            // Tick every second
+            setInterval(function () {
+                seconds++;
+                updateDisplay();
+            }, 1000);
+
+            // Send progress every 30 seconds
+            setInterval(function () {
+                if (seconds > 0) {
+                    $.post('@Url.Action("RecordProgress", "Course")', {
+                        courseId: courseId,
+                        elapsedSeconds: seconds
+                    });
+                }
+            }, 30000);
+
+            // Also send on page unload
+            $(window).on('beforeunload', function () {
+                if (seconds > 0) {
+                    navigator.sendBeacon(
+                        '@Url.Action("RecordProgress", "Course")',
+                        new URLSearchParams({ courseId: courseId, elapsedSeconds: seconds })
+                    );
+                }
+            });
+        })();
+
+        // ===== PPTX Viewer switching =====
+        var pptxLoadTimer = null;
+
+        function onPptxFrameLoad() {
+            // Hide loading overlay when iframe loads
+            var overlay = document.getElementById('pptxLoading');
+            if (overlay) overlay.className = 'pptx-loading-overlay hidden';
+            if (pptxLoadTimer) clearTimeout(pptxLoadTimer);
+        }
+
+        function switchPptViewer(viewer, btn) {
+            var frame = document.getElementById('pptxViewerFrame');
+            if (!frame) return;
+
+            var iframe = document.getElementById('pptxIframe');
+            var overlay = document.getElementById('pptxLoading');
+            var url = viewer === 'google' ? frame.getAttribute('data-google-url') : frame.getAttribute('data-office-url');
+
+            // Update active tab
+            var tabs = frame.parentNode.querySelectorAll('.pptx-viewer-tabs button');
+            for (var i = 0; i < tabs.length; i++) tabs[i].className = '';
+            btn.className = 'active';
+
+            // Show loading, switch src
+            if (overlay) overlay.className = 'pptx-loading-overlay';
+            iframe.src = url;
+
+            // Timeout fallback: if iframe doesn't load in 15s, show help
+            if (pptxLoadTimer) clearTimeout(pptxLoadTimer);
+            pptxLoadTimer = setTimeout(function () {
+                if (overlay) {
+                    overlay.innerHTML = '<i class="fa fa-exclamation-triangle" style="font-size:32px; color:#ff9f43;"></i>'
+                        + '<span>Không thể tải trình chiếu.</span>'
+                        + '<span style="font-size:12px; color:#95a5a6;">Server cần được truy cập từ Internet để dùng Office Online / Google Docs.</span>'
+                        + '<a href="' + frame.parentNode.querySelector('.pptx-viewer-actions a').href + '" style="margin-top:8px; padding:10px 20px; background:#667eea; color:white; border-radius:8px; text-decoration:none; font-weight:600;"><i class="fa fa-download"></i> Tải file về xem</a>';
+                    overlay.className = 'pptx-loading-overlay';
+                }
+            }, 15000);
+        }
+    </script>
+}
+
+

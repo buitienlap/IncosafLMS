@@ -258,6 +258,7 @@
     <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\CourseCategoryController.cs" />
+    <Compile Include="Controllers\CourseController.cs" />
     <Compile Include="Controllers\CoursesController.cs" />
     <Compile Include="Controllers\CustomerAdminController.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
@@ -297,6 +298,7 @@
     <Compile Include="Models\AdminViewModel.cs" />
     <Compile Include="Models\ContractViewModel.cs" />
     <Compile Include="Models\CustomBundle.cs" />
+    <Compile Include="Models\HomeDashboardViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\Logger.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
@@ -313,6 +315,8 @@
     <Compile Include="Providers\LargeDatabaseDataProvider.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\Scripts\Alter_Course_AddContent.sql" />
+    <Content Include="App_Data\Scripts\Create_ExamAssignment.sql" />
     <Content Include="Content\animate.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -621,7 +625,6 @@
     </Content>
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\_ChangePasswordPartial.cshtml" />
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
     <Content Include="Views\Account\_RemoveAccountPartial.cshtml" />
@@ -786,7 +789,6 @@
     <Content Include="Views\Contracts\_DashboardCompanyGrid.cshtml" />
     <Content Include="Views\Contracts\_DashboardCompanyGridLoaiHinh.cshtml" />
     <Content Include="Views\Activity\_ActivityGridPartial.cshtml" />
-    <Content Include="Views\Activity\_ActivityDetailsPartial.cshtml" />
     <Content Include="Views\Activity\Index.cshtml" />
     <Content Include="Views\CourseCategory\_CreateEdit.cshtml" />
     <Content Include="Views\CourseCategory\Index.cshtml" />
@@ -796,23 +798,26 @@
     <Content Include="Views\Courses\Edit.cshtml" />
     <Content Include="Views\Courses\Index.cshtml" />
     <Content Include="Views\Admin\CourseManage.cshtml" />
-    <Content Include="Views\Courses\_CreateEdit.cshtml" />
     <Content Include="Views\Courses\_Details.cshtml" />
     <Content Include="Views\Question\Index.cshtml" />
     <Content Include="Views\Question\_QuestionListPartial.cshtml" />
     <Content Include="Views\Question\_QuestionEdit.cshtml" />
     <Content Include="Views\Question\_QuestionImport.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Activity\_ActivityDetailsPartial.cshtml" />
+    <Content Include="Views\Shared\_LayoutHome.cshtml" />
+    <Content Include="Views\Course\Learn.cshtml" />
+    <Content Include="Views\Course\_DetailPopup.cshtml" />
+    <Content Include="Views\Courses\_CreateEdit.cshtml" />
     <None Include="Web.Incosaf.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Extensions\" />
     <Folder Include="Reports\" />
     <Folder Include="Results\" />
     <Folder Include="Views\Finance\" />
-    <Folder Include="Views\Notifications\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

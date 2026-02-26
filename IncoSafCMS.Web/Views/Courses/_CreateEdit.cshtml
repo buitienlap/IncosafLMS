@@ -1,4 +1,5 @@
-@model IncosafCMS.Core.DomainModels.Course
+﻿@model IncosafCMS.Core.DomainModels.Course
+@using IncosafCMS.Core.DomainModels
 
 @using (Html.BeginForm(Model.Id > 0 ? "Edit" : "Create", "Courses", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
 {
@@ -21,24 +22,262 @@
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(m => m.CourseCategoryId, "Category", new { @class = "col-md-3 control-label" })
+        @Html.LabelFor(m => m.CourseCategoryId, "Danh mục", new { @class = "col-md-3 control-label" })
         <div class="col-md-9">
-            @Html.DropDownListFor(m => m.CourseCategoryId, ViewBag.Categories as SelectList, "-- select --", new { @class = "form-control" })
+            @Html.DropDownListFor(m => m.CourseCategoryId, ViewBag.Categories as SelectList, "-- Chọn danh mục --", new { @class = "form-control" })
             @Html.ValidationMessageFor(m => m.CourseCategoryId)
         </div>
     </div>
 
     <div class="form-group">
-        @Html.LabelFor(m => m.Description, new { @class = "col-md-3 control-label" })
+        @Html.LabelFor(m => m.Description, "Mô tả ngắn", new { @class = "col-md-3 control-label" })
         <div class="col-md-9">
-            @Html.TextAreaFor(m => m.Description, 4, 60, new { @class = "form-control" })
+            @Html.TextAreaFor(m => m.Description, 3, 60, new { @class = "form-control" })
+        </div>
+    </div>
+
+    <hr style="margin:10px 0;" />
+    <h5 style="margin-left:15px; font-weight:600;"><i class="fa fa-file-text-o"></i> Nội dung bài giảng</h5>
+
+    <div class="form-group">
+        <label class="col-md-3 control-label">Loại nội dung</label>
+        <div class="col-md-9">
+            @Html.DropDownListFor(m => m.ContentType, new SelectList(new[]
+            {
+                new { Value = (int)CourseContentType.Html, Text = "Bài viết HTML" },
+                new { Value = (int)CourseContentType.Pdf, Text = "File PDF" },
+                new { Value = (int)CourseContentType.PowerPoint, Text = "File PowerPoint" },
+                new { Value = (int)CourseContentType.Video, Text = "Video (streaming URL)" },
+            }, "Value", "Text", (int)Model.ContentType), new { @class = "form-control", id = "ddlContentType" })
+        </div>
+    </div>
+
+    <!-- File Upload (PDF / PPTX) -->
+    <div class="form-group" id="grpFileUpload" style="display:none;">
+        <label class="col-md-3 control-label">Tải file lên</label>
+        <div class="col-md-9">
+            @Html.HiddenFor(m => m.ContentUrl, new { id = "hdnContentUrl" })
+
+            <!-- Current file display -->
+            <div id="currentFileInfo" style="display:none; margin-bottom:10px; padding:10px 14px; background:#f8f9ff; border-radius:8px; border:1px solid #e0e6ed;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                        <i class="fa fa-file-o" id="currentFileIcon" style="font-size:18px; color:#667eea;"></i>
+                        <span id="currentFileName" style="font-size:13px; font-weight:600; color:#2c3e50; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                    </div>
+                    <button type="button" class="btn btn-xs btn-danger" onclick="removeFile()" title="Xóa file">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload zone -->
+            <div id="uploadZone" style="border:2px dashed #d0d5dd; border-radius:10px; padding:24px; text-align:center; cursor:pointer; transition:all 0.2s; background:#fafbfc;"
+                 onmouseenter="this.style.borderColor='#667eea'; this.style.background='#f0f2ff';"
+                 onmouseleave="this.style.borderColor='#d0d5dd'; this.style.background='#fafbfc';">
+                <input type="file" id="fileInput" accept=".pdf,.ppt,.pptx" style="display:none;" />
+                <div id="uploadPrompt">
+                    <i class="fa fa-cloud-upload" style="font-size:28px; color:#667eea; margin-bottom:6px;"></i>
+                    <p style="margin:0; font-size:13px; color:#5a6c7d; font-weight:600;">Kéo thả file vào đây hoặc <span style="color:#667eea; text-decoration:underline;">chọn file</span></p>
+                    <p style="margin:4px 0 0; font-size:11px; color:#95a5a6;">PDF, PPT, PPTX — Tối đa 10MB</p>
+                </div>
+                <div id="uploadProgress" style="display:none;">
+                    <div style="width:100%; background:#e8ecf1; border-radius:6px; height:6px; overflow:hidden;">
+                        <div id="progressBar" style="width:0%; height:100%; background:linear-gradient(90deg,#667eea,#764ba2); border-radius:6px; transition:width 0.3s;"></div>
+                    </div>
+                    <p style="margin:8px 0 0; font-size:12px; color:#667eea; font-weight:600;">Đang tải lên...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video URL -->
+    <div class="form-group" id="grpVideoUrl" style="display:none;">
+        <label class="col-md-3 control-label">URL Video</label>
+        <div class="col-md-9">
+            <input type="text" id="txtVideoUrl" class="form-control" placeholder="https://www.youtube.com/embed/... hoặc URL streaming" value="@(Model.ContentType == CourseContentType.Video ? Model.ContentUrl : "")" />
+            <span class="help-block" style="font-size:12px;">Nhập URL embed của video (YouTube, Vimeo hoặc streaming server).</span>
+        </div>
+    </div>
+
+    <!-- HTML Body -->
+    <div class="form-group" id="grpContentBody" style="display:none;">
+        <label class="col-md-3 control-label">Nội dung HTML</label>
+        <div class="col-md-9">
+            @Html.TextAreaFor(m => m.ContentBody, new { @class = "form-control", rows = 10, placeholder = "Nhập nội dung bài giảng dạng HTML..." })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-md-3 control-label">Thời lượng (phút)</label>
+        <div class="col-md-9">
+            @Html.TextBoxFor(m => m.DurationMinutes, new { @class = "form-control", type = "number", min = 0 })
         </div>
     </div>
 
     <div class="form-group">
         <div class="col-md-offset-3 col-md-9">
-            <button type="submit" class="btn btn-primary">L?u</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">H?y</button>
+            <div class="checkbox">
+                <label>@Html.CheckBoxFor(m => m.IsActive) Đang hoạt động</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-3 col-md-9">
+            <button type="submit" class="btn btn-primary">Lưu</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
         </div>
     </div>
 }
+
+<script type="text/javascript">
+    (function () {
+        var uploadUrl = '@Url.Action("UploadFile", "Courses")';
+        var removeUrl = '@Url.Action("RemoveFile", "Courses")';
+
+        var $ddl = $('#ddlContentType');
+        var $fileUpload = $('#grpFileUpload');
+        var $videoUrl = $('#grpVideoUrl');
+        var $contentBody = $('#grpContentBody');
+        var $uploadZone = $('#uploadZone');
+        var $fileInput = $('#fileInput');
+        var $hdnUrl = $('#hdnContentUrl');
+
+        // ===== Toggle sections =====
+        function toggleContentFields() {
+            var val = parseInt($ddl.val());
+            $fileUpload.hide();
+            $videoUrl.hide();
+            $contentBody.hide();
+
+            if (val === 0) {
+                // HTML
+                $contentBody.show();
+            } else if (val === 1 || val === 2) {
+                // PDF or PowerPoint
+                $fileUpload.show();
+                refreshFileDisplay();
+            } else if (val === 3) {
+                // Video
+                $videoUrl.show();
+            }
+        }
+        $ddl.on('change', toggleContentFields);
+        toggleContentFields();
+
+        // ===== File display =====
+        function refreshFileDisplay() {
+            var url = $hdnUrl.val();
+            if (url && (url.indexOf('.pdf') > -1 || url.indexOf('.ppt') > -1)) {
+                var name = url.substring(url.lastIndexOf('/') + 1);
+                var icon = url.indexOf('.pdf') > -1 ? 'fa-file-pdf-o' : 'fa-file-powerpoint-o';
+                var color = url.indexOf('.pdf') > -1 ? '#ea5455' : '#ff9f43';
+                $('#currentFileName').text(name);
+                $('#currentFileIcon').attr('class', 'fa ' + icon).css('color', color);
+                $('#currentFileInfo').show();
+            } else {
+                $('#currentFileInfo').hide();
+            }
+        }
+        refreshFileDisplay();
+
+        // ===== Click to open file picker =====
+        $uploadZone.on('click', function () { $fileInput.click(); });
+
+        // ===== Drag & Drop =====
+        $uploadZone.on('dragover dragenter', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).css({ 'border-color': '#667eea', 'background': '#f0f2ff' });
+        });
+        $uploadZone.on('dragleave drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).css({ 'border-color': '#d0d5dd', 'background': '#fafbfc' });
+        });
+        $uploadZone.on('drop', function (e) {
+            var files = e.originalEvent.dataTransfer.files;
+            if (files.length > 0) doUpload(files[0]);
+        });
+
+        // ===== File input change =====
+        $fileInput.on('change', function () {
+            if (this.files.length > 0) doUpload(this.files[0]);
+        });
+
+        // ===== Upload file =====
+        function doUpload(file) {
+            var ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            if (ext !== '.pdf' && ext !== '.ppt' && ext !== '.pptx') {
+                alert('Chỉ chấp nhận file PDF, PPT, PPTX.');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File quá lớn. Tối đa 10MB.');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('courseFile', file);
+
+            $('#uploadPrompt').hide();
+            $('#uploadProgress').show();
+            $('#progressBar').css('width', '0%');
+
+            $.ajax({
+                url: uploadUrl,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function () {
+                    var xhr = new XMLHttpRequest();
+                    xhr.upload.addEventListener('progress', function (e) {
+                        if (e.lengthComputable) {
+                            var pct = Math.round((e.loaded / e.total) * 100);
+                            $('#progressBar').css('width', pct + '%');
+                        }
+                    });
+                    return xhr;
+                },
+                success: function (res) {
+                    $('#uploadProgress').hide();
+                    $('#uploadPrompt').show();
+                    if (res.success) {
+                        $hdnUrl.val(res.url);
+                        // Also sync to video url input in case user switches type
+                        refreshFileDisplay();
+                    } else {
+                        alert('Lỗi: ' + (res.message || 'Không thể tải file lên.'));
+                    }
+                },
+                error: function () {
+                    $('#uploadProgress').hide();
+                    $('#uploadPrompt').show();
+                    alert('Lỗi kết nối. Vui lòng thử lại.');
+                }
+            });
+        }
+
+        // ===== Remove file =====
+        window.removeFile = function () {
+            var url = $hdnUrl.val();
+            if (!url) return;
+            if (!confirm('Xóa file này?')) return;
+
+            $.post(removeUrl, { filePath: url }, function (res) {
+                $hdnUrl.val('');
+                refreshFileDisplay();
+            });
+        };
+
+        // ===== Sync video URL input -> hidden field =====
+        $('#txtVideoUrl').on('input', function () {
+            $hdnUrl.val($(this).val());
+        });
+
+    })();
+</script>
+
+

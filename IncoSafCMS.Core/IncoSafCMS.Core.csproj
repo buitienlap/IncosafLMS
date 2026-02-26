@@ -72,6 +72,7 @@
     <Compile Include="DomainModels\Department.cs" />
     <Compile Include="DomainModels\EmployeePosition.cs" />
     <Compile Include="DomainModels\Enums.cs" />
+    <Compile Include="DomainModels\ExamAssignment.cs" />
     <Compile Include="DomainModels\Identity\ApplicationAuthenticationDescription.cs" />
     <Compile Include="DomainModels\Identity\ApplicationExternalLoginInfo.cs" />
     <Compile Include="DomainModels\Identity\ApplicationMessage.cs" />

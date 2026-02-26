@@ -1,914 +1,934 @@
-﻿@model IEnumerable<IncosafCMS.Core.DomainModels.ActivityLog>
+﻿@model IncosafCMS.Web.Models.HomeDashboardViewModel
 @using IncosafCMS.Core.DomainModels
-@using System.Linq
 
 @{
-    bool showExtraColumns = Session["ShowContractExtraColumns"] as bool? ?? false;
-    ViewBag.Title = "Quá trình học tập";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-
-    // Prepare ActivityType enum values for client-side usage
-    var __activityTypes = Enum.GetValues(typeof(ActivityType))
-        .Cast<ActivityType>()
-        .Select(t => new { Id = (int)t, Name = t.ToString() })
-        .ToList();
-    ViewBag.ActivityTypes = __activityTypes;
+    ViewBag.Title = "Trang chủ";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
 <style>
-    .list-group-item {
-        height: inherit;
-        padding-top: -2px;
-        padding-bottom: 0px;
-        padding-right: 2px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: normal;
+    /* ===== LMS Dashboard Styles ===== */
+    .lms-dashboard {
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px 24px;
+        background: #f4f6f9;
     }
 
-    .list-group-item:first-child {
-        border-top-left-radius: 0px;
-        border-top-right-radius: 0px;
+    /* Welcome Banner */
+    .welcome-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 28px 32px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
     }
 
-    .list-group-item:last-child {
-        border-bottom-left-radius: 0px;
-        border-bottom-right-radius: 0px;
+    .welcome-banner h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 6px;
     }
 
-    .dxgvGroupRow_Material td.dxgv, .dxgvFocusedGroupRow_Material td.dxgv, .dxgvDataRow_Material td.dxgv {
-        padding: 5px !important;
+    .welcome-banner p {
+        opacity: 0.9;
+        font-size: 15px;
+        margin: 0;
     }
 
-    .dxmLite_Material .dxm-main.dxmtb {
-        padding: 0px;
+    .welcome-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
     }
 
-    .dxmLite_Material .dxctToolbar_Material.dxm-main.dxmtb {
-        padding-top: 0px;
-        padding-bottom: 0px;
+    .welcome-actions .btn-practice {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.4);
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    /* Giảm padding và cho label vừa nội dung */
-    .dxgvToolbarItem_Material {
-        padding: 2px 8px !important;
-        min-width: auto !important;
+    .welcome-actions .btn-practice:hover {
+        background: white;
+        color: #667eea;
+        border-color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Exam Alert Strip */
+    .exam-alert-strip {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 12px;
+        margin-top: 16px;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .exam-alert-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(234,84,85,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #ffcdd2;
+        flex-shrink: 0;
+        animation: examPulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes examPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(234,84,85,0.3); }
+        50% { box-shadow: 0 0 0 8px rgba(234,84,85,0); }
+    }
+
+    .exam-alert-list {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .exam-alert-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.85);
         white-space: nowrap;
     }
 
-    /* Nếu dùng icon kèm text, giảm khoảng cách */
-    .dxgvToolbar_Material .dxgvToolbarItem_Material span {
-        margin-right: 4px !important;
+    .exam-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .modal-xxl {
-        max-width: 95% !important; /* 90% chiều rộng màn hình */
-        width: 95% !important;
-        height: 100% !important; /* 100% chiều cao màn hình */
+    .exam-chip:hover {
+        background: rgba(255,255,255,0.95);
+        color: #e74c3c;
+        border-color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
-    .modal-xxl .modal-content {
-        height: 100% !important;
+    .exam-chip .chip-count {
+        background: rgba(234,84,85,0.35);
+        color: white;
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 10px;
+        font-weight: 700;
     }
 
-    .modal-xxl .modal-body {
-        height: calc(100%) !important; /* trừ khoảng header/footer nếu có */
+    .exam-chip:hover .chip-count {
+        background: rgba(234,84,85,0.15);
+        color: #e74c3c;
+    }
+
+    .exam-chip-deadline {
+        font-size: 11px;
+        opacity: 0.7;
+    }
+
+    .exam-chip-more {
+        font-size: 12px;
+        color: rgba(255,255,255,0.7);
+        font-weight: 600;
+        padding: 6px 10px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+    }
+
+    /* Stats Cards */
+    .stats-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        flex: 1;
+        background: white;
+        border-radius: 14px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    .stat-icon.learning { background: rgba(102,126,234,0.12); color: #667eea; }
+    .stat-icon.exam { background: rgba(234,84,85,0.12); color: #ea5455; }
+    .stat-icon.practice { background: rgba(40,199,111,0.12); color: #28c76f; }
+    .stat-icon.total { background: rgba(255,159,67,0.12); color: #ff9f43; }
+
+    .stat-info h3 {
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .stat-info p {
+        font-size: 13px;
+        color: #7f8c8d;
+        margin: 2px 0 0 0;
+    }
+
+    /* Main Content Row */
+    .content-row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .content-left { flex: 7; min-width: 0; }
+    .content-right { flex: 5; min-width: 0; }
+
+    /* Section Header */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .section-header h4 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-header h4 i {
+        color: #667eea;
+    }
+
+    /* Course Cards */
+    .courses-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .course-card {
+        background: white;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .course-thumb {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .course-thumb i {
+        font-size: 42px;
+        color: white;
+        opacity: 0.9;
+    }
+
+    .course-thumb .course-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255,255,255,0.25);
+        color: white;
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .course-body {
+        padding: 16px;
+    }
+
+    .course-body .course-category {
+        font-size: 12px;
+        color: #667eea;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .course-body h5 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .course-body .course-desc {
+        font-size: 13px;
+        color: #7f8c8d;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0;
+    }
+
+    .course-footer {
+        padding: 12px 16px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .course-footer .course-date {
+        font-size: 12px;
+        color: #95a5a6;
+    }
+
+    .course-footer .course-date i {
+        margin-right: 4px;
+    }
+
+    .course-footer .btn-join {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .course-footer .btn-join:hover {
+        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        transform: translateY(-1px);
+    }
+
+    /* Gradient palette for course thumbnails */
+    .grad-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .grad-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .grad-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .grad-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .grad-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .grad-6 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #95a5a6;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.4;
+    }
+
+    /* Activity Timeline */
+    .activity-panel {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 300px);
+    }
+
+    .activity-panel-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .activity-panel-header h4 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .activity-panel-header h4 i { color: #667eea; }
+
+    .activity-filter-tabs {
+        display: flex;
+        gap: 4px;
+    }
+
+    .activity-filter-tabs .tab-btn {
+        background: #f4f6f9;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #7f8c8d;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .activity-filter-tabs .tab-btn.active,
+    .activity-filter-tabs .tab-btn:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .activity-list {
         overflow-y: auto;
+        flex: 1;
+        padding: 8px 0;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 20px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .activity-item:hover,
+    .activity-item.selected {
+        background: #f8f9ff;
+        border-left-color: #667eea;
+    }
+
+    .activity-dot {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .activity-dot.learning { background: rgba(102,126,234,0.12); color: #667eea; }
+    .activity-dot.exam { background: rgba(234,84,85,0.12); color: #ea5455; }
+    .activity-dot.practice { background: rgba(40,199,111,0.12); color: #28c76f; }
+    .activity-dot.other { background: rgba(255,159,67,0.12); color: #ff9f43; }
+
+    .activity-content { flex: 1; min-width: 0; }
+
+    .activity-content .activity-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 3px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .activity-content .activity-desc {
+        font-size: 12px;
+        color: #95a5a6;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .activity-time {
+        font-size: 11px;
+        color: #bdc3c7;
+        white-space: nowrap;
+        margin-top: 2px;
+    }
+
+    /* Activity Detail Panel */
+    .activity-detail {
+        border-top: 1px solid #f0f0f0;
+        padding: 20px;
+        background: #fafbff;
+        border-radius: 0 0 14px 14px;
+        min-height: 120px;
+    }
+
+    .detail-placeholder {
+        text-align: center;
+        color: #bdc3c7;
+        padding: 20px;
+    }
+
+    .detail-placeholder i {
+        font-size: 32px;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    /* Quick Action Buttons */
+    .quick-actions {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .quick-action-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        border-radius: 14px;
+        padding: 16px 20px;
+        text-decoration: none;
+        color: #2c3e50;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+
+    .quick-action-btn:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    .quick-action-btn .qa-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .quick-action-btn h6 {
+        margin: 0 0 2px 0;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .quick-action-btn small {
+        color: #95a5a6;
+        font-size: 12px;
+    }
+
+    /* Course Detail Modal */
+    .course-modal-backdrop {
+        background: rgba(0,0,0,0.5) !important;
+    }
+
+    .course-modal .modal-dialog {
+        max-width: 580px;
+        margin: 60px auto;
+    }
+
+    .course-modal .modal-content {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        overflow: hidden;
+    }
+
+    .course-modal .modal-body {
+        padding: 0;
+    }
+
+    .course-modal-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        color: #95a5a6;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 1200px) {
+        .courses-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @@media (max-width: 992px) {
+        .content-row { flex-direction: column; }
+        .stats-row { flex-wrap: wrap; }
+        .stat-card { flex: 1 1 calc(50% - 8px); }
+    }
+
+    @@media (max-width: 768px) {
+        .courses-grid { grid-template-columns: 1fr; }
+        .welcome-banner { flex-direction: column; text-align: center; gap: 16px; }
+        .course-modal .modal-dialog { margin: 20px; }
     }
 </style>
 
-@*<div class="wrapper animated fadeInRight">*@
-<div class="wrapper animated fadeInRight">
-    <!-- Modal hiển thị hồ sơ -->
-    <div class="modal fade" id="contractDocumentsModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xxl" role="document">
-            <div class="modal-content">
+<div class="lms-dashboard">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner animated fadeIn">
+        <div style="flex:1; min-width:0;">
+            <h2><i class="fa fa-graduation-cap"></i> Xin chào, @Model.UserDisplayName!</h2>
+            <p>Chào mừng bạn quay lại hệ thống đào tạo trực tuyến. Hãy tiếp tục hành trình học tập!</p>
 
-                <div class="modal-body" id="modalContractDocumentsWrapper">
-                    @* Nội dung sẽ được load động từ ViewDocuments *@
+            @if (Model.PendingExams.Count > 0)
+            {
+                var maxShow = 3;
+                var examsToShow = Model.PendingExams.Take(maxShow).ToList();
+                var remaining = Model.PendingExams.Count - maxShow;
+                <div class="exam-alert-strip">
+                    <div class="exam-alert-icon"><i class="fa fa-exclamation-circle"></i></div>
+                    <div class="exam-alert-list">
+                        <span class="exam-alert-label"><i class="fa fa-bell"></i> Bài thi bắt buộc:</span>
+                        @foreach (var exam in examsToShow)
+                        {
+                            <a href="@Url.Action("Start", "Exam", new { assignmentId = exam.Id })" class="exam-chip" title="@exam.ExamTitle">
+                                <i class="fa fa-file-text-o"></i>
+                                <span>@exam.ExamTitle</span>
+                                <span class="chip-count">@exam.QuestionCount câu</span>
+                                @if (exam.Deadline.HasValue)
+                                {
+                                    <span class="exam-chip-deadline">⏰ @exam.Deadline.Value.ToString("dd/MM")</span>
+                                }
+                            </a>
+                        }
+                        @if (remaining > 0)
+                        {
+                            <span class="exam-chip-more">+@remaining bài khác</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="welcome-actions">
+            <a href="@Url.Action("PracticeExam", "Exam")" class="btn-practice">
+                <i class="fa fa-pencil-square-o"></i> Thi thử ngay
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-row animated fadeInUp">
+        <div class="stat-card">
+            <div class="stat-icon learning"><i class="fa fa-book"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalCourses</h3>
+                <p>Khóa học đã tham gia</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon exam"><i class="fa fa-file-text-o"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalExams</h3>
+                <p>Bài thi chính thức</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon practice"><i class="fa fa-pencil"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalPractice</h3>
+                <p>Lần thi thử</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon total"><i class="fa fa-bar-chart"></i></div>
+            <div class="stat-info">
+                <h3>@Model.TotalActivities</h3>
+                <p>Tổng hoạt động</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-row">
+        <!-- Left: Courses + Quick Actions -->
+        <div class="content-left">
+            <div class="section-header">
+                <h4><i class="fa fa-play-circle"></i> Khóa học mới nhất</h4>
+            </div>
+
+            @if (Model.LatestCourses.Any())
+            {
+                var gradients = new[] { "grad-1", "grad-2", "grad-3", "grad-4", "grad-5", "grad-6" };
+                var icons = new[] { "fa-book", "fa-laptop", "fa-flask", "fa-cogs", "fa-lightbulb-o", "fa-trophy" };
+                <div class="courses-grid">
+                    @for (int i = 0; i < Model.LatestCourses.Count; i++)
+                    {
+                        var course = Model.LatestCourses[i];
+                        var grad = gradients[i % gradients.Length];
+                        var icon = icons[i % icons.Length];
+                        <div class="course-card" onclick="openCourseDetail(@course.Id)">
+                            <div class="course-thumb @grad">
+                                <i class="fa @icon"></i>
+                                <span class="course-badge">Mới</span>
+                            </div>
+                            <div class="course-body">
+                                <div class="course-category">@(course.CourseCategory != null ? course.CourseCategory.Name : course.Code)</div>
+                                <h5>@course.Title</h5>
+                                <p class="course-desc">@(course.Description ?? "Khóa học trực tuyến")</p>
+                            </div>
+                            <div class="course-footer">
+                                <span class="course-date"><i class="fa fa-calendar"></i> @course.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                <button class="btn-join" onclick="event.stopPropagation(); openCourseDetail(@course.Id)">Tham gia</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa fa-inbox"></i>
+                    <p>Chưa có khóa học nào. Hãy liên hệ quản trị viên để thêm khóa học mới.</p>
+                </div>
+            }
+
+            <!-- Quick Actions -->
+            <div class="section-header">
+                <h4><i class="fa fa-bolt"></i> Truy cập nhanh</h4>
+            </div>
+            <div class="quick-actions">
+                <a href="@Url.Action("PracticeExam", "Exam")" class="quick-action-btn">
+                    <div class="qa-icon" style="background: rgba(40,199,111,0.12); color: #28c76f;">
+                        <i class="fa fa-pencil-square-o"></i>
+                    </div>
+                    <div>
+                        <h6>Thi thử</h6>
+                        <small>Tự động tạo đề thi ngẫu nhiên</small>
+                    </div>
+                </a>
+                <a href="@Url.Action("Index", "Question")" class="quick-action-btn">
+                    <div class="qa-icon" style="background: rgba(102,126,234,0.12); color: #667eea;">
+                        <i class="fa fa-question-circle"></i>
+                    </div>
+                    <div>
+                        <h6>Ngân hàng câu hỏi</h6>
+                        <small>Ôn tập theo chủ đề</small>
+                    </div>
+                </a>
+                <a href="@Url.Action("Docman", "Account")" class="quick-action-btn">
+                    <div class="qa-icon" style="background: rgba(255,159,67,0.12); color: #ff9f43;">
+                        <i class="fa fa-file-pdf-o"></i>
+                    </div>
+                    <div>
+                        <h6>Tài liệu</h6>
+                        <small>Truy cập kho tài liệu</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Right: Activity Log -->
+        <div class="content-right">
+            <div class="activity-panel">
+                <div class="activity-panel-header">
+                    <h4><i class="fa fa-history"></i> Quá trình học tập</h4>
+                    <div class="activity-filter-tabs">
+                        <button class="tab-btn active" data-filter="all">Tất cả</button>
+                        <button class="tab-btn" data-filter="10">Khóa học</button>
+                        <button class="tab-btn" data-filter="20">Thi</button>
+                        <button class="tab-btn" data-filter="30">Thi thử</button>
+                    </div>
+                </div>
+
+                <div class="activity-list" id="activityList">
+                    @if (Model.RecentActivities.Any())
+                    {
+                        foreach (var act in Model.RecentActivities)
+                        {
+                            var dotClass = "other";
+                            var dotIcon = "fa-info-circle";
+                            switch (act.Type)
+                            {
+                                case ActivityType.Learning:
+                                    dotClass = "learning";
+                                    dotIcon = "fa-book";
+                                    break;
+                                case ActivityType.Exam:
+                                    dotClass = "exam";
+                                    dotIcon = "fa-file-text-o";
+                                    break;
+                                case ActivityType.Practice:
+                                    dotClass = "practice";
+                                    dotIcon = "fa-pencil";
+                                    break;
+                            }
+                            <div class="activity-item" data-id="@act.Id" data-type="@((int)act.Type)" onclick="selectActivity(this, @act.Id)">
+                                <div class="activity-dot @dotClass"><i class="fa @dotIcon"></i></div>
+                                <div class="activity-content">
+                                    <p class="activity-title">@act.Title</p>
+                                    <p class="activity-desc">@(act.Description ?? act.Type.ToString())</p>
+                                </div>
+                                <div class="activity-time">@act.Timestamp.ToLocalTime().ToString("dd/MM HH:mm")</div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fa fa-clock-o"></i>
+                            <p>Chưa có hoạt động nào. Hãy bắt đầu học nhé!</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Activity Detail -->
+                <div class="activity-detail" id="activityDetail">
+                    <div class="detail-placeholder">
+                        <i class="fa fa-hand-pointer-o"></i>
+                        <p>Chọn một hoạt động để xem chi tiết</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Modal upload hồ sơ -->
-    <div class="modal fade" id="contractUploadModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+
+    <!-- Course Detail Modal -->
+    <div class="modal fade course-modal" id="courseDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <div class="modal-body" id="modalContractUploadWrapper">
-                    @* Nội dung sẽ được load động từ UploadDocument *@
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Container để Ajax load modal -->
-    <div id="modalViewDocWrapper"></div>
-
-    <div class="row">
-        <div class="full-height">
-            <div id="list-panel" class="col-lg-8" style="padding-left: 0px; padding-right: 0px; ">
-                <div class="ibox">
-                    <div class="ibox-title">
-                        @*<h5 id="cGridContractTitle" style="padding-left: 0px; padding-right: 0px;"></h5>*@
-                        <!-- 2.11.2025 xử lý thanh công cụ chia 2 phần: gom các ô combo thành 1 nhóm căn lề trái; gom các nút thành 1 nhóm căn lề phải -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                            <!-- Nhóm bên trái: ô combobox + ô tìm kiếm -->
-                            <div class="d-flex align-items-center flex-wrap" style="gap: 4px; display: flex;">
-                                <div class="col-lg-2 hidden" style="gap: 2px; padding-left: 0px; margin-top: -4px; display:@((Session["ShowContractExtraColumns"] as bool? ?? false) ? "block" : "none")" id="cmbPhongBanWrapper">
-                                    @Html.DevExpress().ComboBox(settings =>
-                               {
-                                   settings.Name = "cmbPhongBan";
-                                   settings.Width = System.Web.UI.WebControls.Unit.Percentage(95);
-                                   settings.Width = System.Web.UI.WebControls.Unit.Pixel(200);
-                                   settings.Properties.NullText = "Đơn vi: Toàn bộ";
-                                   settings.Properties.ValueField = "MaDV";
-                                   settings.Properties.TextField = "Name";
-                                   if (User.IsInRole("Admin"))
-                                       settings.ClientVisible = true;
-                                   else
-                                       settings.ClientVisible = false;
-                                   settings.Properties.ItemStyle.Wrap = DefaultBoolean.True;
-                                   settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
-                                   settings.Properties.ClientSideEvents.SelectedIndexChanged = string.Format("function(s, e) {{ OnDepartmentListSelectedIndexChanged(s, e); }}");
-
-                               }).BindList(ViewBag.Departments).GetHtml()
-                                </div>
-
-                                <div style="font-size: 13; gap: 0px; padding: 0px; margin-top: -4px">
-
-                                    @Html.DevExpress().ComboBox(settings =>
-                               {
-                                   settings.Name = "cmbNhanVien";
-                                   settings.Width = System.Web.UI.WebControls.Unit.Percentage(95);
-                                   settings.Width = 150;
-                                   settings.Properties.ValueField = "Value";
-                                   settings.Properties.TextField = "Text";
-                                   settings.Properties.NullText = "Toàn bộ NV";
-                                   if (User.IsInRole("Admin") || User.IsInRole("DeptDirector"))
-                                       settings.ClientVisible = true;
-                                   else
-                                       settings.ClientVisible = false;
-                                   settings.Properties.ValueType = typeof(string);
-                                   settings.Properties.EnableFocusedStyle = false;
-                                   settings.Properties.ClientSideEvents.SelectedIndexChanged = "OnNhanVienSelectedIndexChanged";
-                                   settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
-                               }).BindList(ViewBag.UsersByDepartment).GetHtml()
-
-                                </div>
-                                <div style="font-size: 13; gap: 0px; padding-left: 0px; margin-top: -4px;">
-
-                                    @Html.DevExpress().ComboBox(settings =>
-                               {
-                                   settings.Name = "rdbGridActivityFilter";
-                                   settings.Width = System.Web.UI.WebControls.Unit.Percentage(95);
-                                   settings.Width = 120;
-                                   settings.Properties.Items.Add("Toàn bộ hoạt động", "0");
-                                   settings.Properties.Items.Add("Khóa học", "10");
-                                   settings.Properties.Items.Add("Thi kiểm tra", "20");
-                                   settings.Properties.Items.Add("Thi thử", "30");
-                                   settings.Properties.Items.Add("Hoạt động khác", "99");
-
-                                   settings.SelectedIndex = GridViewHelper.ContractGridFilterIndex;
-                                   settings.Properties.ClientSideEvents.SelectedIndexChanged = string.Format("function(s, e) {{ OnRadioButtonSelectedIndexChanged(s, e); }}");
-                                   settings.Properties.EnableFocusedStyle = false;
-                                   settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
-                               }).GetHtml()
-                                </div>
-
-                                <div style="padding-left: 10px; margin-top: -4px; display: @((Session["ShowContractExtraColumns"] as bool? ?? false) ? "block" : "none")" id="cmbFinancialYearWrapper">
-                                    @Html.DevExpress().ComboBox(settings =>
-                                   {
-                                       settings.Name = "cmbFinancialYear";
-                                       settings.Properties.ClientInstanceName = "cmbFinancialYear";
-                                       settings.Properties.Caption = "Năm TC";
-                                       settings.Width = 80;
-                                       settings.Properties.ValueType = typeof(int);
-                                       settings.SelectedIndex = GridViewHelper.FinancialYearFilter;
-                                       settings.Properties.TextField = "Text";
-                                       settings.Properties.ValueField = "Value";
-                                       settings.SelectedIndex = 0;
-                                       settings.Properties.ClientSideEvents.SelectedIndexChanged = "OnFinancialYearChanged";
-                                       settings.Properties.EnableFocusedStyle = false;
-                                       settings.ControlStyle.ForeColor = System.Drawing.Color.Blue;
-                                   }).BindList(new[] {
-                                                new { Text = "2026", Value = 2025 },
-                                                new { Text = "2025", Value = 2025 },
-                                                new { Text = "2024", Value = 2024 },
-                                                new { Text = "2023", Value = 2023 },
-                                                new { Text = "2022", Value = 2022 },
-                                                new { Text = "2021", Value = 2021 },
-
-                                   }).GetHtml()
-                                </div>
-
-                                <div style="gap: 2px; padding: 0px; margin-top: -4px">
-                                    @*<span style="color: blue; padding: 1px">Tìm:</span>*@
-                                    <div style="position: relative; display: inline-block; color: blue">
-                                        <input type="text" id="txtContractSearch" placeholder="Tìm kiếm..."
-                                               style="width: 170px; height: 31px; font-size: 14px; padding: 0 5px 0 5px; border: 1px solid #ccc; border-radius: 3px;">
-                                        <span id="clearSearch"
-                                              style="position: absolute; right: 5px; top: 2px; color: #888; cursor: pointer; font-weight: bold; font-size: 14px;">×</span>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- Nhóm bên phải: Nút -->
-                            <div class="d-flex align-items-center flex-wrap text-right" style="gap: 4px; text-align: right;">
-                                @*
-                                    <button class="btn btn-primary btn-rounded btn-xs" style="background-color: cornflowerblue" onclick="openDashboard('company')">
-                                        <i class="fa fa-bar-chart"></i> T.hợp
-                                    </button>
-                                *@
-                                @* Dashboard removed to simplify page and avoid loading heavy reports on login *@
-
-
-                                <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
-                                    <button id="btnContractReport" data-toggle="dropdown" class="btn btn-warning btn-rounded btn-xs" href="#" disabled>
-                                        <span class="clear">
-                                            <span>H.đồng <b class="caret"></b></span>
-                                        </span>
-                                    </button>
-                                    <ul class="dropdown-menu animated fadeInDown m-t-xs">
-                                        <li class="hidden">
-                                            <a id="contractReportLink" href="#" target="_blank">In hợp đồng</a>
-                                        </li>
-                                        <li>
-                                            <a id="contractSuggestReportLink" href="#" target="_blank">In giấy đề nghị thực hiện</a>
-                                        </li>
-                                        <li>
-                                            <a id="turnOverSuggestReportLink" href="#" target="_blank">In giấy đề nghị xuất chứng từ</a>
-                                        </li>
-                                        <li class="hidden">
-                                            <a data-toggle="modal" data-target="#invoiceCreateModal" onclick="invoiceCreate()">In hóa đơn</a>
-                                            <div class="modal inmodal" id="invoiceCreateModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content animated bounceInRight">
-                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
-                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
-                                                            <h4>In hóa đơn</h4>
-                                                        </div>
-                                                        <div class="modal-body scroll_content" id="modalInvoiceCreateWrapper" style="padding: 10px">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <a id="contractAcceptanceReportLink" href="#" target="_blank" style="color: blue">In biên bản nghiệm thu</a>
-                                        </li>
-                                        <!-- ✅ Thêm dòng này vào cuối -->
-                                        <li class="divider"></li>
-                                        <li>
-                                            <a href="#" id="btnDelete" class="text-danger deleteContract" onclick="deleteContract()" style="font-weight: bold;">
-                                                <i class="fa fa-trash"></i> Xóa hợp đồng
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
-                                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                                        <span class="clear">
-                                            <span class="btn btn-primary btn-rounded btn-xs">Tạo mới <b class="caret"></b></span>
-                                        </span>
-                                    </a>
-                                    <ul class="dropdown-menu animated fadeInDown m-t-xs">
-                                        <li>
-                                            <a id="btnAddNew" data-toggle="modal" data-target="#addnewModal" onclick="addnewContract()">Tạo mới HĐ/GĐN</a>
-                                            <div class="modal inmodal" id="addnewModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
-                                                <div class="modal-dialog" style="width: 1000px; max-width: 95vw;">
-                                                    <div class="modal-content animated bounceInRight">
-                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
-                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
-                                                            <h4>Tạo mới hợp đồng</h4>
-                                                        </div>
-                                                        <div class="modal-body scroll_content" style="padding: 10px">
-                                                            <div id="modalAddNewWrapper"></div>
-                                                            <div id="loading_panel_create" class="spiner-example">
-                                                                <div class="sk-spinner sk-spinner-wave">
-                                                                    <div class="sk-rect1"></div>
-                                                                    <div class="sk-rect2"></div>
-                                                                    <div class="sk-rect3"></div>
-                                                                    <div class="sk-rect4"></div>
-                                                                    <div class="sk-rect5"></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <a data-toggle="modal" data-target="#addnewFromOldContractModal" onclick="addnewFromOldContract()">Tạo từ hợp đồng cũ</a>
-                                            <div class="modal inmodal" id="addnewFromOldContractModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
-                                                <div class="modal-dialog" style="width: 1000px; max-width: 95vw;">
-                                                    <div class="modal-content animated bounceInRight">
-                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
-                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
-                                                            <h4>Tạo mới hợp đồng</h4>
-                                                        </div>
-                                                        <div class="modal-body" id="modalAddNewFromOldContractWrapper" style="padding: 10px">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="dropdown profile-element" style="display: inline-block; vertical-align: middle">
-                                    <button id="btnEditContract" data-toggle="dropdown" class="btn btn-info btn-rounded btn-xs" href="#" disabled>
-                                        <span class="clear">
-                                            <span>Chỉnh sửa <b class="caret"></b></span>
-                                        </span>
-                                    </button>
-                                    <ul class="dropdown-menu animated fadeInDown m-t-xs">
-                                        <li>
-                                            <a data-toggle="modal" data-target="#editModal" onclick="editContract()">Chỉnh sửa thông tin</a>
-                                            <div class="modal inmodal" id="editModal" tabindex="-2" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
-                                                <div class="modal-dialog" style="width: 1000px; max-width: 95vw;">
-                                                    <div class="modal-content animated bounceInRight">
-                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
-                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
-                                                            <h4>Chỉnh sửa hợp đồng</h4>
-                                                        </div>
-                                                        <div class="modal-body scroll_content" style="padding: 10px">
-                                                            <div id="modalEditWrapper"></div>
-                                                            <div id="loading_panel_edit" class="spiner-example">
-                                                                <div class="sk-spinner sk-spinner-wave">
-                                                                    <div class="sk-rect1"></div>
-                                                                    <div class="sk-rect2"></div>
-                                                                    <div class="sk-rect3"></div>
-                                                                    <div class="sk-rect4"></div>
-                                                                    <div class="sk-rect5"></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <a data-toggle="modal" data-target="#editcontractnumberModal" onclick="editContractNumber()">Cấp số hợp đồng</a>
-                                            <div class="modal inmodal" id="editcontractnumberModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
-                                                <div class="modal-dialog modal-sm">
-                                                    <div class="modal-content animated bounceInRight">
-                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
-                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
-                                                            <h4>Cấp số hợp đồng</h4>
-                                                        </div>
-                                                        <div class="modal-body" id="modalEditContractNumberWrapper" style="padding: 10px">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <a data-toggle="modal" data-target="#deregisterContractNumberModal" onclick="deregisterContractNumber()">Hủy cấp số hợp đồng</a>
-                                            <div class="modal inmodal" id="deregisterContractNumberModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
-                                                <div class="modal-dialog modal-sm">
-                                                    <div class="modal-content animated bounceInRight">
-                                                        <div class="modal-header" style="background-color:#1ab394; color: white; padding: 10px">
-                                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Đóng</span></button>
-                                                            <h4>Hủy cấp số hợp đồng</h4>
-                                                        </div>
-                                                        <div class="modal-body" id="modalDeregisterContractNumberWrapper" style="padding: 10px">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </li>
-                                    </ul>
-                                    @* Equipment modal removed. *@
-
-                                    <div class="modal fade" id="modalSpecifications" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog modal-xl" style="max-width:95vw;">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-primary text-white">
-                                                    <h5 class="modal-title">Thông số kỹ thuật (bấm SAVECHANGES khi có thay đổi)</h5>
-                                                    <button type="button" class="btn-close" data-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body" id="modalSpecificationsContent">
-                                                    <p>Đang tải dữ liệu...</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                    </div>
-
-                    <div class="ibox-content" style="padding: 0px">
-                        <div class="scroll_content">
-                            
-
-                            <div id="activityGridContainer">
-                                @Html.Action("Index", "Activity")
-                            </div>
-                            
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="detail-panel" class="col-lg-4" style="padding-left: 2px; padding-right: 0px;">
-                <div class="ibox">
-                    <div class="ibox-title" style="background-color: #1ab394; color: white">
-                        <h5>Chi tiết khóa học/thi</h5>
-                    </div>
-                    <div class="ibox-content" style="padding: 0px">
-                        <div class="scroll_content">
-                            <ul class="list-group" style="text-overflow: ellipsis; margin-bottom: 0px">
-                                <li class="list-group-item"><p><b>Người chủ trì: </b><strong><i><span class="text-danger" id="cOwnName"></span></i></strong></p></li>
-                                @*<li class="list-group-item hidden"><p><b>Kiểm định viên 1: </b><strong><i><span class="text-danger" id="cKDV1Name"></span></i></strong></p></li>*@
-                                @* <li class="list-group-item"><p><b>Kiểm định viên 2: </b><strong><i><span class="text-danger" id="cKDV2Name"></span></i></strong></p></li>*@
-                                <li class="list-group-item"><p><b>Tên hợp đồng: </b><i id="cContractName"></i></p></li>
-                                <li class="list-group-item"><p><b>Khách hàng: </b><i id="cName"></i></p></li>
-                                @*<li class="list-group-item"><p><b>Đại diện bên A: </b><i id="cRepresentative"></i></p></li>*@
-                                <li class="list-group-item"><p><b>Địa chỉ: </b><i id="cAddress"></i></p></li>
-                                @* <li class="list-group-item"><p><b>Điện thoại: </b><i id="cPhone"></i> - <b>Fax: </b><i id="cFax"></i></p></li>*@
-                                @*<li class="list-group-item"><p><b>Tài khoản: </b><i id="cAccountNumber"></i></p></li>*@
-                                <li class="list-group-item"><p><b>MST: </b><i id="cTaxID"></i></p></li> @* added by lapbt *@
-                                <li class="list-group-item"><p><b>Loại hợp đồng: </b><strong><i><span class="text-danger" id="cContractTypeID"></span></i></strong></p></li>
-                            </ul>
-                            <div class="bg-muted p-xs b-r-xs">
-                                <div class="row">
-                                    <div class="col-md-7">
-                                        <p><strong>Giá trị hợp đồng: <i><span class="text-danger" id="cValue"></span> VNĐ</i></strong></p>
-                                    </div>
-                                    <div class="col-md-5">
-                                        <p><strong>Ngày ký: <i><span class="text-danger" style="padding: 0px" id="cSignDate"></span></i></strong></p>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <p><strong>Người thực hiện: <i><span class="text-danger" id="cKDV1Name"></span> ;  <span class="text-danger" id="cKDV2Name"></span></i></strong></p>
-                                    </div>
-                                </div>
-
-                                <div class="bg-success b-r-xs" style="padding:4px 8px; line-height:22px; font-size:14px;">Hoạt động học tập</div>
-                                @* Activity grid is rendered in the left list-panel. Details will be shown in the right panel. *@
-                                @* Removed device lists, revenue and payment partials to avoid loading heavy data on login. Keep contract basics visible. *@
-                                <div class="bg-success b-r-xs" style="padding: 4px 8px; line-height: 22px; font-size: 14px; margin-bottom: -2px; margin-top: -2px">Thông tin hợp đồng</div>
-                                <div style="padding:8px">
-                                    <p><b>Mã hợp đồng: </b><span id="cContractCode"></span></p>
-                                    <p><b>Khách hàng: </b><span id="cName"></span></p>
-                                    <p><b>Giá trị: </b><span id="cValue"></span> VNĐ</p>
-                                </div>
-
-                        
-                            </div>
-                        </div>
+                <div class="modal-body" id="courseDetailBody">
+                    <div class="course-modal-loading">
+                        <i class="fa fa-spinner fa-spin"></i> Đang tải...
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 @section Styles {
-    @Styles.Render("~/plugins/sweetAlertStyles")
     @Styles.Render("~/plugins/toastrStyles")
 }
 
 @section Scripts {
-    @Scripts.Render("~/bundles/signalr")
-    @Scripts.Render("/signalr/hubs")
-    @Scripts.Render("~/plugins/sweetAlert")
-    @Scripts.Render("~/plugins/idletimer")
     @Scripts.Render("~/plugins/toastr")
-    @*@Scripts.Render("~/Scripts/app/index.js")*@
 
     <script type="text/javascript">
-        // Expose ActivityType enum to client as JSON
-        var activityTypes = @Html.Raw(Json.Encode(ViewBag.ActivityTypes ?? new object[0]));
-    </script>
+        // Open course detail popup
+        function openCourseDetail(courseId) {
+            var loading = '<div class="course-modal-loading"><i class="fa fa-spinner fa-spin"></i> Đang tải...</div>';
+            $('#courseDetailBody').html(loading);
+            $('#courseDetailModal').modal('show');
 
-    <!-- Header Filter Modal -->
-    <div id="headerFilterModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="headerFilterModalLabel">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="headerFilterModalLabel" class="modal-title">Lọc</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <input id="hfSearch" class="form-control mb-2" placeholder="Tìm..." />
-                    <div id="hfItems" style="max-height:300px; overflow:auto;"></div>
-                </div>
-                <div class="modal-footer">
-                    <button id="hfClear" type="button" class="btn btn-secondary">Bỏ chọn</button>
-                    <button id="hfApply" type="button" class="btn btn-primary">Áp dụng</button>
-                </div>
-            </div>
-        </div>
-    </div>
+            $.get('@Url.Action("Detail", "Course")' + '/' + courseId)
+                .done(function (html) {
+                    $('#courseDetailBody').html(html);
+                })
+                .fail(function () {
+                    $('#courseDetailBody').html('<div class="course-modal-loading"><i class="fa fa-exclamation-triangle"></i> Không thể tải thông tin khóa học.</div>');
+                });
+        }
 
+        // Filter activity list by type
+        $(document).on('click', '.tab-btn', function () {
+            $('.tab-btn').removeClass('active');
+            $(this).addClass('active');
 
-    <script type="text/javascript">
+            var filter = $(this).data('filter');
+            var $items = $('#activityList .activity-item');
 
-    var copiedTSKT = {
-        Code: null,
-        Specs: []
-    };
-
-        $(function () {
-            // Set idle time
-            $(document).idleTimer(50000);
-        });
-
-        $(function () {
-            $(document).on("idle.idleTimer", function (event, elem, obj) {
-            });
-
-            $(document).on("active.idleTimer", function (event, elem, obj, triggerevent) {
-            });
-
-        });
-        $(document).ready(function () {
-            // Add slimscroll to element
-            // Tắt slimscroll riêng vùng danh sách hợp đồng
-            $('#list-panel .scroll_content').slimScroll({ destroy: true })
-                .css({ overflow: 'visible', height: 'calc(100vh - 80px)' });
-                //ý nghĩa: 100% chiều cao màn hình trừ đi 80px chứa header/footer ....
-
-            // Bật lại slimscroll cho vùng chi tiết
-            $('#detail-panel .scroll_content').slimscroll({
-                height: 'calc(100vh - 80px)'
-            });
-
-        });
-
-        $('.deleteContract').click(function () {
-            if (selectedcontract && typeof selectedcontract === "number") {
-                swal({
-                    title: "Bạn có muốn xóa?",
-                    text: "Thao tác này sẽ không thể khôi phục lại",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Đồng ý",
-                    cancelButtonColor: "#23C6C8",
-                    cancelButtonText: "Hủy bỏ",
-                    closeOnConfirm: false,
-                    closeOnCancel: false
-                }, function (isConfirm) {
-                    if (isConfirm) {
-                        $.ajax({
-                            url: '/Contracts/Delete/' + selectedcontract, // The method name + paramater
-                            type: "POST",
-                            success: function (data) {
-                                if (data) {
-                                    if (data[0] == "false")
-                                        swal({ title: data[1], text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
-                                    else {
-                                        swal({ title: data[1], text: "Đã xóa thành công.", type: "success", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
-                                        var index = rdbGridContractFilter.GetSelectedIndex();
-                                        grvContracts.PerformCallback({ filtermode: parseInt(index) });
-                                    }
-                                }
-                            }
-                        });
-                    } else {
-                        swal({ title: "Đã hủy bỏ", text: "Đã hủy bỏ thao tác.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
-                    }
+            if (filter === 'all') {
+                $items.show();
+            } else {
+                $items.each(function () {
+                    var type = $(this).data('type');
+                    $(this).toggle(type == filter);
                 });
             }
         });
 
-        $('.denyCreate').click(function () {
-            swal({ title: "Bạn không có quyền tạo mới", text: "Bạn bị giới hạn quyền cho tác vụ này", type: "warning", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" })
-        });
+        // Select activity and load details
+        function selectActivity(el, id) {
+            $('#activityList .activity-item').removeClass('selected');
+            $(el).addClass('selected');
 
-
-        function onEquipmentFocusedRowChanged(s, e) {
-            var rowIndex = s.GetFocusedRowIndex();
-            var key = s.GetRowKey(rowIndex);
-            console.log("Đã chọn dòng thiết bị có ID: " + key);
+            $.get('@Url.Action("Details", "Activity")', { id: id })
+                .done(function (html) {
+                    $('#activityDetail').html(html);
+                })
+                .fail(function () {
+                    $('#activityDetail').html('<div class="detail-placeholder"><i class="fa fa-exclamation-triangle"></i><p>Không thể tải chi tiết hoạt động.</p></div>');
+                });
         }
-
-        // Equipment modal removed; related handlers not required.
-
-
-        function EquipmentToolBarClick(s, e) {
-            var rowIndex = s.GetFocusedRowIndex();
-            if (rowIndex < 0) {
-                toastr.warning("Vui lòng chọn một dòng thiết bị trước khi thao tác.");
-                e.processOnServer = false;
-                return;
-            }
-
-            var equipmentId = s.GetRowKey(rowIndex);
-            //const equipmentId = s.GetRowKey(rowIndex);
-            const code = s.batchEditApi.GetCellValue(rowIndex, "Code");
-
-            switch (e.item.name) {
-                case "RefreshEquipmentData":
-                    if (typeof selectedcontract === "undefined" || selectedcontract <= 0) {
-                        toastr.warning("Không xác định được hợp đồng.");
-                        break;
-                    }
-
-                    var grid = ASPxClientGridView.Cast("grvEquipmentsOfContract");
-                    if (grid) {
-                        grid.PerformCallback({ contractId: selectedcontract }); // Truyền contractId
-                        toastr.info("Đang làm mới dữ liệu...");
-                    }
-                    break;
-
-
-                case "EditAccreditation":
-                    showEditAccreditationModal(equipmentId);
-                    break;
-
-                case "EditSpecifications":
-                    showEditSpecificationsModal(equipmentId);
-                    break;
-
-
-            }
-
-            e.processOnServer = false; // Chặn callback server nếu bạn xử lý hoàn toàn client-side
-        }
-
-        //Hàm in nhiều TB cùng lúc
-        function PrintSelected() {
-            var grid = window.grvEquipmentsOfContract || ASPxClientGridView.Cast("grvEquipmentsOfContract");
-            if (!grid) return;
-
-            // ✅ Copy mảng checkbox hiện có
-            var ids = selectedEquipmentIds.slice();
-
-            // ✅ Nếu chưa chọn checkbox nào, dùng dòng hiện hành
-            if (ids.length === 0) {
-                var focusedIndex = grid.GetFocusedRowIndex();
-                if (focusedIndex >= 0) {
-                    var currentId = grid.GetRowKey(focusedIndex);
-                    if (currentId)
-                        ids.push(currentId);
-                }
-            }
-
-            // ✅ Kiểm tra tổng hợp mảng ids (sau khi đã xét cả 2 cách)
-            if (ids.length === 0) {
-                toastr.warning("Vui lòng chọn ít nhất 1 thiết bị để in.");
-                return;
-            }
-
-            // ✅ Mở tab in chung
-            var url = '/Reports/AccreditationCertificateReportA5_Multi/?ids=' + ids.join(',');
-            window.open(url, '_blank');
-
-            // ✅ Dọn danh sách checkbox sau khi in
-            selectedEquipmentIds = [];
-            $('input[type="checkbox"][data-rowindex]').prop('checked', false);
-            $('#chkSelectAllPrint').prop('checked', false); // ✅ bỏ check ô header
-
-        }
-
-
-    function showEditSpecificationsModal(equipmentId) {
-        console.log("Gọi nhập TSKT cho TB ID:", equipmentId); // 👈 kiểm tra
-
-        $.ajax({
-            url: '/Equipments/SpecificationsOfEquipmentEditByIdPartial',
-            data: { equipmentId: equipmentId },
-            type: 'GET',
-            success: function (data) {
-                $("#modalSpecificationsContent").html(data);
-                $("#modalSpecifications").removeAttr("aria-hidden");
-                $("#modalSpecifications").modal("show");
-            },
-            error: function () {
-                toastr.error("Không tải được thông tin thông số kỹ thuật.");
-            }
-        });
-    }
-
-        function showEditAccreditationModal(equipmentId, contractId) {
-            $('#modalEditAccreditationWrapper').html("");
-            $.ajax({
-                type: "GET",
-                url: '/Equipments/AccreditationViewViaContract/', // The method name + paramater
-                data: { id: equipmentId, contractId: selectedcontract/*, taskId: taskId*/ },
-                success: function (data) {
-                    if (data) {
-                        $('#modalEditAccreditationWrapper').html(data);
-                        $('#editAccreditationModal').modal('show');
-                    }
-                    else {
-                        swal({ title: "Lỗi rồi 2 :)", text: "Vui lòng tải lại trang để tiếp tục.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
-                    }
-                },
-                error: function (data) {
-                    swal({ title: "Lỗi rồi :)", text: "Đã có lỗi xảy ra.", type: "error", confirmButtonColor: "#23C6C8", confirmButtonText: "Đồng ý" });
-                }
-            });
-        }
-
-        function onEquipmentBatchStartEdit(s, e) {
-        // lấy giá trị Ngày KĐ của dòng đang sửa
-            var accreDate = s.batchEditApi.GetCellValue(e.visibleIndex, "AccreDate");
-            var isAdmin = '@User.IsInRole("Admin")'.toLowerCase() === "true";
-
-            if (!isAdmin) {
-                if (accreDate) {
-                    var accreDateObj = new Date(accreDate);
-                    var now = new Date();
-                    var diffDays = Math.floor((now - accreDateObj) / (1000 * 60 * 60 * 24));
-                    if (diffDays > 60) {
-                        e.cancel = true; // chặn sửa
-                        toastr.warning("Không được sửa dòng này do Ngày KĐ quá 60 ngày.");
-                    }
-                }
-            }
-            var column = e.focusedColumn;
-            var fieldName = s.GetColumn(fieldIndex = column.index).fieldName;
-
-            if (fieldName === "Code") {
-                if (!isAdmin) {
-                    e.cancel = true; // chặn không cho sửa
-                    toastr.warning("Không được sửa cột này, liên hệ Admin.");
-                }
-            }
-        }
-
-    function uploadAndPrint(formData, equipmentId) {
-        fetch("/Upload/UploadImage", {
-            method: "POST",
-            body: formData
-        })
-            .then(response => {
-                if (!response.ok) throw new Error("Upload thất bại");
-                return response.json();
-            })
-            .then(result => {
-                if (result.success) {
-                    var url = `/Reports/AccreditationCertificateReportA5WithImage/${equipmentId}?imagePath=${encodeURIComponent(result.imagePath)}`;
-                    window.open(url, "_blank");
-                } else {
-                    toastr.error("Không thể tải ảnh lên.");
-                }
-            })
-            .catch(() => {
-                toastr.error("Không thể tải ảnh lên.");
-            });
-    }
-
-
     </script>
-
-    <script>
-        //Nút mũi tên mở rộng cửa sổ Danh sách hợp đồng
-        $("#btnToggleDetail").off('click').on('click', function () {
-            var $detailCol = $("#detail-panel");
-            var $listCol = $("#list-panel");
-            var lastFocusIndex = -1;
-            try {
-                if (typeof grvContracts !== "undefined" && grvContracts) {
-                    lastFocusIndex = grvContracts.GetFocusedRowIndex();//31.10.2025 lưu dòng ở danh sách
-                }
-            } catch (ex) { console.log("Get page/index error:", ex); }
-
-            if ($detailCol.is(":visible")) {
-                $detailCol.hide();
-                $listCol.removeClass("col-lg-8").addClass("col-lg-12");
-                $(this).html('<i class="fa fa-angle-double-left"></i>')
-                    .attr("title", "Hiện chi tiết");
-                $("#cmbPhongBanWrapper").show();    // hiện combobox Phòng ban
-                $("#cmbTaiChinhWrapper").show();   // hiện combobox Báo cáo TC
-                $("#cmbFinancialYearWrapper").show();   // hiện combobox Năm tài chính
-            } else {
-                $detailCol.show();
-                $listCol.removeClass("col-lg-12").addClass("col-lg-8");
-                $(this).html('<i class="fa fa-angle-double-right"></i>')
-                    .attr("title", "Ẩn chi tiết");
-                $("#cmbPhongBanWrapper").hide();    // ẩn combobox Phòng ban
-                $("#cmbTaiChinhWrapper").hide();   // ẩn combobox Báo cáo TC
-                $("#cmbFinancialYearWrapper").hide();   // ẩn combobox Năm tài chính
-            }
-
-            // Call server to persist column toggle but don't load heavy extras
-            $.post("/Contracts/ContractToggleColumns", function (html) {
-                $("#contractGridContainer").html(html);
-                if (lastFocusIndex >= 0 && typeof grvContracts !== 'undefined' && grvContracts) {
-                    try { grvContracts.SetFocusedRowIndex(lastFocusIndex); } catch (e) { }
-                    if (typeof OnGridFocusedRowChanged === "function") OnGridFocusedRowChanged(grvContracts, null);
-                }
-            });
-        });
-
-    </script>
-
-
-
-    <script type="text/javascript">
-    //Bấm đúp vào chữ pdf ở cột H.sơ
-        $(document).on("dblclick", ".pdf-link", function () {
-            var contractId = $(this).data("id");
-            console.log("dblclick pdf:", contractId);
-            if (contractId) {
-                openDocumentById(contractId);
-            }
-        });
-
-    function openDocumentById(contractId) {
-        // Gọi action ViewDocuments để load partial vào modal
-        $.get('@Url.Action("ViewDocuments", "Contracts")', { id: contractId }, function (data) {
-            if (data) {
-                $("#modalContractDocumentsWrapper").html(data);
-                $("#contractDocumentsModal").modal("show");
-            } else {
-                toastr.warning("Hợp đồng này chưa có hồ sơ.");
-            }
-        });
-        }
-
-    </script>
-
-
-    <script type="text/javascript">
-        //30.10.2025 thêm đoạn dưới đây để ẩn thanh tìm kiếm mặc định của grid
-        //Và tạo ô tìm kiếm mới đật trên thanh công cụ - Mục đích: mở rộng cửa sổ DS HĐong
-        var contractSearchText = "";
-
-        $(document).ready(function () {
-            InitContractSearchBox();
-        });
-
-        function InitContractSearchBox() {
-            var $txt = $("#txtContractSearch");
-            var $clear = $("#clearSearch");
-            if ($txt.data("hasEnterEvent")) return;
-
-            $txt.on("keydown", function (e) {
-                if (e.key === "Enter" || e.which === 13) {
-                    e.preventDefault();
-                    contractSearchText = $(this).val();
-                    applyContractFilter();
-                }
-            });
-
-            // Nút "x" để xóa nội dung
-            $clear.on("click", function () {
-                $txt.val("");          // clear text
-                contractSearchText = "";       // clear biến tạm
-                applyContractFilter(); // load lại grid
-                $txt.focus();          // focus lại vào ô tìm
-            });
-
-            $txt.data("hasEnterEvent", true);
-        }
-
-        function applyContractFilter() {
-            var grid = (typeof grvContracts !== 'undefined')
-                ? grvContracts
-                : ASPxClientGridView.Cast('grvContracts');
-
-            grid.PerformCallback({ search: contractSearchText });
-        }
-        //End 30.10.2025
-
-    </script>
-
-    
-    <script>
-    // Dashboard and heavy-reporting JS removed. Provide minimal globals to avoid errors.
-    var currentUserRole = @Html.Raw(Json.Encode(User.IsInRole("Admin") ? "Admin" : User.IsInRole("DeptDirector") ? "DeptDirector" : "User"));
-    var currentUserDeptId = @Html.Raw(Json.Encode(ViewBag.DirectorDeptId ?? null));
-    var currentUserDeptName = @Html.Raw(Json.Encode(ViewBag.DirectorDeptName ?? null));
-    var currentUserDeptMaDV = @Html.Raw(Json.Encode(ViewBag.DirectorDeptMaDV ?? null));
-
- // loadDepartments trả về jqXHR để caller có thể .done/.then()
-    function loadDepartments() {
-        return $.get('/Contracts/GetDepartments', function (data) {
-            const ddl = $('#departmentSelector');
-            ddl.empty().append('<option value="">-- Chọn đơn vị --</option>');
-
-            // Nạp danh sách đơn vị
-            $.each(data.departments, function (i, item) {
-                ddl.append('<option value="' + item.Value + '" data-madv="' + item.MaDV + '">' + item.Text + '</option>');
-            });
-
-            // Nếu là DeptDirector: gán biến global (và chọn dropdown)
-            if (data.directorDept) {
-                currentUserDeptId = data.directorDept.Id;
-                currentUserDeptName = data.directorDept.Name;
-                currentUserDeptMaDV = data.directorDept.MaDV;
-                ddl.val(currentUserDeptId); // nếu muốn hiển thị chọn sẵn
-            }
-        });
-    }
-
-
-
-
-    </script>
-
-    
-
 }
+
+
+
+

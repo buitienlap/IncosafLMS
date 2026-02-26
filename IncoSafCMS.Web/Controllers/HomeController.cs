@@ -3,6 +3,7 @@ using IncosafCMS.Core.DomainModels;
 using IncosafCMS.Core.DomainModels.Identity;
 using IncosafCMS.Core.Identity;
 using IncosafCMS.Core.Services;
+using IncosafCMS.Web.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -27,76 +28,51 @@ namespace IncosafCMS.Web.Controllers
         [OutputCache(NoStore = true, Duration = 0, VaryByParam = "None")]
         public ActionResult Index()
         {
-            Session["ShowContractExtraColumns"] = false;
-            Session["ShowFilterTabDashboard"] = false;
-            ViewData["SubTitle"] = "";
-            ViewData["Message"] = "";
-            //var contracts = service.GetAll();
-            //var model = User.IsInRole("KDV") ? contracts.Where(e => e.own?.UserName == User.Identity.Name) : contracts;
             var user = userManager.FindByName(User.Identity.Name);
-            if (User.IsInRole("Admin") || User.IsInRole("TPTH"))
-                GridViewHelper.OwnerContractGridFilter = "Công ty";
-            else if (User.IsInRole("Accountant") || User.IsInRole("DeptDirector"))
-                GridViewHelper.OwnerContractGridFilter = user.Department?.MaDV;
-            else
-                GridViewHelper.OwnerContractGridFilter = user.DisplayName;
 
-            var departments = departmentService.GetAll();
-            if (departments.Count > 0 && User.IsInRole("Admin"))
-                departments.Insert(0, new Department { Id = 0, MaDV = "", Name = "Đơn vi: Toàn bộ" });
-            
-            ViewBag.Departments = departments;           
+            var courses = uow.Repository<Course>().FindBy(c => c.IsActive)
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(6)
+                .ToList();
 
-            // Lấy danh sách nhân viên
-            if (User.IsInRole("Admin"))
-            {
-                var userList = uow.Repository<AppUser>()
-                .FindBy(x => x.TwoFactorEnabled)
-                .Select(x => new SelectListItem
+            var activities = uow.Repository<ActivityLog>()
+                .FindBy(a => a.UserId == user.Id)
+                .OrderByDescending(a => a.Timestamp)
+                .ToList();
+
+            // Load pending / in-progress exam assignments for this user
+            var pendingExams = uow.Repository<ExamAssignment>()
+                .FindBy(e => e.UserId == user.Id
+                    && e.Status != ExamAssignmentStatus.Completed)
+                .OrderBy(e => e.Deadline)
+                .Select(e => new Models.PendingExamDto
                 {
-                    Value = x.Id.ToString(),
-                    Text = x.DisplayName
+                    Id = e.Id,
+                    ExamTitle = e.ExamTitle,
+                    QuestionCount = e.QuestionCount,
+                    TimeLimitMinutes = e.TimeLimitMinutes,
+                    Deadline = e.Deadline,
+                    Status = e.Status
                 })
                 .ToList();
 
-                userList.Insert(0, new SelectListItem { Value = "", Text = "KĐV Toàn bộ" });
-                ViewBag.UsersByDepartment = userList;
-            }
-
-            if (User.IsInRole("DeptDirector"))
+            var model = new HomeDashboardViewModel
             {
-                var userList = uow.Repository<AppUser>()
-                .FindBy(x => x.TwoFactorEnabled && x.Department.Id == user.Department.Id)
-                .Select(x => new SelectListItem
-                {
-                    Value = x.Id.ToString(),
-                    Text = x.DisplayName
-                })
-                .ToList();
+                UserDisplayName = user.DisplayName,
+                LatestCourses = courses,
+                RecentActivities = activities,
+                PendingExams = pendingExams,
+                // Count distinct courses/exams by RelatedId to avoid duplicates from multiple visits
+                TotalCourses = activities.Where(a => a.Type == ActivityType.Learning && a.RelatedId != null)
+                    .Select(a => a.RelatedId).Distinct().Count(),
+                TotalExams = activities.Where(a => a.Type == ActivityType.Exam && a.RelatedId != null)
+                    .Select(a => a.RelatedId).Distinct().Count(),
+                TotalPractice = activities.Where(a => a.Type == ActivityType.Practice && a.RelatedId != null)
+                    .Select(a => a.RelatedId).Distinct().Count(),
+                TotalActivities = activities.Count
+            };
 
-                userList.Insert(0, new SelectListItem { Value = "", Text = "KĐV Toàn đơn vị" });
-                ViewBag.UsersByDepartment = userList;
-            }
-            if (!User.IsInRole("Admin") && !User.IsInRole("DeptDirector"))
-            {
-                var userList = uow.Repository<AppUser>()
-                .FindBy(x => x.TwoFactorEnabled && x.Id == user.Id)
-                .Select(x => new SelectListItem
-                {
-                    Value = x.Id.ToString(),
-                    Text = x.DisplayName
-                })
-                .ToList();
-                userList.Insert(0, new SelectListItem { Value = user.Id.ToString(), Text = user.DisplayName.ToString() });
-                ViewBag.UserList = userList;
-            }
-
-            // Return recent activity logs as the model for the home index (left panel now shows ActivityLog)
-            var activities = uow.Repository<ActivityLog>().GetAll()
-                .OrderByDescending(x => x.Timestamp)
-                .ToList();
-
-            return View(activities);
+            return View(model);
 
         }
         public ActionResult ContractDetails(Contract model)

@@ -1,7 +1,9 @@
 using IncosafCMS.Core.Data;
 using IncosafCMS.Core.DomainModels;
 using System;
+using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 
 namespace IncosafCMS.Web.Controllers
@@ -127,6 +129,10 @@ namespace IncosafCMS.Web.Controllers
                 entity.Description = form.Description;
                 entity.CourseCategoryId = form.CourseCategoryId;
                 entity.IsActive = form.IsActive;
+                entity.ContentType = form.ContentType;
+                entity.ContentBody = form.ContentBody;
+                entity.ContentUrl = form.ContentUrl;
+                entity.DurationMinutes = form.DurationMinutes;
                 entity.UpdatedAt = DateTime.UtcNow;
 
                 repo.Update(entity);
@@ -147,6 +153,67 @@ namespace IncosafCMS.Web.Controllers
             var course = repo.GetSingleIncluding(id, c => c.CourseCategory);
             if (course == null) return HttpNotFound();
             return View(course);
+        }
+
+        // POST: Courses/UploadFile — AJAX file upload for PDF/PPTX
+        [HttpPost]
+        public ActionResult UploadFile(HttpPostedFileBase courseFile)
+        {
+            if (courseFile == null || courseFile.ContentLength == 0)
+                return Json(new { success = false, message = "Chưa chọn file." });
+
+            var ext = Path.GetExtension(courseFile.FileName).ToLowerInvariant();
+            var allowed = new[] { ".pdf", ".ppt", ".pptx" };
+            if (!allowed.Contains(ext))
+                return Json(new { success = false, message = "Chỉ chấp nhận file PDF, PPT, PPTX." });
+
+            try
+            {
+                // Save to ~/Uploads/CourseFiles/yyyyMM/
+                var subFolder = DateTime.UtcNow.ToString("yyyyMM");
+                var relDir = "~/Uploads/CourseFiles/" + subFolder;
+                var absDir = Server.MapPath(relDir);
+                if (!Directory.Exists(absDir))
+                    Directory.CreateDirectory(absDir);
+
+                // Unique file name to avoid collision
+                var safeName = Path.GetFileNameWithoutExtension(courseFile.FileName);
+                safeName = safeName.Length > 80 ? safeName.Substring(0, 80) : safeName;
+                var fileName = safeName + "_" + DateTime.UtcNow.ToString("HHmmss") + ext;
+                var absPath = Path.Combine(absDir, fileName);
+                courseFile.SaveAs(absPath);
+
+                // Return relative path (portable across domains)
+                var relativePath = relDir + "/" + fileName;
+                return Json(new { success = true, url = relativePath, fileName = courseFile.FileName });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Courses/RemoveFile — remove uploaded file
+        [HttpPost]
+        public ActionResult RemoveFile(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return Json(new { success = false });
+
+            try
+            {
+                if (filePath.StartsWith("~"))
+                {
+                    var absPath = Server.MapPath(filePath);
+                    if (System.IO.File.Exists(absPath))
+                        System.IO.File.Delete(absPath);
+                }
+                return Json(new { success = true });
+            }
+            catch
+            {
+                return Json(new { success = false });
+            }
         }
 
         // POST: Courses/Delete/5 (ajax)
