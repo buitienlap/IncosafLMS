@@ -125,9 +125,6 @@
         @Scripts.Render("~/bundles/inspinia")
         @Scripts.Render("~/bundles/app")
 
-        @Scripts.Render("~/bundles/signalr")
-        @Scripts.Render("/signalr/hubs")
-
         @RenderSection("scripts", required: false)
 </body>
 </html>
@@ -144,38 +141,3 @@
     }
    
 </style>
-<script type="text/javascript">
-    $(function () {
-        // Declare a proxy to reference the hub.
-        var notifications = $.connection.notificationHub;
-
-        //debugger;
-        // Create a function that the hub can call to broadcast messages.
-        notifications.client.updateMessages = function () {
-            getAllMessages();
-
-        };
-        // Start the connection.
-        $.connection.hub.start().done(function () {
-            //alert("connection started");
-            getAllMessages();
-        }).fail(function (e) {
-            alert(e);
-        });
-    });
-
-
-    function getAllMessages() {
-        //$.ajax({
-        //    url: '/notifications/GetAllMessages',
-        //    contentType: 'application/html ; charset:utf-8',
-        //    type: 'GET',
-        //    dataType: 'html'
-        //}).success(function (result) {
-        //    $('#notifications-center').html(result);
-        //    $('#notifiCount').html(result.count);
-        //}).error(function () {
-
-        //});
-    }
-</script>

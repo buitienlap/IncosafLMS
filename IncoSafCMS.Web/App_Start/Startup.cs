@@ -1,4 +1,4 @@
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 using Owin;
 using AutoMapper;
 
@@ -11,7 +11,7 @@ namespace IncosafCMS.Web
         {
             ConfigureAuth(app);
             app.MapSignalR();
-            Microsoft.AspNet.SignalR.StockTicker.Startup.ConfigureSignalR(app);
+            //Microsoft.AspNet.SignalR.StockTicker.Startup.ConfigureSignalR(app); Lập đóng & xóa code ngày 26/02/2026 lquan gì đó lấy giá chứng khoán
             //app.Use(
             //(context, next) =>
             //{

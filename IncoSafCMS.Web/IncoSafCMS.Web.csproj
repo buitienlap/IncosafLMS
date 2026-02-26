@@ -264,7 +264,6 @@
     <Compile Include="Controllers\DepartmentsController.cs" />
     <Compile Include="Controllers\EmployeesController.cs" />
     <Compile Include="Controllers\FinacialReportsController.cs" />
-    <Compile Include="Controllers\FinanceController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\NotificationsController.cs" />
@@ -312,11 +311,6 @@
     <Compile Include="Providers\FinacialReportDataProvider.cs" />
     <Compile Include="Providers\GridViewCustomBindingHandlers.cs" />
     <Compile Include="Providers\LargeDatabaseDataProvider.cs" />
-    <Compile Include="Results\ChallengeResult.cs" />
-    <Compile Include="SignalR.Sample\Startup.cs" />
-    <Compile Include="SignalR.Sample\Stock.cs" />
-    <Compile Include="SignalR.Sample\StockTicker.cs" />
-    <Compile Include="SignalR.Sample\StockTickerHub.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\animate.css" />
@@ -590,7 +584,6 @@
     <Content Include="SignalR.Sample\jquery.color-2.1.2.min.js" />
     <Content Include="SignalR.Sample\SignalR.StockTicker.js" />
     <Content Include="SignalR.Sample\StockTicker.css" />
-    <Content Include="SignalR.Sample\StockTicker.html" />
     <Content Include="UploadedImages\readme.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -736,7 +729,6 @@
     <Content Include="Views\Reports\ContractReport.cshtml" />
     <Content Include="Views\Reports\ContractSuggestReport.cshtml" />
     <Content Include="Views\Shared\_ReportLayout.cshtml" />
-    <Content Include="Views\Finance\Index.cshtml" />
     <Content Include="Views\Admin\StandardProcedure.cshtml" />
     <Content Include="Views\Contracts\Payment.cshtml" />
     <Content Include="Views\Contracts\_ContractPaymentViewPartial.cshtml" />
@@ -816,7 +808,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Extensions\" />
     <Folder Include="Reports\" />
+    <Folder Include="Results\" />
+    <Folder Include="Views\Finance\" />
+    <Folder Include="Views\Notifications\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
