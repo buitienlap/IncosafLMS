@@ -65,5 +65,31 @@ namespace IncosafCMS.Core.DomainModels
         /// Estimated duration in minutes.
         /// </summary>
         public int? DurationMinutes { get; set; }
+
+        // ---- Statistics (denormalized for display performance) ----
+
+        /// <summary>
+        /// Number of distinct users who joined this course.
+        /// </summary>
+        public int ParticipantCount { get; set; }
+
+        /// <summary>
+        /// Total number of learning sessions (views).
+        /// </summary>
+        public int ViewCount { get; set; }
+
+        /// <summary>
+        /// Cached average rating (1-5). Null if no ratings yet.
+        /// </summary>
+        [Column(TypeName = "float")]
+        public double? AverageRating { get; set; }
+
+        /// <summary>
+        /// Number of ratings submitted.
+        /// </summary>
+        public int RatingCount { get; set; }
+
+        // Navigation
+        public virtual System.Collections.Generic.ICollection<CourseRating> Ratings { get; set; }
     }
 }

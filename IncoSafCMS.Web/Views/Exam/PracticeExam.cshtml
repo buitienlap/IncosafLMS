@@ -550,15 +550,16 @@
         function startNewExam() {
             var token = $('#setupForm input[name="__RequestVerificationToken"]').val();
             var catConfig = getCategoryConfig();
-            var totalPct = 0;
-            if (catConfig) {
-                for (var i = 0; i < catConfig.length; i++) totalPct += catConfig[i].percent;
-                if (totalPct > 100) {
-                    alert('Tổng tỷ lệ thể loại vượt quá 100%. Vui lòng điều chỉnh.');
-                    return;
-                }
+            // catConfig is null when "all" mode, or an array when "custom" mode
+            if (catConfig !== null) {
                 if (catConfig.length === 0) {
                     alert('Vui lòng chọn ít nhất một thể loại và nhập tỷ lệ %.');
+                    return;
+                }
+                var totalPct = 0;
+                for (var i = 0; i < catConfig.length; i++) totalPct += catConfig[i].percent;
+                if (totalPct !== 100) {
+                    alert('Tổng tỷ lệ phải bằng đúng 100%. Hiện tại: ' + totalPct + '%.');
                     return;
                 }
             }

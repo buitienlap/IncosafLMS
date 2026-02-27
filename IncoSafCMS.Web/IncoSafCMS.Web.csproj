@@ -320,6 +320,7 @@
     <Content Include="App_Data\Scripts\Alter_Course_AddContent.sql" />
     <Content Include="App_Data\Scripts\Create_ExamAssignment.sql" />
     <Content Include="App_Data\Scripts\Create_PracticeExam.sql" />
+    <Content Include="App_Doc\Migration_CourseStats_Rating.sql" />
     <Content Include="Content\animate.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -816,6 +817,7 @@
     <Content Include="Views\Exam\Take.cshtml" />
     <Content Include="Views\Exam\Review.cshtml" />
     <Content Include="Views\Exam\_PracticeSetup.cshtml" />
+    <Content Include="Views\Course\Browse.cshtml" />
     <None Include="Web.Incosaf.config">
       <DependentUpon>Web.config</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

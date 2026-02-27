@@ -373,7 +373,7 @@
         } else if (total > 0 && total < 100) {
             $pct.addClass('under');
             $warn.show().removeClass('error').addClass('warn');
-            $('#pctWarningText').text('Tổng chưa đủ 100%. Phần còn lại (' + (100 - total) + '%) sẽ được lấy ngẫu nhiên từ các thể loại khác.');
+            $('#pctWarningText').text('Tổng chưa đủ 100%. Vui lòng phân bổ thêm ' + (100 - total) + '% còn lại.');
         } else {
             $warn.hide();
         }
@@ -402,6 +402,6 @@
                 items.push({ categoryId: catId, percent: pct });
             }
         });
-        return items.length > 0 ? items : null;
+        return items;
     }
 </script>

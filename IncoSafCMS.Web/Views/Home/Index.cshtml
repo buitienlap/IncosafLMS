@@ -257,7 +257,7 @@
         color: #667eea;
     }
 
-    /* Course Cards */
+    /* Course Cards — Browse-style */
     .courses-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -267,63 +267,97 @@
 
     .course-card {
         background: white;
-        border-radius: 14px;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        transition: all 0.25s ease;
         cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        border: 1.5px solid transparent;
     }
 
     .course-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        border-color: #667eea;
     }
 
     .course-thumb {
-        height: 120px;
+        height: 140px;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
+        overflow: hidden;
     }
 
-    .course-thumb i {
-        font-size: 42px;
+    .course-thumb::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.25) 100%);
+    }
+
+    .course-thumb i.thumb-icon {
+        font-size: 44px;
         color: white;
-        opacity: 0.9;
+        opacity: 0.7;
+        z-index: 1;
     }
 
-    .course-thumb .course-badge {
+    .course-thumb .card-type-badge {
         position: absolute;
         top: 10px;
-        right: 10px;
-        background: rgba(255,255,255,0.25);
+        left: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        z-index: 2;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .course-thumb .card-type-badge.type-html { background: rgba(102,126,234,0.9); color: white; }
+    .course-thumb .card-type-badge.type-pdf { background: rgba(234,84,85,0.9); color: white; }
+    .course-thumb .card-type-badge.type-ppt { background: rgba(255,159,67,0.9); color: white; }
+    .course-thumb .card-type-badge.type-video { background: rgba(40,199,111,0.9); color: white; }
+
+    .course-thumb .card-cat {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.5);
         color: white;
         font-size: 11px;
-        padding: 3px 10px;
-        border-radius: 20px;
         font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 4px;
+        z-index: 2;
+        max-width: 80%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        backdrop-filter: blur(4px);
     }
 
     .course-body {
         padding: 16px;
-    }
-
-    .course-body .course-category {
-        font-size: 12px;
-        color: #667eea;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 6px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     .course-body h5 {
         font-size: 15px;
-        font-weight: 600;
-        color: #2c3e50;
-        margin: 0 0 8px 0;
-        line-height: 1.4;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 6px 0;
+        line-height: 1.45;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -338,12 +372,27 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        margin: 0;
+        margin: 0 0 10px 0;
+        flex: 1;
+    }
+
+    .course-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: #95a5a6;
+        flex-wrap: wrap;
+    }
+
+    .course-card-meta i {
+        margin-right: 3px;
+        font-size: 11px;
     }
 
     .course-footer {
         padding: 12px 16px;
-        border-top: 1px solid #f0f0f0;
+        border-top: 1px solid #f0f2f5;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -351,28 +400,30 @@
 
     .course-footer .course-date {
         font-size: 12px;
-        color: #95a5a6;
+        color: #bdc3c7;
     }
 
-    .course-footer .course-date i {
-        margin-right: 4px;
-    }
-
-    .course-footer .btn-join {
+    .course-footer .btn-start {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        padding: 6px 16px;
+        padding: 7px 18px;
         border-radius: 8px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
 
-    .course-footer .btn-join:hover {
-        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+    .course-footer .btn-start:hover {
+        box-shadow: 0 4px 14px rgba(102,126,234,0.45);
         transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
     }
 
     /* Gradient palette for course thumbnails */
@@ -725,26 +776,58 @@
             @if (Model.LatestCourses.Any())
             {
                 var gradients = new[] { "grad-1", "grad-2", "grad-3", "grad-4", "grad-5", "grad-6" };
-                var icons = new[] { "fa-book", "fa-laptop", "fa-flask", "fa-cogs", "fa-lightbulb-o", "fa-trophy" };
                 <div class="courses-grid">
                     @for (int i = 0; i < Model.LatestCourses.Count; i++)
                     {
                         var course = Model.LatestCourses[i];
                         var grad = gradients[i % gradients.Length];
-                        var icon = icons[i % icons.Length];
-                        <div class="course-card" onclick="openCourseDetail(@course.Id)">
+                        var learnUrl = Url.Action("Learn", "Course", new { id = course.Id });
+
+                        var typeClass = "type-html";
+                        var typeLabel = "Bài viết";
+                        var typeIcon = "fa-file-text-o";
+                        var thumbIcon = "fa-book";
+                        switch (course.ContentType)
+                        {
+                            case CourseContentType.Pdf:
+                                typeClass = "type-pdf"; typeLabel = "PDF"; typeIcon = "fa-file-pdf-o"; thumbIcon = "fa-file-pdf-o";
+                                break;
+                            case CourseContentType.PowerPoint:
+                                typeClass = "type-ppt"; typeLabel = "PPT"; typeIcon = "fa-file-powerpoint-o"; thumbIcon = "fa-file-powerpoint-o";
+                                break;
+                            case CourseContentType.Video:
+                                typeClass = "type-video"; typeLabel = "Video"; typeIcon = "fa-play-circle"; thumbIcon = "fa-play-circle";
+                                break;
+                        }
+
+                        <div class="course-card" onclick="window.location='@learnUrl'">
                             <div class="course-thumb @grad">
-                                <i class="fa @icon"></i>
-                                <span class="course-badge">Mới</span>
+                                <i class="fa @thumbIcon thumb-icon"></i>
+                                <span class="card-type-badge @typeClass"><i class="fa @typeIcon"></i> @typeLabel</span>
+                                @if (course.CourseCategory != null)
+                                {
+                                    <span class="card-cat">@course.CourseCategory.Name</span>
+                                }
                             </div>
                             <div class="course-body">
-                                <div class="course-category">@(course.CourseCategory != null ? course.CourseCategory.Name : course.Code)</div>
                                 <h5>@course.Title</h5>
                                 <p class="course-desc">@(course.Description ?? "Khóa học trực tuyến")</p>
+                                <div class="course-card-meta">
+                                    @if (course.DurationMinutes.HasValue)
+                                    {
+                                        <span><i class="fa fa-clock-o"></i> @course.DurationMinutes phút</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(course.Code))
+                                    {
+                                        <span><i class="fa fa-tag"></i> @course.Code</span>
+                                    }
+                                </div>
                             </div>
                             <div class="course-footer">
                                 <span class="course-date"><i class="fa fa-calendar"></i> @course.CreatedAt.ToString("dd/MM/yyyy")</span>
-                                <button class="btn-join" onclick="event.stopPropagation(); openCourseDetail(@course.Id)">Tham gia</button>
+                                <a href="@learnUrl" class="btn-start" onclick="event.stopPropagation();">
+                                    <i class="fa fa-play"></i> Học ngay
+                                </a>
                             </div>
                         </div>
                     }
@@ -772,13 +855,13 @@
                         <small>Tự động tạo đề thi ngẫu nhiên</small>
                     </div>
                 </a>
-                <a href="@Url.Action("Index", "Question")" class="quick-action-btn">
+                <a href="@Url.Action("Browse", "Course")" class="quick-action-btn">
                     <div class="qa-icon" style="background: rgba(102,126,234,0.12); color: #667eea;">
-                        <i class="fa fa-question-circle"></i>
+                        <i class="fa fa-search"></i>
                     </div>
                     <div>
-                        <h6>Ngân hàng câu hỏi</h6>
-                        <small>Ôn tập theo chủ đề</small>
+                        <h6>Khóa học</h6>
+                        <small>Tìm kiếm và xem các khóa học</small>
                     </div>
                 </a>
                 <a href="@Url.Action("Docman", "Account")" class="quick-action-btn">

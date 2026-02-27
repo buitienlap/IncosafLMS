@@ -1,0 +1,1066 @@
+﻿@model IEnumerable<IncosafCMS.Core.DomainModels.Course>
+@using IncosafCMS.Core.DomainModels
+
+@{
+    ViewBag.Title = "Khóa học";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+
+    var search = (string)ViewBag.Search;
+    var categoryId = (int?)ViewBag.CategoryId;
+    var currentSort = (string)ViewBag.Sort ?? "newest";
+    var contentType = (string)ViewBag.ContentType;
+    var categories = (List<CourseCategory>)ViewBag.Categories;
+    var userRatings = (Dictionary<int, int>)ViewBag.UserRatings;
+    var totalCourseCount = (int)ViewBag.TotalCourseCount;
+
+    var courseList = Model.ToList();
+    var gradients = new[] { "grad-1", "grad-2", "grad-3", "grad-4", "grad-5", "grad-6" };
+
+    var hasActiveFilter = !string.IsNullOrWhiteSpace(search)
+        || (categoryId.HasValue && categoryId.Value > 0)
+        || !string.IsNullOrWhiteSpace(contentType);
+}
+
+<style>
+    /* ============================================
+       COURSE BROWSE PAGE — Udemy-inspired design
+       ============================================ */
+    .cb-page {
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #f7f8fc;
+    }
+
+    /* ── Hero Search Section ── */
+    .cb-hero {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 0 44px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cb-hero::before {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(102,126,234,0.15) 0%, transparent 70%);
+        top: -200px;
+        right: -100px;
+        pointer-events: none;
+    }
+
+    .cb-hero::after {
+        content: '';
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        background: radial-gradient(circle, rgba(118,75,162,0.12) 0%, transparent 70%);
+        bottom: -150px;
+        left: -50px;
+        pointer-events: none;
+    }
+
+    .cb-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .cb-hero-inner {
+        text-align: center;
+    }
+
+    .cb-hero h1 {
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+    }
+
+    .cb-hero p {
+        color: rgba(255,255,255,0.6);
+        font-size: 15px;
+        margin: 0 0 24px 0;
+    }
+
+    .cb-hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin-bottom: 28px;
+    }
+
+    .cb-hero-stat {
+        text-align: center;
+    }
+
+    .cb-hero-stat .stat-num {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .cb-hero-stat .stat-label {
+        font-size: 12px;
+        color: rgba(255,255,255,0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Search Bar */
+    .cb-search-bar {
+        max-width: 640px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .cb-search-bar input {
+        width: 100%;
+        padding: 14px 54px 14px 22px;
+        border: 2px solid rgba(255,255,255,0.15);
+        border-radius: 14px;
+        font-size: 15px;
+        background: rgba(255,255,255,0.08);
+        color: white;
+        outline: none;
+        transition: all 0.3s;
+        backdrop-filter: blur(4px);
+    }
+
+    .cb-search-bar input::placeholder {
+        color: rgba(255,255,255,0.4);
+    }
+
+    .cb-search-bar input:focus {
+        border-color: #667eea;
+        background: rgba(255,255,255,0.12);
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
+    }
+
+    .cb-search-bar .btn-search {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cb-search-bar .btn-search:hover {
+        box-shadow: 0 4px 12px rgba(102,126,234,0.5);
+        transform: translateY(-50%) scale(1.05);
+    }
+
+    /* ── Category Chips ── */
+    .cb-categories {
+        background: white;
+        border-bottom: 1px solid #e8ecf1;
+        padding: 0;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .cb-cat-scroll {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .cb-cat-scroll::-webkit-scrollbar { display: none; }
+
+    .cb-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: pointer;
+        border: 1.5px solid #e0e6ed;
+        background: white;
+        color: #5a6c7d;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .cb-chip:hover {
+        border-color: #667eea;
+        color: #667eea;
+        background: #f0f2ff;
+        text-decoration: none;
+    }
+
+    .cb-chip.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+    }
+
+    .cb-chip.active:hover {
+        background: #5a6fd6;
+        border-color: #5a6fd6;
+        color: white;
+    }
+
+    .cb-chip .chip-count {
+        background: rgba(0,0,0,0.08);
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 10px;
+        font-weight: 700;
+    }
+
+    .cb-chip.active .chip-count {
+        background: rgba(255,255,255,0.25);
+    }
+
+    /* ── Toolbar ── */
+    .cb-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 20px 0 12px;
+        flex-wrap: wrap;
+    }
+
+    .cb-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .cb-result-count {
+        font-size: 15px;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .cb-result-count span {
+        color: #667eea;
+    }
+
+    .cb-active-filters {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .cb-filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #eef0ff;
+        color: #667eea;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+
+    .cb-filter-tag .remove-filter {
+        cursor: pointer;
+        opacity: 0.6;
+        margin-left: 2px;
+    }
+
+    .cb-filter-tag .remove-filter:hover {
+        opacity: 1;
+    }
+
+    .cb-clear-all {
+        color: #ea5455;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .cb-clear-all:hover {
+        text-decoration: underline;
+        color: #ea5455;
+    }
+
+    .cb-toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Content type filter pills */
+    .cb-type-pills {
+        display: flex;
+        gap: 4px;
+    }
+
+    .cb-type-pill {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1.5px solid #e0e6ed;
+        background: white;
+        color: #7f8c8d;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .cb-type-pill:hover {
+        border-color: #667eea;
+        color: #667eea;
+        text-decoration: none;
+    }
+
+    .cb-type-pill.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+    }
+
+    .cb-sort-select {
+        padding: 8px 14px;
+        border: 1.5px solid #e0e6ed;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #5a6c7d;
+        background: white;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        min-width: 150px;
+    }
+
+    .cb-sort-select:focus {
+        border-color: #667eea;
+    }
+
+    .cb-view-btns {
+        display: flex;
+        gap: 2px;
+    }
+
+    .cb-view-btn {
+        width: 36px;
+        height: 36px;
+        border: 1.5px solid #e0e6ed;
+        background: white;
+        color: #95a5a6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .cb-view-btn:first-child { border-radius: 8px 0 0 8px; }
+    .cb-view-btn:last-child { border-radius: 0 8px 8px 0; }
+
+    .cb-view-btn.active,
+    .cb-view-btn:hover {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+    }
+
+    /* ── Course Grid ── */
+    .cb-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        padding-bottom: 40px;
+    }
+
+    .cb-grid.list-view {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* ── Course Card — Grid Mode ── */
+    .cb-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        transition: all 0.25s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        border: 1.5px solid transparent;
+    }
+
+    .cb-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+
+    .cb-card-thumb {
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cb-card-thumb::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.25) 100%);
+    }
+
+    .cb-card-thumb i.thumb-icon {
+        font-size: 44px;
+        color: white;
+        opacity: 0.7;
+        z-index: 1;
+    }
+
+    .cb-card-thumb .card-type-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        z-index: 2;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .cb-card-thumb .card-type-badge.type-html { background: rgba(102,126,234,0.9); color: white; }
+    .cb-card-thumb .card-type-badge.type-pdf { background: rgba(234,84,85,0.9); color: white; }
+    .cb-card-thumb .card-type-badge.type-ppt { background: rgba(255,159,67,0.9); color: white; }
+    .cb-card-thumb .card-type-badge.type-video { background: rgba(40,199,111,0.9); color: white; }
+
+    .cb-card-thumb .card-cat {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 4px;
+        z-index: 2;
+        max-width: 80%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        backdrop-filter: blur(4px);
+    }
+
+    .cb-card-body {
+        padding: 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cb-card-body h5 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 6px 0;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .cb-card-body .cb-card-desc {
+        font-size: 13px;
+        color: #7f8c8d;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0 0 10px 0;
+        flex: 1;
+    }
+
+    .cb-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: #95a5a6;
+        flex-wrap: wrap;
+    }
+
+    .cb-card-meta i {
+        margin-right: 3px;
+        font-size: 11px;
+    }
+
+    .cb-card-meta .meta-learners {
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .cb-card-footer {
+        padding: 12px 16px;
+        border-top: 1px solid #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .cb-card-footer .cb-card-date {
+        font-size: 12px;
+        color: #bdc3c7;
+    }
+
+    .cb-card-footer .btn-start {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 7px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .cb-card-footer .btn-start:hover {
+        box-shadow: 0 4px 14px rgba(102,126,234,0.45);
+        transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* ── List View Card ── */
+    .cb-grid.list-view .cb-card {
+        flex-direction: row;
+        height: auto;
+    }
+
+    .cb-grid.list-view .cb-card-thumb {
+        width: 220px;
+        min-width: 220px;
+        height: auto;
+        min-height: 130px;
+    }
+
+    .cb-grid.list-view .cb-card-body {
+        padding: 16px 20px;
+    }
+
+    .cb-grid.list-view .cb-card-body h5 {
+        font-size: 16px;
+        -webkit-line-clamp: 1;
+    }
+
+    .cb-grid.list-view .cb-card-body .cb-card-desc {
+        -webkit-line-clamp: 2;
+    }
+
+    .cb-grid.list-view .cb-card-footer {
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+        border-top: none;
+        border-left: 1px solid #f0f2f5;
+        padding: 16px 20px;
+        min-width: 130px;
+    }
+
+    /* ── Gradients ── */
+    .grad-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .grad-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .grad-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .grad-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .grad-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .grad-6 { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+
+    /* ── Empty State ── */
+    .cb-empty {
+        text-align: center;
+        padding: 80px 20px;
+        color: #95a5a6;
+    }
+
+    .cb-empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 32px;
+        color: #bdc3c7;
+    }
+
+    .cb-empty h4 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 8px 0;
+    }
+
+    .cb-empty p {
+        font-size: 14px;
+        margin: 0 0 20px 0;
+    }
+
+    .cb-empty .btn-reset {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 24px;
+        border-radius: 10px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .cb-empty .btn-reset:hover {
+        background: #5a6fd6;
+        color: white;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+    }
+
+    /* ── Rating Stars ── */
+    .cb-card-rating {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+    .cb-stars {
+        display: inline-flex;
+        gap: 1px;
+    }
+
+    .cb-stars i {
+        font-size: 12px;
+        color: #e0e6ed;
+    }
+
+    .cb-stars i.filled {
+        color: #f5b100;
+    }
+
+    .cb-stars i.half {
+        color: #f5b100;
+    }
+
+    .cb-rating-text {
+        font-size: 12px;
+        color: #95a5a6;
+        font-weight: 600;
+    }
+
+    .cb-rating-text strong {
+        color: #2c3e50;
+    }
+
+    .cb-card-stats {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 12px;
+        color: #95a5a6;
+        margin-top: 4px;
+    }
+
+    .cb-card-stats i {
+        margin-right: 3px;
+        font-size: 11px;
+    }
+
+    .cb-card-stats .stat-participants {
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .cb-card-stats .stat-views {
+        color: #7f8c8d;
+    }
+
+    /* ── Responsive ── */
+    @@media (max-width: 1200px) {
+        .cb-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @@media (max-width: 992px) {
+        .cb-grid { grid-template-columns: repeat(2, 1fr); }
+        .cb-grid.list-view { grid-template-columns: 1fr; }
+        .cb-hero h1 { font-size: 22px; }
+        .cb-hero-stats { gap: 20px; }
+        .cb-type-pills { display: none; }
+    }
+
+    @@media (max-width: 768px) {
+        .cb-grid { grid-template-columns: 1fr; }
+        .cb-grid.list-view .cb-card { flex-direction: column; }
+        .cb-grid.list-view .cb-card-thumb { width: 100%; min-height: 120px; }
+        .cb-grid.list-view .cb-card-footer { flex-direction: row; border-left: none; border-top: 1px solid #f0f2f5; }
+        .cb-toolbar { flex-direction: column; align-items: flex-start; }
+        .cb-hero-stats { flex-wrap: wrap; gap: 16px; }
+        .cb-view-btns { display: none; }
+    }
+</style>
+
+<div class="cb-page">
+    <!-- ═══ Hero Search Section ═══ -->
+    <div class="cb-hero">
+        <div class="cb-container">
+            <div class="cb-hero-inner">
+                <h1>Khám phá khóa học</h1>
+                <p>Tìm kiếm và tham gia các khóa học đào tạo dành cho bạn</p>
+
+                <div class="cb-hero-stats">
+                    <div class="cb-hero-stat">
+                        <div class="stat-num">@totalCourseCount</div>
+                        <div class="stat-label">Khóa học</div>
+                    </div>
+                    <div class="cb-hero-stat">
+                        <div class="stat-num">@categories.Count</div>
+                        <div class="stat-label">Danh mục</div>
+                    </div>
+                </div>
+
+                <form id="searchForm" method="get" action="@Url.Action("Browse", "Course")">
+                    <input type="hidden" name="categoryId" id="hidCategoryId" value="@(categoryId.HasValue ? categoryId.Value.ToString() : "")" />
+                    <input type="hidden" name="sort" id="hidSort" value="@currentSort" />
+                    <input type="hidden" name="contentType" id="hidContentType" value="@contentType" />
+                    <div class="cb-search-bar">
+                        <input type="text" name="search" id="txtSearch"
+                               placeholder="Tìm kiếm khóa học theo tên, mô tả, mã..."
+                               value="@search" autocomplete="off" spellcheck="false" />
+                        <button type="submit" class="btn-search" title="Tìm kiếm">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Category Chips ═══ -->
+    <div class="cb-categories">
+        <div class="cb-container">
+            <div class="cb-cat-scroll">
+                @{
+                    var allActive = !categoryId.HasValue || categoryId.Value <= 0;
+                }
+                <a class="cb-chip @(allActive ? "active" : "")" href="javascript:void(0)" onclick="filterCategory(0)">
+                    <i class="fa fa-th-large"></i> Tất cả
+                    <span class="chip-count">@totalCourseCount</span>
+                </a>
+                @foreach (var cat in categories)
+                {
+                    var isActive = categoryId.HasValue && categoryId.Value == cat.Id;
+                    <a class="cb-chip @(isActive ? "active" : "")" href="javascript:void(0)" onclick="filterCategory(@cat.Id)" title="@cat.Name">
+                        @cat.Name
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Content Area ═══ -->
+    <div class="cb-container">
+        <!-- Toolbar -->
+        <div class="cb-toolbar">
+            <div class="cb-toolbar-left">
+                <div class="cb-result-count">
+                    @if (hasActiveFilter)
+                    {
+                        <text><span>@courseList.Count</span> kết quả</text>
+                    }
+                    else
+                    {
+                        <text><span>@courseList.Count</span> khóa học</text>
+                    }
+                </div>
+
+                @if (hasActiveFilter)
+                {
+                    <div class="cb-active-filters">
+                        @if (!string.IsNullOrWhiteSpace(search))
+                        {
+                            <span class="cb-filter-tag">
+                                <i class="fa fa-search"></i> "@search"
+                                <i class="fa fa-times remove-filter" onclick="clearSearch()"></i>
+                            </span>
+                        }
+                        @if (categoryId.HasValue && categoryId.Value > 0)
+                        {
+                            var catName = categories.FirstOrDefault(c => c.Id == categoryId.Value);
+                            if (catName != null)
+                            {
+                                <span class="cb-filter-tag">
+                                    <i class="fa fa-folder-o"></i> @catName.Name
+                                    <i class="fa fa-times remove-filter" onclick="filterCategory(0)"></i>
+                                </span>
+                            }
+                        }
+                        @if (!string.IsNullOrWhiteSpace(contentType))
+                        {
+                            var ctLabel = contentType == "Html" ? "Bài viết" : contentType == "Pdf" ? "PDF" : contentType == "PowerPoint" ? "PowerPoint" : contentType == "Video" ? "Video" : contentType;
+                            <span class="cb-filter-tag">
+                                <i class="fa fa-file-o"></i> @ctLabel
+                                <i class="fa fa-times remove-filter" onclick="filterContentType('')"></i>
+                            </span>
+                        }
+                        <a class="cb-clear-all" href="@Url.Action("Browse", "Course")">Xóa tất cả</a>
+                    </div>
+                }
+            </div>
+
+            <div class="cb-toolbar-right">
+                <!-- Content type pills -->
+                <div class="cb-type-pills">
+                    <a class="cb-type-pill @(string.IsNullOrWhiteSpace(contentType) ? "active" : "")" href="javascript:void(0)" onclick="filterContentType('')">
+                        Tất cả
+                    </a>
+                    <a class="cb-type-pill @(contentType == "Html" ? "active" : "")" href="javascript:void(0)" onclick="filterContentType('Html')">
+                        <i class="fa fa-file-text-o"></i> Bài viết
+                    </a>
+                    <a class="cb-type-pill @(contentType == "Pdf" ? "active" : "")" href="javascript:void(0)" onclick="filterContentType('Pdf')">
+                        <i class="fa fa-file-pdf-o"></i> PDF
+                    </a>
+                    <a class="cb-type-pill @(contentType == "Video" ? "active" : "")" href="javascript:void(0)" onclick="filterContentType('Video')">
+                        <i class="fa fa-play-circle"></i> Video
+                    </a>
+                </div>
+
+                <select class="cb-sort-select" onchange="changeSort(this.value)">
+                    <option value="newest" @(currentSort == "newest" ? "selected" : "")>Mới nhất</option>
+                    <option value="popular" @(currentSort == "popular" ? "selected" : "")>Phổ biến nhất</option>
+                    <option value="rating" @(currentSort == "rating" ? "selected" : "")>Đánh giá cao</option>
+                    <option value="title" @(currentSort == "title" ? "selected" : "")>Theo tên A-Z</option>
+                    <option value="oldest" @(currentSort == "oldest" ? "selected" : "")>Cũ nhất</option>
+                </select>
+
+                <div class="cb-view-btns">
+                    <button class="cb-view-btn active" data-view="grid" title="Dạng lưới" onclick="setView('grid')">
+                        <i class="fa fa-th-large"></i>
+                    </button>
+                    <button class="cb-view-btn" data-view="list" title="Dạng danh sách" onclick="setView('list')">
+                        <i class="fa fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Grid -->
+        @if (courseList.Any())
+        {
+            <div class="cb-grid" id="courseGrid">
+                @for (int i = 0; i < courseList.Count; i++)
+                {
+                    var course = courseList[i];
+                    var grad = gradients[i % gradients.Length];
+                    var learnUrl = Url.Action("Learn", "Course", new { id = course.Id });
+
+                    var typeClass = "type-html";
+                    var typeLabel = "Bài viết";
+                    var typeIcon = "fa-file-text-o";
+                    var thumbIcon = "fa-book";
+                    switch (course.ContentType)
+                    {
+                        case CourseContentType.Pdf:
+                            typeClass = "type-pdf"; typeLabel = "PDF"; typeIcon = "fa-file-pdf-o"; thumbIcon = "fa-file-pdf-o";
+                            break;
+                        case CourseContentType.PowerPoint:
+                            typeClass = "type-ppt"; typeLabel = "PPT"; typeIcon = "fa-file-powerpoint-o"; thumbIcon = "fa-file-powerpoint-o";
+                            break;
+                        case CourseContentType.Video:
+                            typeClass = "type-video"; typeLabel = "Video"; typeIcon = "fa-play-circle"; thumbIcon = "fa-play-circle";
+                            break;
+                    }
+
+                    var avgRating = course.AverageRating ?? 0;
+                    var fullStars = (int)Math.Floor(avgRating);
+                    var hasHalf = (avgRating - fullStars) >= 0.25;
+
+                    <div class="cb-card" onclick="window.location='@learnUrl'">
+                        <div class="cb-card-thumb @grad">
+                            <i class="fa @thumbIcon thumb-icon"></i>
+                            <span class="card-type-badge @typeClass"><i class="fa @typeIcon"></i> @typeLabel</span>
+                            @if (course.CourseCategory != null)
+                            {
+                                <span class="card-cat">@course.CourseCategory.Name</span>
+                            }
+                        </div>
+                        <div class="cb-card-body">
+                            <h5>@course.Title</h5>
+                            <p class="cb-card-desc">@(course.Description ?? "Khóa học trực tuyến")</p>
+                            <div class="cb-card-meta">
+                                @if (course.DurationMinutes.HasValue)
+                                {
+                                    <span><i class="fa fa-clock-o"></i> @course.DurationMinutes phút</span>
+                                }
+                                @if (!string.IsNullOrEmpty(course.Code))
+                                {
+                                    <span><i class="fa fa-tag"></i> @course.Code</span>
+                                }
+                            </div>
+                            <div class="cb-card-stats">
+                                <span class="stat-participants"><i class="fa fa-users"></i> @course.ParticipantCount học viên</span>
+                                <span class="stat-views"><i class="fa fa-eye"></i> @course.ViewCount lượt học</span>
+                            </div>
+                            <div class="cb-card-rating">
+                                <div class="cb-stars">
+                                    @for (int s = 1; s <= 5; s++)
+                                    {
+                                        if (s <= fullStars)
+                                        {
+                                            <i class="fa fa-star filled"></i>
+                                        }
+                                        else if (s == fullStars + 1 && hasHalf)
+                                        {
+                                            <i class="fa fa-star-half-o half"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa fa-star-o"></i>
+                                        }
+                                    }
+                                </div>
+                                @if (course.RatingCount > 0)
+                                {
+                                    <span class="cb-rating-text"><strong>@avgRating.ToString("0.0")</strong> (@course.RatingCount đánh giá)</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="cb-card-footer">
+                            <span class="cb-card-date"><i class="fa fa-calendar"></i> @course.CreatedAt.ToString("dd/MM/yyyy")</span>
+                            <a href="@learnUrl" class="btn-start" onclick="event.stopPropagation();">
+                                <i class="fa fa-play"></i> Học ngay
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="cb-empty">
+                <div class="cb-empty-icon"><i class="fa fa-search"></i></div>
+                <h4>Không tìm thấy khóa học</h4>
+                <p>Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc danh mục</p>
+                <a href="@Url.Action("Browse", "Course")" class="btn-reset">
+                    <i class="fa fa-refresh"></i> Xem tất cả khóa học
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        function submitFilters() {
+            document.getElementById('searchForm').submit();
+        }
+
+        function filterCategory(catId) {
+            document.getElementById('hidCategoryId').value = catId > 0 ? catId : '';
+            submitFilters();
+        }
+
+        function filterContentType(ct) {
+            document.getElementById('hidContentType').value = ct;
+            submitFilters();
+        }
+
+        function changeSort(val) {
+            document.getElementById('hidSort').value = val;
+            submitFilters();
+        }
+
+        function clearSearch() {
+            document.getElementById('txtSearch').value = '';
+            submitFilters();
+        }
+
+        function setView(mode) {
+            var grid = document.getElementById('courseGrid');
+            if (!grid) return;
+
+            var btns = document.querySelectorAll('.cb-view-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.remove('active');
+                if (btns[i].getAttribute('data-view') === mode) {
+                    btns[i].classList.add('active');
+                }
+            }
+
+            if (mode === 'list') {
+                grid.classList.add('list-view');
+            } else {
+                grid.classList.remove('list-view');
+            }
+
+            try { localStorage.setItem('cb-view', mode); } catch (e) { }
+        }
+
+        // Restore saved view preference
+        $(function () {
+            try {
+                var saved = localStorage.getItem('cb-view');
+                if (saved === 'list') setView('list');
+            } catch (e) { }
+
+            // Enter key in search
+            $('#txtSearch').on('keypress', function (e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    submitFilters();
+                }
+            });
+        });
+    </script>
+}

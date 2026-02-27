@@ -49,6 +49,24 @@
         background: #f0f2ff;
     }
 
+    .learn-browse-link {
+        border-left: 1.5px solid #e8ecf1;
+        padding-left: 14px !important;
+        margin-left: 2px;
+        color: #fff !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        font-size: 12px !important;
+        font-weight: 600;
+        padding: 5px 14px !important;
+        border-radius: 20px !important;
+    }
+
+    .learn-browse-link:hover {
+        color: #fff !important;
+        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        transform: translateY(-1px);
+    }
+
     .learn-topbar-title {
         font-size: 15px;
         font-weight: 700;
@@ -271,14 +289,172 @@
         opacity: 0;
         pointer-events: none;
     }
+
+    /* ── Rating Widget ── */
+    .learn-rating-widget {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 100;
+    }
+
+    .rating-toggle-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f5b100 0%, #ff9f43 100%);
+        border: none;
+        color: white;
+        font-size: 22px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(245,177,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s;
+    }
+
+    .rating-toggle-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 24px rgba(245,177,0,0.5);
+    }
+
+    .rating-toggle-btn.rated {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 16px rgba(102,126,234,0.4);
+    }
+
+    .rating-panel {
+        position: absolute;
+        bottom: 64px;
+        right: 0;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+        padding: 24px;
+        width: 280px;
+        display: none;
+        animation: ratingSlideUp 0.25s ease;
+    }
+
+    .rating-panel.open {
+        display: block;
+    }
+
+    @@keyframes ratingSlideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .rating-panel-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 4px 0;
+    }
+
+    .rating-panel-sub {
+        font-size: 12px;
+        color: #95a5a6;
+        margin: 0 0 16px 0;
+    }
+
+    .rating-stars-input {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .rating-stars-input i {
+        font-size: 32px;
+        color: #e0e6ed;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .rating-stars-input i:hover {
+        transform: scale(1.2);
+    }
+
+    .rating-stars-input i.active {
+        color: #f5b100;
+    }
+
+    .rating-stars-input i.hover-preview {
+        color: #ffd966;
+    }
+
+    .rating-result {
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    .rating-result .result-avg {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a1a2e;
+    }
+
+    .rating-result .result-count {
+        font-size: 12px;
+        color: #95a5a6;
+    }
+
+    .rating-result .result-stars {
+        display: flex;
+        justify-content: center;
+        gap: 2px;
+        margin-top: 4px;
+    }
+
+    .rating-result .result-stars i {
+        font-size: 14px;
+        color: #e0e6ed;
+    }
+
+    .rating-result .result-stars i.filled {
+        color: #f5b100;
+    }
+
+    .rating-result .result-stars i.half {
+        color: #f5b100;
+    }
+
+    .rating-msg {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: #28c76f;
+        margin-top: 8px;
+        display: none;
+    }
+
+    .rating-your {
+        text-align: center;
+        font-size: 12px;
+        color: #667eea;
+        font-weight: 600;
+        margin-top: 6px;
+    }
 </style>
+
+@{
+    var referrer = Request.UrlReferrer;
+    var backUrl = (referrer != null && referrer.Host == Request.Url.Host)
+        ? referrer.PathAndQuery
+        : Url.Action("Index", "Home");
+}
 
 <div class="learn-page">
     <!-- Top bar -->
     <div class="learn-topbar">
         <div class="learn-topbar-left">
-            <a href="@Url.Action("Index", "Home")">
+            <a href="@backUrl">
                 <i class="fa fa-arrow-left"></i> Quay lại
+            </a>
+            <a href="@Url.Action("Browse", "Course")" class="learn-browse-link">
+                <i class="fa fa-search"></i> Tìm khóa học
             </a>
             <span class="learn-topbar-title" title="@Model.Title">@Model.Title</span>
         </div>
@@ -388,9 +564,17 @@
             case CourseContentType.Video:
                 if (!string.IsNullOrEmpty(Model.ContentUrl))
                 {
+                    var videoUrl = Model.ContentUrl;
+                    // Convert YouTube watch/short URLs to embeddable format
+                    var ytMatch = System.Text.RegularExpressions.Regex.Match(videoUrl,
+                        @"(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/)([\w-]+)");
+                    if (ytMatch.Success)
+                    {
+                        videoUrl = "https://www.youtube.com/embed/" + ytMatch.Groups[1].Value;
+                    }
                     <div class="learn-video-wrapper">
                         <div class="video-container">
-                            <iframe src="@Model.ContentUrl" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+                            <iframe src="@videoUrl" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
                         </div>
                     </div>
                 }
@@ -403,6 +587,73 @@
                 }
                 break;
         }
+    </div>
+
+    <!-- Rating Widget -->
+    @{
+        var userRating = (int)ViewBag.UserRating;
+        var courseAvg = Model.AverageRating ?? 0;
+        var courseRatingCount = Model.RatingCount;
+        var avgFullStars = (int)Math.Floor(courseAvg);
+        var avgHasHalf = (courseAvg - avgFullStars) >= 0.25;
+    }
+    <div class="learn-rating-widget">
+        <div class="rating-panel" id="ratingPanel">
+            <p class="rating-panel-title">Đánh giá khóa học</p>
+            <p class="rating-panel-sub">Nhấn chọn số sao bạn muốn đánh giá</p>
+
+            <div class="rating-stars-input" id="ratingStarsInput">
+                @for (int s = 1; s <= 5; s++)
+                {
+                    <i class="fa fa-star@(s <= userRating ? "" : "-o") @(s <= userRating ? "active" : "")"
+                       data-star="@s" title="@s sao"></i>
+                }
+            </div>
+
+            <div class="rating-your" id="ratingYourText">
+                @if (userRating > 0)
+                {
+                    <text>Đánh giá của bạn: @userRating sao</text>
+                }
+                else
+                {
+                    <text>Bạn chưa đánh giá khóa học này</text>
+                }
+            </div>
+
+            <div class="rating-msg" id="ratingMsg">
+                <i class="fa fa-check-circle"></i> Cảm ơn bạn đã đánh giá!
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #f0f2f5; margin: 14px 0;" />
+
+            <div class="rating-result" id="ratingResult">
+                <span class="result-avg" id="resultAvg">@courseAvg.ToString("0.0")</span>
+                <div class="result-stars" id="resultStars">
+                    @for (int s = 1; s <= 5; s++)
+                    {
+                        if (s <= avgFullStars)
+                        {
+                            <i class="fa fa-star filled"></i>
+                        }
+                        else if (s == avgFullStars + 1 && avgHasHalf)
+                        {
+                            <i class="fa fa-star-half-o half"></i>
+                        }
+                        else
+                        {
+                            <i class="fa fa-star-o"></i>
+                        }
+                    }
+                </div>
+                <span class="result-count" id="resultCount">@courseRatingCount đánh giá</span>
+            </div>
+        </div>
+
+        <button class="rating-toggle-btn @(userRating > 0 ? "rated" : "")" id="ratingToggleBtn"
+                title="Đánh giá khóa học">
+            <i class="fa fa-star"></i>
+        </button>
     </div>
 </div>
 
@@ -486,6 +737,103 @@
                 }
             }, 15000);
         }
+
+        // ===== Rating Widget =====
+        (function () {
+            var courseId = @Model.Id;
+            var currentUserStars = @userRating;
+            var panel = document.getElementById('ratingPanel');
+            var toggleBtn = document.getElementById('ratingToggleBtn');
+            var starsContainer = document.getElementById('ratingStarsInput');
+            var stars = starsContainer.querySelectorAll('i');
+            var msgEl = document.getElementById('ratingMsg');
+            var yourText = document.getElementById('ratingYourText');
+
+            // Toggle panel
+            toggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                panel.classList.toggle('open');
+            });
+
+            // Close on outside click
+            document.addEventListener('click', function (e) {
+                if (!panel.contains(e.target) && e.target !== toggleBtn) {
+                    panel.classList.remove('open');
+                }
+            });
+
+            // Hover preview
+            for (var i = 0; i < stars.length; i++) {
+                (function (star, idx) {
+                    star.addEventListener('mouseenter', function () {
+                        for (var j = 0; j < stars.length; j++) {
+                            stars[j].classList.remove('hover-preview');
+                            if (j <= idx) stars[j].classList.add('hover-preview');
+                        }
+                    });
+                })(stars[i], i);
+            }
+
+            starsContainer.addEventListener('mouseleave', function () {
+                for (var j = 0; j < stars.length; j++) {
+                    stars[j].classList.remove('hover-preview');
+                }
+            });
+
+            // Click to rate
+            for (var i = 0; i < stars.length; i++) {
+                (function (star, idx) {
+                    star.addEventListener('click', function () {
+                        var rating = idx + 1;
+                        $.post('@Url.Action("RateCourse", "Course")', {
+                            courseId: courseId,
+                            stars: rating
+                        }, function (res) {
+                            if (res.success) {
+                                currentUserStars = res.userStars;
+                                updateStarsDisplay(currentUserStars);
+                                updateResultDisplay(res.averageRating, res.ratingCount);
+
+                                yourText.innerHTML = 'Đánh giá của bạn: ' + currentUserStars + ' sao';
+                                toggleBtn.classList.add('rated');
+
+                                msgEl.style.display = 'block';
+                                setTimeout(function () { msgEl.style.display = 'none'; }, 2500);
+                            }
+                        });
+                    });
+                })(stars[i], i);
+            }
+
+            function updateStarsDisplay(val) {
+                for (var j = 0; j < stars.length; j++) {
+                    if (j < val) {
+                        stars[j].className = 'fa fa-star active';
+                    } else {
+                        stars[j].className = 'fa fa-star-o';
+                    }
+                }
+            }
+
+            function updateResultDisplay(avg, count) {
+                document.getElementById('resultAvg').textContent = avg.toFixed(1);
+                document.getElementById('resultCount').textContent = count + ' đánh giá';
+
+                var full = Math.floor(avg);
+                var half = (avg - full) >= 0.25;
+                var html = '';
+                for (var s = 1; s <= 5; s++) {
+                    if (s <= full) {
+                        html += '<i class="fa fa-star filled"></i>';
+                    } else if (s === full + 1 && half) {
+                        html += '<i class="fa fa-star-half-o half"></i>';
+                    } else {
+                        html += '<i class="fa fa-star-o"></i>';
+                    }
+                }
+                document.getElementById('resultStars').innerHTML = html;
+            }
+        })();
     </script>
 }
 

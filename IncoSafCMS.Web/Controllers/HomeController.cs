@@ -32,7 +32,7 @@ namespace IncosafCMS.Web.Controllers
 
             var courses = uow.Repository<Course>().FindBy(c => c.IsActive)
                 .OrderByDescending(c => c.CreatedAt)
-                .Take(6)
+                .Take(3)
                 .ToList();
 
             var activities = uow.Repository<ActivityLog>()
