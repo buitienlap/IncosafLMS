@@ -127,8 +127,10 @@ namespace IncosafCMS.Web.Models
         public int QuestionId { get; set; }
         public string Text { get; set; }
         public string Title { get; set; }
+        public string Explanation { get; set; }
         public List<PracticeExamAnswerOptionDto> Options { get; set; } = new List<PracticeExamAnswerOptionDto>();
         public int? SelectedAnswerId { get; set; }
+        public bool? IsCorrect { get; set; }
     }
 
     public class PracticeExamAnswerOptionDto
@@ -136,6 +138,8 @@ namespace IncosafCMS.Web.Models
         public int AnswerId { get; set; }
         public string Text { get; set; }
         public string Label { get; set; }
+        public bool IsCorrect { get; set; }
+        public string Explanation { get; set; }
     }
 
     public class QuestionProgressDto
@@ -143,6 +147,7 @@ namespace IncosafCMS.Web.Models
         public int Index { get; set; }
         public bool IsAnswered { get; set; }
         public bool IsCurrent { get; set; }
+        public bool? IsCorrect { get; set; }
     }
 
     // ---- Review ----

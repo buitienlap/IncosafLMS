@@ -563,11 +563,14 @@
                 }
             }
 
+            var examTitle = ($('#setupExamTitle').val() || '').trim();
+
             var data = {
                 __RequestVerificationToken: token,
                 questionCount: parseInt($('#setupQuestionCount').val()) || 20,
                 difficulty: $('#setupDifficulty').val() || null,
-                categoryConfigJson: catConfig ? JSON.stringify(catConfig) : null
+                categoryConfigJson: catConfig ? JSON.stringify(catConfig) : null,
+                examTitle: examTitle || null
             };
 
             $('#btnStartExam').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang tạo đề...');

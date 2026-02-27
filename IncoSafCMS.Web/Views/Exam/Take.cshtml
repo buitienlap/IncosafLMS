@@ -87,7 +87,9 @@
     }
 
     .qnav-btn:hover { border-color: #667eea; color: #667eea; }
-    .qnav-btn.answered { background: #28c76f; border-color: #28c76f; color: white; }
+    .qnav-btn.correct { background: #28c76f; border-color: #28c76f; color: white; }
+    .qnav-btn.wrong { background: #ea5455; border-color: #ea5455; color: white; }
+    .qnav-btn.answered { background: #95a5a6; border-color: #95a5a6; color: white; }
     .qnav-btn.current { border-color: #667eea; background: #667eea; color: white; box-shadow: 0 2px 8px rgba(102,126,234,0.4); }
 
     .sidebar-footer {
@@ -137,12 +139,57 @@
         transform: translateY(-1px);
     }
 
-    /* Main Question Area */
+    .sidebar-extra-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .btn-sidebar-action {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 13px;
+        border: 2px solid #e0e6ed;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-sidebar-action:hover { transform: translateY(-1px); }
+
+    .btn-sidebar-action.btn-pause {
+        color: #ff9f43;
+        border-color: rgba(255,159,67,0.3);
+        background: rgba(255,159,67,0.06);
+    }
+    .btn-sidebar-action.btn-pause:hover {
+        background: #ff9f43; color: white; border-color: #ff9f43;
+        box-shadow: 0 4px 12px rgba(255,159,67,0.3);
+    }
+
+    .btn-sidebar-action.btn-reset {
+        color: #667eea;
+        border-color: rgba(102,126,234,0.3);
+        background: rgba(102,126,234,0.06);
+    }
+    .btn-sidebar-action.btn-reset:hover {
+        background: #667eea; color: white; border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+    }
+
+    /* Main Content Area (center) */
     .take-main {
         flex: 1;
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        min-width: 0;
     }
 
     .question-area {
@@ -171,6 +218,8 @@
         font-weight: 700;
         flex-shrink: 0;
     }
+
+    .question-meta { flex: 1; }
 
     .question-meta h3 {
         font-size: 16px;
@@ -209,17 +258,28 @@
         cursor: pointer;
         transition: all 0.2s;
         background: white;
+        position: relative;
     }
 
-    .answer-option:hover {
-        border-color: #667eea;
-        background: #f8f9ff;
-    }
+    .answer-option:hover { border-color: #667eea; background: #f8f9ff; }
 
     .answer-option.selected {
         border-color: #667eea;
         background: rgba(102,126,234,0.06);
         box-shadow: 0 2px 10px rgba(102,126,234,0.15);
+    }
+
+    .answer-option.graded { cursor: default; pointer-events: none; }
+    .answer-option.graded:hover { border-color: inherit; background: inherit; }
+
+    .answer-option.graded.correct-answer {
+        border-color: #28c76f;
+        background: rgba(40,199,111,0.06);
+    }
+
+    .answer-option.graded.wrong-selected {
+        border-color: #ea5455;
+        background: rgba(234,84,85,0.06);
     }
 
     .answer-option input[type="radio"] { display: none; }
@@ -239,10 +299,9 @@
         transition: all 0.2s;
     }
 
-    .answer-option.selected .answer-label {
-        background: #667eea;
-        color: white;
-    }
+    .answer-option.selected .answer-label { background: #667eea; color: white; }
+    .answer-option.graded.correct-answer .answer-label { background: #28c76f; color: white; }
+    .answer-option.graded.wrong-selected .answer-label { background: #ea5455; color: white; }
 
     .answer-text {
         flex: 1;
@@ -251,6 +310,50 @@
         line-height: 1.6;
         padding-top: 6px;
     }
+
+    .answer-result-icon {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        display: none;
+    }
+
+    .answer-option.graded.correct-answer .answer-result-icon {
+        display: block;
+        color: #28c76f;
+    }
+    .answer-option.graded.wrong-selected .answer-result-icon {
+        display: block;
+        color: #ea5455;
+    }
+
+    /* Grading feedback banner */
+    .grading-feedback {
+        margin-top: 20px;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        display: none;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .grading-feedback.correct {
+        background: rgba(40,199,111,0.08);
+        border: 1px solid rgba(40,199,111,0.2);
+        color: #1e8449;
+    }
+
+    .grading-feedback.wrong {
+        background: rgba(234,84,85,0.08);
+        border: 1px solid rgba(234,84,85,0.2);
+        color: #c0392b;
+    }
+
+    .grading-feedback i { font-size: 18px; }
 
     /* Navigation Buttons */
     .question-nav-buttons {
@@ -277,10 +380,7 @@
         gap: 8px;
     }
 
-    .btn-nav:hover {
-        border-color: #667eea;
-        color: #667eea;
-    }
+    .btn-nav:hover { border-color: #667eea; color: #667eea; }
 
     .btn-nav.primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -288,19 +388,156 @@
         border-color: transparent;
     }
 
-    .btn-nav.primary:hover {
-        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
-    }
+    .btn-nav.primary:hover { box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
 
-    .btn-nav:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
+    .btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .nav-counter {
         font-size: 14px;
         color: #95a5a6;
         font-weight: 600;
+    }
+
+    /* Explanation Panel (right side) */
+    .explanation-panel {
+        width: 0;
+        min-width: 0;
+        background: white;
+        border-left: 1px solid #e8ecf1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: width 0.3s ease, min-width 0.3s ease;
+    }
+
+    .explanation-panel.open {
+        width: 380px;
+        min-width: 380px;
+    }
+
+    .explanation-panel-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .explanation-panel-header h5 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .explanation-panel-header h5 i { color: #ff9f43; }
+
+    .btn-close-explain {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: none;
+        background: #f4f6f9;
+        color: #7f8c8d;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-close-explain:hover { background: #ea5455; color: white; }
+
+    .explanation-panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .explain-section {
+        margin-bottom: 20px;
+    }
+
+    .explain-section-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .explain-section-title.question-explain { color: #667eea; }
+    .explain-section-title.answer-explain { color: #28c76f; }
+    .explain-section-title.answer-explain.wrong { color: #ea5455; }
+
+    .explain-content {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #2c3e50;
+        padding: 14px 16px;
+        border-radius: 10px;
+        background: #fafbfc;
+        border: 1px solid #e8ecf1;
+    }
+
+    .explain-content p { margin: 0 0 8px 0; }
+    .explain-content p:last-child { margin-bottom: 0; }
+
+    .explain-answer-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+    }
+
+    .explain-answer-label.correct-label { background: rgba(40,199,111,0.1); color: #28c76f; }
+    .explain-answer-label.wrong-label { background: rgba(234,84,85,0.1); color: #ea5455; }
+    .explain-answer-label.neutral-label { background: #f4f6f9; color: #7f8c8d; }
+
+    .explain-no-content {
+        font-size: 13px;
+        color: #95a5a6;
+        font-style: italic;
+        padding: 14px 16px;
+    }
+
+    .btn-show-explain {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 12px;
+        border: 2px solid rgba(255,159,67,0.3);
+        background: rgba(255,159,67,0.06);
+        color: #ff9f43;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-show-explain:hover {
+        background: #ff9f43;
+        color: white;
+        border-color: #ff9f43;
+    }
+
+    .explain-divider {
+        border: none;
+        border-top: 1px solid #e8ecf1;
+        margin: 16px 0;
     }
 </style>
 
@@ -323,10 +560,15 @@
                 @for (int i = 0; i < Model.Progress.Count; i++)
                 {
                     var p = Model.Progress[i];
-                    var cls = p.IsCurrent ? "current" : p.IsAnswered ? "answered" : "";
+                    var cls = p.IsCurrent ? "current"
+                            : p.IsCorrect == true ? "correct"
+                            : p.IsCorrect == false ? "wrong"
+                            : p.IsAnswered ? "answered"
+                            : "";
                     <button class="qnav-btn @cls"
+                            data-index="@i"
                             onclick="goToQuestion(@Model.ExamId, @i)"
-                            title="Câu @(i + 1)@(p.IsAnswered ? " (đã trả lời)" : "")">
+                            title="Câu @(i + 1)@(p.IsAnswered ? (p.IsCorrect == true ? " ✓" : p.IsCorrect == false ? " ✗" : " (đã trả lời)") : "")">
                         @(i + 1)
                     </button>
                 }
@@ -348,6 +590,14 @@
             <button class="btn-finish-exam" onclick="finishExam()">
                 <i class="fa fa-flag-checkered"></i> Nộp bài
             </button>
+            <div class="sidebar-extra-actions">
+                <button class="btn-sidebar-action btn-pause" onclick="pauseExam()">
+                    <i class="fa fa-pause"></i> Tạm dừng
+                </button>
+                <button class="btn-sidebar-action btn-reset" onclick="resetExam()">
+                    <i class="fa fa-refresh"></i> Thi lại
+                </button>
+            </div>
         </div>
     </div>
 
@@ -360,21 +610,79 @@
                     <h3>Câu hỏi @(Model.CurrentIndex + 1)</h3>
                     <p>@(Model.CurrentQuestion.Title ?? "")</p>
                 </div>
+                <button class="btn-show-explain" onclick="toggleExplanationPanel()" title="Xem giải thích">
+                    <i class="fa fa-lightbulb-o"></i> Giải thích
+                </button>
             </div>
 
             <div class="question-text">
                 @Html.Raw(Model.CurrentQuestion.Text)
             </div>
 
+            @{
+                var alreadyGraded = Model.CurrentQuestion.IsCorrect.HasValue;
+            }
             <div class="answer-options" id="answerOptions">
                 @foreach (var opt in Model.CurrentQuestion.Options)
                 {
                     var sel = Model.CurrentQuestion.SelectedAnswerId.HasValue && Model.CurrentQuestion.SelectedAnswerId.Value == opt.AnswerId;
-                    <label class="answer-option @(sel ? "selected" : "")" data-aid="@opt.AnswerId">
-                        <input type="radio" name="selectedAnswer" value="@opt.AnswerId" @(sel ? "checked" : "") />
+                    var gradedClass = "";
+                    if (alreadyGraded)
+                    {
+                        if (opt.IsCorrect)
+                        {
+                            gradedClass = "graded correct-answer";
+                        }
+                        else if (sel && !opt.IsCorrect)
+                        {
+                            gradedClass = "graded wrong-selected";
+                        }
+                        else
+                        {
+                            gradedClass = "graded";
+                        }
+                    }
+                    <label class="answer-option @(sel ? "selected" : "") @gradedClass"
+                           data-aid="@opt.AnswerId"
+                           data-correct="@opt.IsCorrect.ToString().ToLower()">
+                        <input type="radio" name="selectedAnswer" value="@opt.AnswerId" @(sel ? "checked" : "") @(alreadyGraded ? "disabled" : "") />
                         <div class="answer-label">@opt.Label</div>
                         <div class="answer-text">@Html.Raw(opt.Text)</div>
+                        <span class="answer-result-icon">
+                            @if (opt.IsCorrect)
+                            {
+                                <i class="fa fa-check-circle"></i>
+                            }
+                            else if (sel && !opt.IsCorrect)
+                            {
+                                <i class="fa fa-times-circle"></i>
+                            }
+                        </span>
                     </label>
+                }
+            </div>
+
+            <div class="grading-feedback" id="gradingFeedback"
+                 @if (alreadyGraded)
+                 {
+                     if (Model.CurrentQuestion.IsCorrect == true)
+                     {
+                         <text>style="display:flex" class="grading-feedback correct"</text>
+                     }
+                     else
+                     {
+                         <text>style="display:flex" class="grading-feedback wrong"</text>
+                     }
+                 }>
+                @if (alreadyGraded && Model.CurrentQuestion.IsCorrect == true)
+                {
+                    <i class="fa fa-check-circle"></i>
+                    <span>Chính xác! Bạn đã trả lời đúng câu hỏi này.</span>
+                }
+                else if (alreadyGraded && Model.CurrentQuestion.IsCorrect == false)
+                {
+                    <i class="fa fa-times-circle"></i>
+                    <span>Sai rồi! Hãy xem giải thích để hiểu rõ hơn.</span>
                 }
             </div>
         </div>
@@ -398,6 +706,60 @@
             }
         </div>
     </div>
+
+    <!-- Explanation Panel (right side) -->
+    <div class="explanation-panel" id="explanationPanel">
+        <div class="explanation-panel-header">
+            <h5><i class="fa fa-lightbulb-o"></i> Giải thích</h5>
+            <button class="btn-close-explain" onclick="toggleExplanationPanel()">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <div class="explanation-panel-body">
+            <!-- Question explanation -->
+            <div class="explain-section">
+                <div class="explain-section-title question-explain">
+                    <i class="fa fa-question-circle"></i> Giải thích câu hỏi
+                </div>
+                @if (!string.IsNullOrEmpty(Model.CurrentQuestion.Explanation))
+                {
+                    <div class="explain-content">
+                        @Html.Raw(Model.CurrentQuestion.Explanation)
+                    </div>
+                }
+                else
+                {
+                    <div class="explain-no-content">Không có giải thích cho câu hỏi này.</div>
+                }
+            </div>
+
+            <hr class="explain-divider" />
+
+            <!-- Answer explanations -->
+            @foreach (var opt in Model.CurrentQuestion.Options)
+            {
+                if (!string.IsNullOrEmpty(opt.Explanation))
+                {
+                    var labelClass = opt.IsCorrect ? "correct-label" : "neutral-label";
+                    var sectionClass = opt.IsCorrect ? "answer-explain" : "answer-explain wrong";
+                    <div class="explain-section">
+                        <div class="explain-section-title @sectionClass">
+                            <span class="explain-answer-label @labelClass">
+                                @opt.Label
+                                @if (opt.IsCorrect)
+                                {
+                                    <i class="fa fa-check"></i>
+                                }
+                            </span>
+                        </div>
+                        <div class="explain-content">
+                            @Html.Raw(opt.Explanation)
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
 </div>
 
 @using (Html.BeginForm("SubmitAnswer", "Exam", FormMethod.Post, new { id = "hiddenForm", style = "display:none" }))
@@ -409,7 +771,9 @@
     <script type="text/javascript">
         var examId = @Model.ExamId;
         var questionId = @Model.CurrentQuestion.QuestionId;
+        var currentIndex = @Model.CurrentIndex;
         var startTime = new Date('@Model.StartedAt.ToString("o")');
+        var isGraded = @(Model.CurrentQuestion.IsCorrect.HasValue ? "true" : "false");
 
         // Timer
         function updateTimer() {
@@ -424,12 +788,70 @@
         setInterval(updateTimer, 1000);
         updateTimer();
 
-        // Select answer
+        // Select answer — triggers immediate grading
         $(document).on('click', '.answer-option', function () {
+            if (isGraded) return;
+
             $('.answer-option').removeClass('selected');
             $(this).addClass('selected');
             $(this).find('input[type="radio"]').prop('checked', true);
+
+            // Submit for immediate grading
+            var selectedId = parseInt($(this).find('input[type="radio"]').val());
+            gradeAnswer(selectedId);
         });
+
+        function gradeAnswer(selectedId) {
+            if (isGraded) return;
+
+            var data = {
+                __RequestVerificationToken: getToken(),
+                examId: examId,
+                questionId: questionId,
+                selectedAnswerId: selectedId,
+                action: 'grade'
+            };
+
+            $.post('@Url.Action("SubmitAnswer", "Exam")', data, function (res) {
+                if (!res.success) return;
+
+                isGraded = true;
+                var correct = res.isCorrect === true;
+
+                // Update answer options visually
+                $('#answerOptions .answer-option').each(function () {
+                    var $opt = $(this);
+                    var isCorrectAnswer = $opt.data('correct') === true || $opt.data('correct') === 'true';
+                    var isSelected = $opt.hasClass('selected');
+
+                    $opt.addClass('graded');
+                    $opt.find('input[type="radio"]').prop('disabled', true);
+
+                    if (isCorrectAnswer) {
+                        $opt.addClass('correct-answer');
+                        $opt.find('.answer-result-icon').html('<i class="fa fa-check-circle"></i>').show();
+                    } else if (isSelected && !isCorrectAnswer) {
+                        $opt.addClass('wrong-selected');
+                        $opt.find('.answer-result-icon').html('<i class="fa fa-times-circle"></i>').show();
+                    }
+                });
+
+                // Show feedback banner
+                var $fb = $('#gradingFeedback');
+                $fb.removeClass('correct wrong');
+                if (correct) {
+                    $fb.addClass('correct').html('<i class="fa fa-check-circle"></i> <span>Chính xác! Bạn đã trả lời đúng câu hỏi này.</span>');
+                } else {
+                    $fb.addClass('wrong').html('<i class="fa fa-times-circle"></i> <span>Sai rồi! Hãy xem giải thích để hiểu rõ hơn.</span>');
+                }
+                $fb.css('display', 'flex');
+
+                // Update nav button color for current question
+                var $btn = $('.qnav-btn[data-index="' + currentIndex + '"]');
+                $btn.removeClass('current answered');
+                $btn.addClass(correct ? 'correct' : 'wrong');
+            });
+        }
 
         function getToken() {
             return $('#hiddenForm input[name="__RequestVerificationToken"]').val();
@@ -438,6 +860,11 @@
         function getSelectedAnswer() {
             var checked = $('input[name="selectedAnswer"]:checked');
             return checked.length ? parseInt(checked.val()) : null;
+        }
+
+        // Toggle explanation panel
+        function toggleExplanationPanel() {
+            $('#explanationPanel').toggleClass('open');
         }
 
         // Navigate prev/next
@@ -465,7 +892,6 @@
                 selectedAnswerId: getSelectedAnswer(),
                 action: 'save'
             };
-            // Save current answer first, then navigate
             $.post('@Url.Action("SubmitAnswer", "Exam")', data, function () {
                 $.post('@Url.Action("GoToQuestion", "Exam")', {
                     __RequestVerificationToken: getToken(),
@@ -481,9 +907,9 @@
 
         // Finish exam
         function finishExam() {
-            var unanswered = $('.qnav-btn').not('.answered').not('.current').length;
+            var unanswered = $('.qnav-btn').not('.correct').not('.wrong').not('.answered').not('.current').length;
             var currentAnswered = getSelectedAnswer() !== null;
-            if (!currentAnswered) unanswered++;
+            if (!currentAnswered && !isGraded) unanswered++;
 
             var msg = 'Bạn có chắc muốn nộp bài?';
             if (unanswered > 0) {
@@ -491,7 +917,6 @@
             }
             if (!confirm(msg)) return;
 
-            // Save current answer first
             var saveData = {
                 __RequestVerificationToken: getToken(),
                 examId: examId,
@@ -508,6 +933,35 @@
                         window.location.href = res.redirectUrl;
                     }
                 });
+            });
+        }
+
+        // Pause exam
+        function pauseExam() {
+            var saveData = {
+                __RequestVerificationToken: getToken(),
+                examId: examId,
+                questionId: questionId,
+                selectedAnswerId: getSelectedAnswer(),
+                action: 'save'
+            };
+            $.post('@Url.Action("SubmitAnswer", "Exam")', saveData, function () {
+                window.location.href = '@Url.Action("PracticeExam", "Exam")';
+            });
+        }
+
+        // Reset exam
+        function resetExam() {
+            if (!confirm('Bạn có chắc muốn thi lại? Tất cả câu trả lời sẽ bị xóa trắng.')) return;
+            $.post('@Url.Action("ResetPractice", "Exam")', {
+                __RequestVerificationToken: getToken(),
+                examId: examId
+            }, function (res) {
+                if (res.success) {
+                    window.location.href = res.redirectUrl;
+                } else {
+                    alert(res.message || 'Không thể thi lại.');
+                }
             });
         }
     </script>

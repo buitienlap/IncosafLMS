@@ -11,6 +11,11 @@
 
     <div class="setup-body">
         <div class="form-group">
+            <label><i class="fa fa-pencil"></i> Tên đề thi <span style="font-weight:400;color:#95a5a6;font-size:12px">(để trống sẽ tự động tạo)</span></label>
+            <input type="text" id="setupExamTitle" name="examTitle" class="form-control setup-select" placeholder="Nhập tên đề thi..." spellcheck="false" />
+        </div>
+
+        <div class="form-group">
             <label><i class="fa fa-list-ol"></i> Số lượng câu hỏi</label>
             <select id="setupQuestionCount" name="questionCount" class="form-control setup-select">
                 <option value="10">10 câu</option>
@@ -38,21 +43,21 @@
             <label><i class="fa fa-folder-open"></i> Phân bổ thể loại câu hỏi</label>
             <div class="category-mode-switch">
                 <label class="radio-inline cat-mode-label">
-                    <input type="radio" name="catMode" value="all" checked onchange="toggleCategoryMode()"> Tất cả thể loại (ngẫu nhiên)
+                    <input type="radio" name="catMode" value="all" onchange="toggleCategoryMode()"> Tất cả thể loại (ngẫu nhiên)
                 </label>
                 <label class="radio-inline cat-mode-label">
-                    <input type="radio" name="catMode" value="custom" onchange="toggleCategoryMode()"> Tùy chỉnh tỷ lệ
+                    <input type="radio" name="catMode" value="custom" checked onchange="toggleCategoryMode()"> Tùy chỉnh tỷ lệ
                 </label>
             </div>
 
-            <div id="catAllPanel" class="cat-panel">
+            <div id="catAllPanel" class="cat-panel" style="display:none">
                 <div class="cat-all-info">
                     <i class="fa fa-info-circle"></i>
                     Câu hỏi được chọn ngẫu nhiên từ tất cả thể loại có sẵn.
                 </div>
             </div>
 
-            <div id="catCustomPanel" class="cat-panel" style="display:none">
+            <div id="catCustomPanel" class="cat-panel">
                 <div class="cat-picker-toolbar">
                     <button type="button" class="btn btn-sm btn-success" onclick="addCategoryRow()">
                         <i class="fa fa-plus"></i> Thêm thể loại
@@ -89,7 +94,8 @@
     .category-mode-switch {
         margin-bottom: 12px;
         display: flex;
-        gap: 16px;
+        gap: 24px;
+        padding-left: 0;
     }
 
     .cat-mode-label {
@@ -97,11 +103,21 @@
         font-weight: 500 !important;
         color: #5a6c7d !important;
         cursor: pointer;
-        padding: 0 !important;
+        padding: 6px 12px !important;
         margin: 0 !important;
+        border: 1px solid #e8ecf1;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
     }
 
-    .cat-mode-label input[type="radio"] { margin-right: 5px; }
+    .cat-mode-label:hover {
+        border-color: #28c76f;
+        background: #f0faf4;
+    }
+
+    .cat-mode-label input[type="radio"] { margin-right: 6px; margin-top: 0; }
 
     .cat-panel { margin-top: 4px; }
 
@@ -195,12 +211,16 @@
         font-size: 14px;
     }
 
-    .cat-available {
-        font-size: 11px;
-        color: #95a5a6;
+    .cat-qcount {
+        font-size: 12px;
+        font-weight: 600;
+        color: #28c76f;
         white-space: nowrap;
-        min-width: 50px;
-        text-align: right;
+        min-width: 55px;
+        text-align: center;
+        background: rgba(40,199,111,0.08);
+        padding: 4px 8px;
+        border-radius: 6px;
     }
 
     .cat-row .btn-remove-cat {
@@ -286,7 +306,7 @@
             + '<input type="number" class="form-control cat-pct-input" min="1" max="100" value="" placeholder="%" oninput="recalcTotal()">'
             + '<span class="cat-pct-symbol">%</span>'
             + '</div>'
-            + '<span class="cat-available"></span>'
+            + '<span class="cat-qcount"></span>'
             + '<button type="button" class="btn-remove-cat" onclick="removeCategoryRow(this)" title="Xóa">'
             + '<i class="fa fa-times"></i></button>'
             + '</div>';
@@ -310,11 +330,6 @@
     }
 
     function onCategorySelectChange(sel) {
-        var $sel = $(sel);
-        var opt = $sel.find('option:selected');
-        var row = $sel.closest('.cat-row');
-        var count = opt.data('count') || 0;
-        row.find('.cat-available').text(count > 0 ? count + ' câu' : '');
         refreshAvailableOptions();
     }
 
@@ -332,8 +347,18 @@
 
     function recalcTotal() {
         var total = 0;
-        $('#categoryRows .cat-pct-input').each(function () {
-            total += parseInt($(this).val()) || 0;
+        var totalQuestions = parseInt($('#setupQuestionCount').val()) || 20;
+
+        $('#categoryRows .cat-row').each(function () {
+            var pct = parseInt($(this).find('.cat-pct-input').val()) || 0;
+            total += pct;
+            var qCount = Math.round(pct / 100 * totalQuestions);
+            var $qc = $(this).find('.cat-qcount');
+            if (pct > 0) {
+                $qc.text(qCount + ' câu');
+            } else {
+                $qc.text('');
+            }
         });
 
         var $pct = $('#pctTotal');
@@ -353,6 +378,17 @@
             $warn.hide();
         }
     }
+
+    // Recalc when question count changes
+    $(document).ready(function () {
+        $('#setupQuestionCount').on('change', function () {
+            recalcTotal();
+        });
+        // Auto-add first category row in custom mode on load
+        if ($('#categoryRows .cat-row').length === 0) {
+            addCategoryRow();
+        }
+    });
 
     function getCategoryConfig() {
         var mode = $('input[name="catMode"]:checked').val();

@@ -98,7 +98,7 @@ namespace IncosafCMS.Web.Controllers
         // =============================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult StartPractice(int questionCount = 20, string difficulty = null, string categoryConfigJson = null)
+        public ActionResult StartPractice(int questionCount = 20, string difficulty = null, string categoryConfigJson = null, string examTitle = null)
         {
             var user = userManager.FindByName(User.Identity.Name);
 
@@ -212,9 +212,10 @@ namespace IncosafCMS.Web.Controllers
                     .Select(c => catNames[c.CategoryId] + " " + c.Percent + "%");
                 titleParts = string.Join(", ", parts);
             }
-            var title = "Thi thử"
+            var autoTitle = "Thi thử"
                 + (string.IsNullOrEmpty(titleParts) ? "" : " - " + titleParts)
                 + " (" + selectedIds.Count + " câu)";
+            var title = !string.IsNullOrWhiteSpace(examTitle) ? examTitle.Trim() : autoTitle;
 
             var exam = new PracticeExam
             {
@@ -306,19 +307,24 @@ namespace IncosafCMS.Web.Controllers
                     QuestionId = question.Id,
                     Title = question.Title,
                     Text = question.Text,
+                    Explanation = question.Explanation,
                     SelectedAnswerId = existingAnswer?.SelectedAnswerId,
+                    IsCorrect = existingAnswer?.IsCorrect,
                     Options = orderedAnswers.Select((a, idx) => new PracticeExamAnswerOptionDto
                     {
                         AnswerId = a.Id,
                         Text = a.Text,
-                        Label = idx < labels.Length ? labels[idx] : (idx + 1).ToString()
+                        Label = idx < labels.Length ? labels[idx] : (idx + 1).ToString(),
+                        IsCorrect = a.IsCorrect,
+                        Explanation = a.Explanation
                     }).ToList()
                 },
                 Progress = allAnswers.Select((a, idx) => new QuestionProgressDto
                 {
                     Index = idx,
                     IsAnswered = a.SelectedAnswerId.HasValue,
-                    IsCurrent = idx == exam.CurrentQuestionIndex
+                    IsCurrent = idx == exam.CurrentQuestionIndex,
+                    IsCorrect = a.IsCorrect
                 }).ToList()
             };
 
@@ -339,6 +345,7 @@ namespace IncosafCMS.Web.Controllers
                 return Json(new { success = false });
 
             // Save the answer
+            bool? answerIsCorrect = null;
             if (selectedAnswerId.HasValue)
             {
                 var examAnswer = uow.Repository<PracticeExamAnswer>()
@@ -354,9 +361,16 @@ namespace IncosafCMS.Web.Controllers
                     examAnswer.SelectedAnswerId = selectedAnswerId.Value;
                     examAnswer.IsCorrect = correctAnswer != null && correctAnswer.Id == selectedAnswerId.Value;
                     examAnswer.AnsweredAt = DateTime.UtcNow;
+                    answerIsCorrect = examAnswer.IsCorrect;
                     uow.Repository<PracticeExamAnswer>().Update(examAnswer);
                     uow.SaveChanges();
                 }
+            }
+
+            // If action is "grade" — just return grading result, don't navigate
+            if (action == "grade")
+            {
+                return Json(new { success = true, isCorrect = answerIsCorrect });
             }
 
             // Navigate
@@ -559,6 +573,45 @@ namespace IncosafCMS.Web.Controllers
             uow.SaveChanges();
 
             return Json(new { success = true });
+        }
+
+        // =============================================
+        // POST: /Exam/ResetPractice — Clear answers and restart same exam
+        // =============================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ResetPractice(int examId)
+        {
+            var user = userManager.FindByName(User.Identity.Name);
+            var exam = uow.Repository<PracticeExam>().GetSingle(examId);
+
+            if (exam == null || exam.UserId != user.Id)
+                return Json(new { success = false, message = "Không tìm thấy bài thi." });
+
+            // Clear all answers
+            var answers = uow.Repository<PracticeExamAnswer>()
+                .FindBy(a => a.PracticeExamId == examId)
+                .ToList();
+
+            foreach (var ans in answers)
+            {
+                ans.SelectedAnswerId = null;
+                ans.IsCorrect = null;
+                uow.Repository<PracticeExamAnswer>().Update(ans);
+            }
+
+            // Reset exam state
+            exam.CurrentQuestionIndex = 0;
+            exam.StartedAt = DateTime.UtcNow;
+            exam.CompletedAt = null;
+            exam.DurationSeconds = null;
+            exam.CorrectCount = 0;
+            exam.Score = null;
+            exam.Status = PracticeExamStatus.InProgress;
+            uow.Repository<PracticeExam>().Update(exam);
+            uow.SaveChanges();
+
+            return Json(new { success = true, redirectUrl = Url.Action("Take", new { id = exam.Id }) });
         }
 
         // =============================================
