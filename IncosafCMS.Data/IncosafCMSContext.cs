@@ -21,13 +21,13 @@ namespace IncosafCMS.Data
         private static readonly object Lock = new object();
         private static bool _databaseInitialized;
         //public DbSet<Equipment> Equipments { get; set; }//thêm 4.7.2025
-        public DbSet<Accreditation> Accreditations { get; set; }//thêm 4.7.2025
+        //public DbSet<Accreditation> Accreditations { get; set; }//thêm 4.7.2025
         //public DbSet<AppUser> AppUsers { get; set; }//thêm 4.7.2025
 
         //public DbSet<StampSerial> StampSerials { get; set; } //thêm 29.7.2025
         //public DbSet<v_ActTurnOver> v_ActTurnOver { get; set; }
         //public DbSet<v_ActPayment> v_ActPayment { get; set; }
-        public DbSet<Contract> Contracts { get; set; } // thêm dòng này
+        //public DbSet<Contract> Contracts { get; set; } // thêm dòng này
         //public DbSet<OriginalSpec> OriginalSpecs { get; set; } //thêm 24.9.2025
         //public DbSet<Contract_Doc> Contract_Docs { get; set; } //thêm 26.9.2025
         //public DbSet<Department> Departments { get; set; } //thêm 4.11.2025

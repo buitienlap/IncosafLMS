@@ -12,7 +12,7 @@ namespace IncosafCMS.Core.DomainModels.Identity
             Claims = new List<ApplicationUserClaim>();
             Roles = new List<ApplicationUserRole>();
             Logins = new List<ApplicationUserLogin>();
-            Accreditations = new List<Accreditation>();
+            //Accreditations = new List<Accreditation>();
             Notifications = new List<Notification>();
             //SanLuongDK = new List<SanLuongDK>();
         }
@@ -39,7 +39,7 @@ namespace IncosafCMS.Core.DomainModels.Identity
         public virtual string Address { get; set; }
         public virtual int? DepartmentId { set; get; }
         public virtual Department Department { get; set; }
-        public virtual List<Accreditation> Accreditations { get; set; }
+        //public virtual List<Accreditation> Accreditations { get; set; }
         public virtual List<Notification> Notifications { set; get; }
         //public virtual List<SanLuongDK> SanLuongDK { get; set; }
         public string Tags { get; set; }

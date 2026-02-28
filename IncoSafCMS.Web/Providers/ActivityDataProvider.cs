@@ -123,14 +123,6 @@ namespace IncosafCMS.Web.Providers
             }
         }
 
-        internal static IQueryable<ContractViewModel> GetContractByMaHD(string MaHD)
-        {
-            var clientIdParameter = new SqlParameter("@MaHD", MaHD);
-            var contracts = DB1.Database
-                .SqlQuery<ContractViewModel>("GetContractByMaHD @MaHD", clientIdParameter)
-                .AsQueryable();
-            return contracts;
-        }
 
     }
 }

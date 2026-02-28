@@ -14,128 +14,128 @@ using System.Web;
 
 namespace IncosafCMS.Web.Providers
 {
-    public static class GridViewCustomBindingHandlers
-    {
-        static IQueryable<ContractViewModel> Model { get { return LargeDatabaseDataProvider.Contracts.OrderByDescending(e => e.SignDate); } }
+    //public static class GridViewCustomBindingHandlers
+    //{
+    //    static IQueryable<ContractViewModel> Model { get { return LargeDatabaseDataProvider.Contracts.OrderByDescending(e => e.SignDate); } }
 
-        public static void GetDataRowCountSimple(GridViewCustomBindingGetDataRowCountArgs e)
-        {
-            e.DataRowCount = Model.Count();
-        }
-        public static void GetDataSimple(GridViewCustomBindingGetDataArgs e)
-        {
-            e.Data = Model
-                .ApplySorting(e.State.SortedColumns)
-                .Skip(e.StartDataRowIndex)
-                .Take(e.DataRowCount);
-        }
+    //    public static void GetDataRowCountSimple(GridViewCustomBindingGetDataRowCountArgs e)
+    //    {
+    //        e.DataRowCount = Model.Count();
+    //    }
+    //    public static void GetDataSimple(GridViewCustomBindingGetDataArgs e)
+    //    {
+    //        e.Data = Model
+    //            .ApplySorting(e.State.SortedColumns)
+    //            .Skip(e.StartDataRowIndex)
+    //            .Take(e.DataRowCount);
+    //    }
        
-        public static void GetDataRowCountAdvanced(GridViewCustomBindingGetDataRowCountArgs e)
-        {
-            int rowCount;
-            if (GridViewCustomBindingSummaryCache.TryGetCount(e.FilterExpression, out rowCount))
-                e.DataRowCount = rowCount;
-            else
-                e.DataRowCount = Model.ApplyFilter(e.FilterExpression).Count();
-        }
+    //    public static void GetDataRowCountAdvanced(GridViewCustomBindingGetDataRowCountArgs e)
+    //    {
+    //        int rowCount;
+    //        if (GridViewCustomBindingSummaryCache.TryGetCount(e.FilterExpression, out rowCount))
+    //            e.DataRowCount = rowCount;
+    //        else
+    //            e.DataRowCount = Model.ApplyFilter(e.FilterExpression).Count();
+    //    }
 
-        public static void GetUniqueHeaderFilterValuesAdvanced(GridViewCustomBindingGetUniqueHeaderFilterValuesArgs e)
-        {
-            e.Data = Model
-                .ApplyFilter(e.FilterExpression)
-                .UniqueValuesForField(e.FieldName);
-        }
+    //    public static void GetUniqueHeaderFilterValuesAdvanced(GridViewCustomBindingGetUniqueHeaderFilterValuesArgs e)
+    //    {
+    //        e.Data = Model
+    //            .ApplyFilter(e.FilterExpression)
+    //            .UniqueValuesForField(e.FieldName);
+    //    }
 
-        public static void GetGroupingInfoAdvanced(GridViewCustomBindingGetGroupingInfoArgs e)
-        {
-            e.Data = Model
-                .ApplyFilter(e.FilterExpression)
-                .ApplyFilter(e.GroupInfoList)
-                .GetGroupInfo(e.FieldName, e.SortOrder);
-        }
+    //    public static void GetGroupingInfoAdvanced(GridViewCustomBindingGetGroupingInfoArgs e)
+    //    {
+    //        e.Data = Model
+    //            .ApplyFilter(e.FilterExpression)
+    //            .ApplyFilter(e.GroupInfoList)
+    //            .GetGroupInfo(e.FieldName, e.SortOrder);
+    //    }
         
-        public static void GetDataAdvanced(GridViewCustomBindingGetDataArgs e)
-        {
-            //30.10.2025 thêm đoạn dưới đây để ẩn thanh tìm kiếm mặc định của grid
-            //Và tạo ô tìm kiếm mới đật trên thanh công cụ - Mục đích: mở rộng cửa sổ DS H.Đong
-            // 1️⃣ Lấy dữ liệu gốc
-            var query = Model; // Model của bạn là IQueryable<ContractViewModel> hoặc tương tự
+    //    public static void GetDataAdvanced(GridViewCustomBindingGetDataArgs e)
+    //    {
+    //        //30.10.2025 thêm đoạn dưới đây để ẩn thanh tìm kiếm mặc định của grid
+    //        //Và tạo ô tìm kiếm mới đật trên thanh công cụ - Mục đích: mở rộng cửa sổ DS H.Đong
+    //        // 1️⃣ Lấy dữ liệu gốc
+    //        var query = Model; // Model của bạn là IQueryable<ContractViewModel> hoặc tương tự
 
-            // 2️⃣ Lọc theo text tìm kiếm (từ Session) theo Tên HĐ; Mã HĐ; KĐV; K.hàng
-            string search = HttpContext.Current.Session["ContractSearchText"] as string;
-            if (!string.IsNullOrEmpty(search))
-            {
-                // Chuyển search về chữ thường để tránh lỗi phân biệt hoa thường
-                string keyword = search.Trim().ToLower();
+    //        // 2️⃣ Lọc theo text tìm kiếm (từ Session) theo Tên HĐ; Mã HĐ; KĐV; K.hàng
+    //        string search = HttpContext.Current.Session["ContractSearchText"] as string;
+    //        if (!string.IsNullOrEmpty(search))
+    //        {
+    //            // Chuyển search về chữ thường để tránh lỗi phân biệt hoa thường
+    //            string keyword = search.Trim().ToLower();
 
-                query = query.Where(c =>
-                    (c.Name ?? "").ToLower().Contains(keyword) ||
-                    (c.MaHD ?? "").ToLower().Contains(keyword) ||
-                    (c.OwnerDisplayName ?? "").ToLower().Contains(keyword) ||
-                    (c.CustomerName ?? "").ToLower().Contains(keyword)
-                );
-            }
+    //            query = query.Where(c =>
+    //                (c.Name ?? "").ToLower().Contains(keyword) ||
+    //                (c.MaHD ?? "").ToLower().Contains(keyword) ||
+    //                (c.OwnerDisplayName ?? "").ToLower().Contains(keyword) ||
+    //                (c.CustomerName ?? "").ToLower().Contains(keyword)
+    //            );
+    //        }
             
-            e.Data = query
-                .ApplyFilter(e.FilterExpression)
-                .ApplyFilter(e.GroupInfoList)
-                .ApplySorting(e.State.SortedColumns)
-                .Skip(e.StartDataRowIndex)
-                .Take(e.DataRowCount);
+    //        e.Data = query
+    //            .ApplyFilter(e.FilterExpression)
+    //            .ApplyFilter(e.GroupInfoList)
+    //            .ApplySorting(e.State.SortedColumns)
+    //            .Skip(e.StartDataRowIndex)
+    //            .Take(e.DataRowCount);
             
-        }
+    //    }
 
-        private static IQueryable<ContractViewModel> ApplyContractFilterMode(IQueryable<ContractViewModel> query)
-        {
-            int mode = GridViewHelper.ContractGridFilterIndex;
+    //    private static IQueryable<ContractViewModel> ApplyContractFilterMode(IQueryable<ContractViewModel> query)
+    //    {
+    //        int mode = GridViewHelper.ContractGridFilterIndex;
 
-            switch (mode)
-            {
-                case 0://HD Toan bo
+    //        switch (mode)
+    //        {
+    //            case 0://HD Toan bo
                     
-                    break;
-                case 1://HD chua cap so
-                    query = query.Where(x => string.IsNullOrEmpty(x.MaHD));
-                    break;
-                case 2://HD da cap so
-                    query = query.Where(x => !string.IsNullOrEmpty(x.MaHD));
-                    break;
-                case 3://HD Da xuat hoa don
-                    query = query.Where(x => x.XuatHoaDon > 0);
-                    break;
-                case 4:
-                    query = query.Where(x => x.ThuNo > 0);
-                    break;
-                case 5:
-                    query = query.Where(x => x.CongNo > 0);
-                    break;
-                case 6:
-                    query = query.Where(x => x.DoDang > 0);
-                    break;
-            }
+    //                break;
+    //            case 1://HD chua cap so
+    //                query = query.Where(x => string.IsNullOrEmpty(x.MaHD));
+    //                break;
+    //            case 2://HD da cap so
+    //                query = query.Where(x => !string.IsNullOrEmpty(x.MaHD));
+    //                break;
+    //            case 3://HD Da xuat hoa don
+    //                query = query.Where(x => x.XuatHoaDon > 0);
+    //                break;
+    //            case 4:
+    //                query = query.Where(x => x.ThuNo > 0);
+    //                break;
+    //            case 5:
+    //                query = query.Where(x => x.CongNo > 0);
+    //                break;
+    //            case 6:
+    //                query = query.Where(x => x.DoDang > 0);
+    //                break;
+    //        }
 
-            return query;
-        }
+    //        return query;
+    //    }
         
-        public static void GetSummaryValuesAdvanced(GridViewCustomBindingGetSummaryValuesArgs e)
-        {
-            var query = Model
-                .ApplyFilter(e.FilterExpression)
-                .ApplyFilter(e.GroupInfoList);
+    //    public static void GetSummaryValuesAdvanced(GridViewCustomBindingGetSummaryValuesArgs e)
+    //    {
+    //        var query = Model
+    //            .ApplyFilter(e.FilterExpression)
+    //            .ApplyFilter(e.GroupInfoList);
 
-            var summaryValues = query.CalculateSummary(e.SummaryItems);
-            e.Data = summaryValues;
+    //        var summaryValues = query.CalculateSummary(e.SummaryItems);
+    //        e.Data = summaryValues;
 
-            var countSummaryItem = e.SummaryItems.FirstOrDefault(i => i.SummaryType == SummaryItemType.Count);
-            if (e.GroupInfoList.Count == 0 && countSummaryItem != null)
-            {
-                var itemIndex = e.SummaryItems.IndexOf(countSummaryItem);
-                var count = summaryValues[itemIndex] != null ? Convert.ToInt32(summaryValues[itemIndex]) : 0;
-                GridViewCustomBindingSummaryCache.SaveCount(e.FilterExpression, count);
-            }
-        }
+    //        var countSummaryItem = e.SummaryItems.FirstOrDefault(i => i.SummaryType == SummaryItemType.Count);
+    //        if (e.GroupInfoList.Count == 0 && countSummaryItem != null)
+    //        {
+    //            var itemIndex = e.SummaryItems.IndexOf(countSummaryItem);
+    //            var count = summaryValues[itemIndex] != null ? Convert.ToInt32(summaryValues[itemIndex]) : 0;
+    //            GridViewCustomBindingSummaryCache.SaveCount(e.FilterExpression, count);
+    //        }
+    //    }
 
-    }
+    //}
 
     public class CriteriaValidator : EvaluatorCriteriaValidator
     {

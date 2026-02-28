@@ -5,6 +5,7 @@ using IncosafCMS.Core.Identity;
 using IncosafCMS.Core.Services;
 using IncosafCMS.Web.Models;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -13,13 +14,13 @@ namespace IncosafCMS.Web.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        IService<Contract> service;
+        //IService<Contract> service;
         IService<Department> departmentService;        
         IUnitOfWork uow;
         private IApplicationUserManager userManager;
-        public HomeController(IService<Contract> _service, IService<Department> _departmentService, IUnitOfWork _uow, IApplicationUserManager _userManager)
+        public HomeController(IService<Department> _departmentService, IUnitOfWork _uow, IApplicationUserManager _userManager)
         {
-            service = _service;
+            // service = _service;  IService<Contract> _service, 
             uow = _uow;
             userManager = _userManager;
             departmentService = _departmentService;
@@ -75,11 +76,11 @@ namespace IncosafCMS.Web.Controllers
             return View(model);
 
         }
-        public ActionResult ContractDetails(Contract model)
-        {
-            model = service.GetById(model.Id);
-            return View(model);
-        }
+        //public ActionResult ContractDetails(Contract model)
+        //{
+        //    model = service.GetById(model.Id);
+        //    return View(model);
+        //}
         [OutputCache(NoStore = true, Duration = 0, VaryByParam = "None")]
         public ActionResult Customer()
         {

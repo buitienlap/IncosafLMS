@@ -16,14 +16,14 @@ namespace IncosafCMS.Data
             modelBuilder.Entity<Customer>()
                 .Property(e => e.Id)
                 .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-            modelBuilder.Entity<Accreditation>()
-                .Property(e => e.Id)
-                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            //modelBuilder.Entity<Accreditation>()
+            //    .Property(e => e.Id)
+            //    .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
             //modelBuilder.Entity<Accreditation>().HasOptional(p => p.AccTask).WithMany(x => x.Accreditations).HasForeignKey(key => key.AccTask_Id);
             
-            modelBuilder.Entity<Contract>().ToTable("Contract")
-                .Property(e => e.Id)
-                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            //modelBuilder.Entity<Contract>().ToTable("Contract")
+            //    .Property(e => e.Id)
+            //    .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
 
             modelBuilder.Entity<Province>()
                 .Property(e => e.Id)
