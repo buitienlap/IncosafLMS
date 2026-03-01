@@ -108,6 +108,13 @@ namespace IncosafCMS.Core.DomainModels
         /// </summary>
         public int QuestionOrder { get; set; }
 
+        /// <summary>
+        /// Comma-separated, pre-shuffled answer IDs shown to the user for this question.
+        /// When a question has more answers than the configured max, only a random subset
+        /// (always including the correct answer) is stored here in display order.
+        /// </summary>
+        public string ShuffledAnswerIds { get; set; }
+
         public DateTime? AnsweredAt { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web.Mvc;
 using IncosafCMS.Core.Data;
@@ -233,14 +234,71 @@ namespace IncosafCMS.Web.Controllers
             uow.Repository<PracticeExam>().Insert(exam);
             uow.SaveChanges();
 
-            // Create answer slots
+            // Read max answer options from config
+            int maxOptions = 4;
+            var maxOptSetting = ConfigurationManager.AppSettings["MaxAnswerOptionsPerQuestion"];
+            if (!string.IsNullOrEmpty(maxOptSetting))
+            {
+                int parsed;
+                if (int.TryParse(maxOptSetting, out parsed) && parsed >= 2)
+                    maxOptions = parsed;
+            }
+
+            // Load all questions with their answers to pre-shuffle
+            var questionsWithAnswers = uow.Repository<Question>()
+                .GetAllIncluding(q => q.Answers)
+                .Where(q => selectedIds.Contains(q.Id))
+                .ToDictionary(q => q.Id);
+
+            // Create answer slots with pre-shuffled answer selection
             for (int i = 0; i < selectedIds.Count; i++)
             {
+                Question question;
+                questionsWithAnswers.TryGetValue(selectedIds[i], out question);
+
+                string shuffledIds = "";
+                if (question != null && question.Answers != null && question.Answers.Any())
+                {
+                    var allAnswers = question.Answers.ToList();
+                    List<Answer> selectedAnswers;
+
+                    if (allAnswers.Count <= maxOptions)
+                    {
+                        // Use all answers, just shuffle the order
+                        selectedAnswers = allAnswers.OrderBy(x => rng.Next()).ToList();
+                    }
+                    else
+                    {
+                        // More answers than allowed: pick random subset, always include correct answer(s)
+                        var correctAnswers = allAnswers.Where(a => a.IsCorrect).ToList();
+                        var incorrectAnswers = allAnswers.Where(a => !a.IsCorrect).ToList();
+
+                        var picked = new List<Answer>(correctAnswers);
+
+                        // Fill remaining slots with random incorrect answers
+                        int remaining = maxOptions - picked.Count;
+                        if (remaining > 0)
+                        {
+                            picked.AddRange(incorrectAnswers.OrderBy(x => rng.Next()).Take(remaining));
+                        }
+
+                        // If we somehow have more correct answers than maxOptions, trim
+                        if (picked.Count > maxOptions)
+                            picked = picked.Take(maxOptions).ToList();
+
+                        // Shuffle the final selection
+                        selectedAnswers = picked.OrderBy(x => rng.Next()).ToList();
+                    }
+
+                    shuffledIds = string.Join(",", selectedAnswers.Select(a => a.Id));
+                }
+
                 var ans = new PracticeExamAnswer
                 {
                     PracticeExamId = exam.Id,
                     QuestionId = selectedIds[i],
-                    QuestionOrder = i
+                    QuestionOrder = i,
+                    ShuffledAnswerIds = shuffledIds
                 };
                 uow.Repository<PracticeExamAnswer>().Insert(ans);
             }
@@ -287,13 +345,29 @@ namespace IncosafCMS.Web.Controllers
                 .FirstOrDefault();
 
             // Progress tracking
-            var allAnswers = uow.Repository<PracticeExamAnswer>()
+            var allExamAnswers = uow.Repository<PracticeExamAnswer>()
                 .FindBy(a => a.PracticeExamId == exam.Id)
                 .OrderBy(a => a.QuestionOrder)
                 .ToList();
 
             var labels = new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
-            var orderedAnswers = question.Answers.OrderBy(a => a.Order).ToList();
+            var questionAnswers = question.Answers.ToList();
+
+            // Use pre-shuffled answer IDs if available, otherwise fall back to all answers
+            List<Answer> orderedAnswers;
+            if (!string.IsNullOrEmpty(existingAnswer?.ShuffledAnswerIds))
+            {
+                var shuffledIds = existingAnswer.ShuffledAnswerIds.Split(',').Select(int.Parse).ToList();
+                var answerDict = questionAnswers.ToDictionary(a => a.Id);
+                orderedAnswers = shuffledIds
+                    .Where(id => answerDict.ContainsKey(id))
+                    .Select(id => answerDict[id])
+                    .ToList();
+            }
+            else
+            {
+                orderedAnswers = questionAnswers.OrderBy(a => a.Order).ToList();
+            }
 
             var model = new PracticeExamTakeViewModel
             {
@@ -319,7 +393,7 @@ namespace IncosafCMS.Web.Controllers
                         Explanation = a.Explanation
                     }).ToList()
                 },
-                Progress = allAnswers.Select((a, idx) => new QuestionProgressDto
+                Progress = allExamAnswers.Select((a, idx) => new QuestionProgressDto
                 {
                     Index = idx,
                     IsAnswered = a.SelectedAnswerId.HasValue,
@@ -525,7 +599,23 @@ namespace IncosafCMS.Web.Controllers
                 {
                     Question q;
                     questions.TryGetValue(ea.QuestionId, out q);
-                    var orderedAns = q != null ? q.Answers.OrderBy(a => a.Order).ToList() : new List<Answer>();
+                    var allAns = q != null ? q.Answers.ToList() : new List<Answer>();
+
+                    // Use pre-shuffled answer IDs if available
+                    List<Answer> orderedAns;
+                    if (!string.IsNullOrEmpty(ea.ShuffledAnswerIds))
+                    {
+                        var shuffledIds = ea.ShuffledAnswerIds.Split(',').Select(int.Parse).ToList();
+                        var ansDict = allAns.ToDictionary(a => a.Id);
+                        orderedAns = shuffledIds
+                            .Where(id => ansDict.ContainsKey(id))
+                            .Select(id => ansDict[id])
+                            .ToList();
+                    }
+                    else
+                    {
+                        orderedAns = allAns.OrderBy(a => a.Order).ToList();
+                    }
                     return new ReviewQuestionDto
                     {
                         Index = idx + 1,
@@ -588,15 +678,61 @@ namespace IncosafCMS.Web.Controllers
             if (exam == null || exam.UserId != user.Id)
                 return Json(new { success = false, message = "Không tìm thấy bài thi." });
 
-            // Clear all answers
+            // Read max answer options from config
+            int maxOptions = 4;
+            var maxOptSetting = ConfigurationManager.AppSettings["MaxAnswerOptionsPerQuestion"];
+            if (!string.IsNullOrEmpty(maxOptSetting))
+            {
+                int parsedOpt;
+                if (int.TryParse(maxOptSetting, out parsedOpt) && parsedOpt >= 2)
+                    maxOptions = parsedOpt;
+            }
+
+            // Clear all answers and re-shuffle answer options
             var answers = uow.Repository<PracticeExamAnswer>()
                 .FindBy(a => a.PracticeExamId == examId)
                 .ToList();
+
+            var questionIds = answers.Select(a => a.QuestionId).Distinct().ToList();
+            var questionsDict = uow.Repository<Question>()
+                .GetAllIncluding(q => q.Answers)
+                .Where(q => questionIds.Contains(q.Id))
+                .ToDictionary(q => q.Id);
+
+            var rng = new Random();
 
             foreach (var ans in answers)
             {
                 ans.SelectedAnswerId = null;
                 ans.IsCorrect = null;
+
+                // Re-shuffle answer options
+                Question q;
+                if (questionsDict.TryGetValue(ans.QuestionId, out q) && q.Answers != null && q.Answers.Any())
+                {
+                    var allAns = q.Answers.ToList();
+                    List<Answer> selected;
+
+                    if (allAns.Count <= maxOptions)
+                    {
+                        selected = allAns.OrderBy(x => rng.Next()).ToList();
+                    }
+                    else
+                    {
+                        var correct = allAns.Where(a => a.IsCorrect).ToList();
+                        var incorrect = allAns.Where(a => !a.IsCorrect).ToList();
+                        var picked = new List<Answer>(correct);
+                        int rem = maxOptions - picked.Count;
+                        if (rem > 0)
+                            picked.AddRange(incorrect.OrderBy(x => rng.Next()).Take(rem));
+                        if (picked.Count > maxOptions)
+                            picked = picked.Take(maxOptions).ToList();
+                        selected = picked.OrderBy(x => rng.Next()).ToList();
+                    }
+
+                    ans.ShuffledAnswerIds = string.Join(",", selected.Select(a => a.Id));
+                }
+
                 uow.Repository<PracticeExamAnswer>().Update(ans);
             }
 

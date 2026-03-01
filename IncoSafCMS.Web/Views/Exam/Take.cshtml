@@ -1,4 +1,5 @@
 ﻿@model IncosafCMS.Web.Models.PracticeExamTakeViewModel
+@using IncosafCMS.Web.Helpers
 @{
     ViewBag.Title = "Làm bài thi thử";
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
@@ -772,7 +773,7 @@
         var examId = @Model.ExamId;
         var questionId = @Model.CurrentQuestion.QuestionId;
         var currentIndex = @Model.CurrentIndex;
-        var startTime = new Date('@Model.StartedAt.ToString("o")');
+        var startTime = new Date('@(Model.StartedAt.ToVietnamTime().ToString("yyyy-MM-ddTHH:mm:ss"))');
         var isGraded = @(Model.CurrentQuestion.IsCorrect.HasValue ? "true" : "false");
 
         // Timer

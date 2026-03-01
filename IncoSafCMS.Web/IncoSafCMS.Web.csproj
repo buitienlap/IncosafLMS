@@ -294,6 +294,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DateTimeHelper.cs" />
     <Compile Include="Helpers\QRCodeHelper.cs" />
     <Compile Include="Helpers\CryptionHelper.cs" />
     <Compile Include="Helpers\EntityHelper.cs" />
@@ -333,6 +334,7 @@
     <Content Include="App_Data\Scripts\Create_ExamAssignment.sql" />
     <Content Include="App_Data\Scripts\Create_PracticeExam.sql" />
     <Content Include="App_Doc\Migration_CourseStats_Rating.sql" />
+    <Content Include="App_Doc\Migration_PracticeExam_ShuffledAnswerIds.sql" />
     <Content Include="Content\animate.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />

@@ -20,16 +20,16 @@ namespace IncosafCMS.Web
 
             // jQuery
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-3.4.1.min.js", "~/Scripts/app/index.js"));
+                        "~/Scripts/jquery-3.7.1.min.js", "~/Scripts/app/index.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/signalr").Include(
-                  "~/Scripts/jquery.signalR-2.4.1.min.js"));
+                  "~/Scripts/jquery.signalR-2.4.3.min.js"));
             // jQueryUI CSS
-            bundles.Add(new ScriptBundle("~/Scripts/plugins/jquery-ui/jqueryuiStyles").Include(
+            bundles.Add(new StyleBundle("~/Scripts/plugins/jquery-ui/jqueryuiStyles").Include(
                         "~/Scripts/plugins/jquery-ui/jquery-ui.css"));
 
             // jQueryUI 
-            bundles.Add(new StyleBundle("~/bundles/jqueryui").Include(
+            bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
                         "~/Scripts/plugins/jquery-ui/jquery-ui.min.js"));
 
             // Bootstrap
@@ -156,8 +156,7 @@ namespace IncosafCMS.Web
 
             // fullCalendar 
             bundles.Add(new ScriptBundle("~/plugins/fullCalendar").Include(
-                      "~/Scripts/plugins/fullcalendar/moment.min.js",
-                      "~/Scripts/plugins/fullcalendar/fullcalendar.min.js"));
+                      "~/Scripts/moment.min.js"));
 
             // vectorMap 
             bundles.Add(new ScriptBundle("~/plugins/vectorMap").Include(
@@ -314,9 +313,7 @@ namespace IncosafCMS.Web
 
             // Date range picker
             bundles.Add(new ScriptBundle("~/plugins/dateRange").Include(
-                      // Date range use moment.js same as full calendar plugin 
-                      "~/Scripts/plugins/fullcalendar/moment.min.js",
-                      "~/Scripts/plugins/daterangepicker/daterangepicker.js"));
+                      "~/Scripts/moment.min.js"));
 
             // Sweet alert Styless
             bundles.Add(new StyleBundle("~/plugins/sweetAlertStyles").Include(

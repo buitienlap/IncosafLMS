@@ -1,4 +1,5 @@
 ﻿@model IncosafCMS.Web.Models.PracticeExamReviewViewModel
+@using IncosafCMS.Web.Helpers
 @{
     ViewBag.Title = "Xem lại bài thi thử";
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
@@ -283,7 +284,7 @@
             <div class="result-detail-stats">
                 <span><i class="fa fa-check"></i> Đúng: @Model.CorrectCount / @Model.QuestionCount</span>
                 <span><i class="fa fa-clock-o"></i> Thời gian: @Model.DurationDisplay</span>
-                <span><i class="fa fa-calendar"></i> @Model.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                <span><i class="fa fa-calendar"></i> @Model.StartedAt.ToVietnamTime().ToString("dd/MM/yyyy HH:mm")</span>
             </div>
         </div>
         <div class="result-actions">
@@ -312,8 +313,8 @@
                         @foreach (var a in q.Answers)
                         {
                             var ansClass = "";
-                            if (a.IsCorrect) ansClass = "is-correct";
-                            else if (a.IsSelected && !a.IsCorrect) ansClass = "is-selected-wrong";
+                            if (a.IsCorrect) { ansClass = "is-correct"; }
+                            else if (a.IsSelected && !a.IsCorrect) { ansClass = "is-selected-wrong"; }
                             <div class="rq-answer @ansClass">
                                 <div class="rq-answer-label">@a.Label</div>
                                 <div class="rq-answer-text">@Html.Raw(a.Text)</div>
